@@ -1,0 +1,36 @@
+---
+import { getEntry, render } from 'astro:content';
+import LoanCalculator from '../../calculators/loan/LoanCalculator.astro';
+import { CALCULATORS, getCalculator, liveCountries, type EngineName } from '../../calculators/registry';
+import { getCountry } from '../../countries';
+import CalculatorLayout from '../../layouts/CalculatorLayout.astro';
+
+export function getStaticPaths() {
+  return CALCULATORS.flatMap((calc) =>
+    liveCountries(calc).map((country) => ({ params: { country, slug: calc.slug } })),
+  );
+}
+
+/** Engine → calculator UI. Add one line per new engine. */
+const ENGINE_UI = {
+  loan: LoanCalculator,
+} satisfies Record<EngineName, unknown>;
+
+const { country: countryCode, slug } = Astro.params;
+const country = getCountry(countryCode);
+const calc = getCalculator(slug);
+
+const guide = await getEntry('guides', `${country.code}/${calc.slug}`);
+if (!guide) {
+  throw new Error(`Missing guide: src/content/guides/${country.code}/${calc.slug}.md (every calculator page needs one)`);
+}
+const { Content } = await render(guide);
+const Calculator = ENGINE_UI[calc.engine];
+---
+
+<CalculatorLayout country={country} calc={calc} guide={guide.data}>
+  <Calculator country={country} />
+  <Fragment slot="guide">
+    <Content />
+  </Fragment>
+</CalculatorLayout>

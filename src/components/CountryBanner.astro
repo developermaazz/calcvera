@@ -1,0 +1,101 @@
+---
+/**
+ * Suggests the visitor's own country version of the page. Never redirects: Google crawls from the
+ * US and must see every country's page. Fixed to the bottom of the viewport so it causes no layout shift.
+ * Guess order: country the visitor picked before (localStorage) → browser timezone → browser language.
+ */
+import { LAUNCHED_COUNTRIES, type CountryCode } from '../countries';
+
+interface Props {
+  current: CountryCode;
+  /** Paths of this page in other countries. */
+  alternates: Partial<Record<CountryCode, string>>;
+}
+
+const { current, alternates } = Astro.props;
+
+const config = JSON.stringify({
+  current,
+  alternates,
+  countries: LAUNCHED_COUNTRIES.map((c) => ({
+    code: c.code,
+    name: c.name,
+    adjective: c.adjective,
+    timezones: c.detect.timezones,
+    languages: c.detect.languages,
+  })),
+});
+---
+
+<div class="country-banner" role="region" aria-label="Country suggestion" data-country-banner data-config={config} hidden>
+  <p>
+    <span data-banner-text></span>
+    <a href="/" data-banner-link></a>
+  </p>
+  <button type="button" class="banner-close" data-banner-close aria-label="Dismiss country suggestion">
+    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"
+      ><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg
+    >
+  </button>
+</div>
+
+<script>
+  import { readStorage, writeStorage, STORAGE_KEYS } from '../lib/storage';
+
+  interface BannerCountry {
+    code: string;
+    name: string;
+    adjective: string;
+    timezones: string[];
+    languages: string[];
+  }
+  interface BannerConfig {
+    current: string;
+    alternates: Record<string, string | undefined>;
+    countries: BannerCountry[];
+  }
+
+  const banner = document.querySelector<HTMLElement>('[data-country-banner]');
+  if (banner?.dataset.config) {
+    const config = JSON.parse(banner.dataset.config) as BannerConfig;
+
+    const detect = (): string | null => {
+      let tz = '';
+      try {
+        tz = Intl.DateTimeFormat().resolvedOptions().timeZone ?? '';
+      } catch {
+        tz = '';
+      }
+      if (tz) {
+        return config.countries.find((c) => c.timezones.includes(tz))?.code ?? null;
+      }
+      // No timezone available: fall back to the language region, e.g. en-GB.
+      const languages = navigator.languages?.length ? navigator.languages : [navigator.language];
+      for (const lang of languages) {
+        const match = config.countries.find((c) => c.languages.some((l) => l.toLowerCase() === lang.toLowerCase()));
+        if (match) return match.code;
+      }
+      return null;
+    };
+
+    const preferred = readStorage(STORAGE_KEYS.country) ?? detect();
+    const target = config.countries.find((c) => c.code === preferred);
+
+    if (target && target.code !== config.current && readStorage(STORAGE_KEYS.bannerDismissed) !== target.code) {
+      const text = banner.querySelector<HTMLElement>('[data-banner-text]');
+      const link = banner.querySelector<HTMLAnchorElement>('[data-banner-link]');
+      const samePage = config.alternates[target.code];
+      if (text && link) {
+        text.textContent = `Looks like you're in the ${target.name}. `;
+        link.textContent = samePage ? `See the ${target.adjective} version of this page` : `See ${target.adjective} calculators`;
+        link.href = samePage ?? `/${target.code}/`;
+        link.addEventListener('click', () => writeStorage(STORAGE_KEYS.country, target.code));
+        banner.querySelector('[data-banner-close]')?.addEventListener('click', () => {
+          writeStorage(STORAGE_KEYS.bannerDismissed, target.code);
+          banner.hidden = true;
+        });
+        banner.hidden = false;
+      }
+    }
+  }
+</script>

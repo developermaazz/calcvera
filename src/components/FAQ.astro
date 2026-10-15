@@ -1,0 +1,20 @@
+---
+/** Visible FAQ. The same questions feed the FAQPage JSON-LD in CalculatorLayout. */
+interface Props {
+  faqs: { q: string; a: string }[];
+}
+
+const { faqs } = Astro.props;
+---
+
+<section class="faq" aria-labelledby="faq-title">
+  <h2 id="faq-title">Frequently asked questions</h2>
+  {
+    faqs.map((item) => (
+      <div class="faq-item">
+        <h3>{item.q}</h3>
+        <p>{item.a}</p>
+      </div>
+    ))
+  }
+</section>

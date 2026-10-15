@@ -1,0 +1,30 @@
+---
+import { calculatorPath, type CalculatorEntry } from '../calculators/registry';
+import type { CountryConfig } from '../countries';
+
+interface Props {
+  country: CountryConfig;
+  calculators: CalculatorEntry[];
+}
+
+const { country, calculators } = Astro.props;
+---
+
+<section class="related" aria-labelledby="related-title">
+  <h2 id="related-title">Related calculators</h2>
+  {
+    calculators.length > 0 && (
+      <ul class="card-list">
+        {calculators.map((calc) => (
+          <li>
+            <a class="link-card" href={calculatorPath(country.code, calc.slug)}>
+              <strong>{calc.name}</strong>
+              <span>{calc.blurb}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+  <p><a href={`/${country.code}/`}>See all {country.adjective} calculators</a></p>
+</section>

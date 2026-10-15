@@ -1,0 +1,26 @@
+---
+/**
+ * Calculator card: inputs on the left, live results on the right (stacked on mobile).
+ * The engine-specific component fills the two slots and wires up the behaviour.
+ */
+interface Props {
+  /** Unique id; the form gets `${id}-form`. */
+  id: string;
+  /** Accessible name for the calculator section. */
+  label: string;
+}
+
+const { id, label } = Astro.props;
+---
+
+<section class="calc card" aria-labelledby={`${id}-title`}>
+  <h2 id={`${id}-title`} class="visually-hidden">{label}</h2>
+  <div class="calc-grid">
+    <form id={`${id}-form`} class="calc-inputs" novalidate autocomplete="off">
+      <slot name="inputs" />
+    </form>
+    <div class="calc-results">
+      <slot name="results" />
+    </div>
+  </div>
+</section>

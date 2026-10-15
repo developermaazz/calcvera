@@ -1,0 +1,40 @@
+---
+import { SITE } from '../config/site';
+import { LAUNCHED_COUNTRIES } from '../countries';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <nav aria-label="Calculators by country">
+      <h2 class="footer-heading">Calculators</h2>
+      <ul>
+        {
+          LAUNCHED_COUNTRIES.map((c) => (
+            <li>
+              <a href={`/${c.code}/`}>{c.adjective} calculators</a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+    <nav aria-label="About Calcvera">
+      <h2 class="footer-heading">{SITE.name}</h2>
+      <ul>
+        <li><a href="/about/">About</a></li>
+        <li><a href="/methodology/">How we build our calculators</a></li>
+        <li><a href="/contact/">Contact</a></li>
+      </ul>
+    </nav>
+    <nav aria-label="Legal">
+      <h2 class="footer-heading">Legal</h2>
+      <ul>
+        <li><a href="/privacy/">Privacy Policy</a></li>
+        <li><a href="/terms/">Terms of Use</a></li>
+        <li><a href="/disclaimer/">Disclaimer</a></li>
+      </ul>
+    </nav>
+  </div>
+  <p class="footer-note">&copy; {year} {SITE.name}. Educational tools, not financial advice.</p>
+</footer>

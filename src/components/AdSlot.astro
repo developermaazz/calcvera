@@ -1,0 +1,41 @@
+---
+/**
+ * Manual AdSense unit with a fixed height, so the ad can never shift the layout.
+ * Renders nothing until SITE.ADSENSE_CLIENT and the slot's ID are set. In `npm run dev`
+ * an empty slot shows a dashed placeholder so you can see where ads will go.
+ */
+import { SITE, type AdSlotName } from '../config/site';
+
+interface Props {
+  name: AdSlotName;
+  /** Reserved height in px. */
+  height?: number;
+}
+
+const { name, height = 280 } = Astro.props;
+const slotId = SITE.AD_SLOTS[name];
+const enabled = SITE.ADSENSE_CLIENT !== '' && slotId !== '';
+const placeholder = !enabled && import.meta.env.DEV;
+---
+
+{
+  enabled && (
+    <aside class="ad-slot" aria-label="Advertisement">
+      <span class="ad-label">Advertisement</span>
+      <ins
+        class="adsbygoogle"
+        style={`display:inline-block;width:100%;height:${height}px`}
+        data-ad-client={SITE.ADSENSE_CLIENT}
+        data-ad-slot={slotId}
+      />
+      <script is:inline>(window.adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </aside>
+  )
+}
+{
+  placeholder && (
+    <aside class="ad-slot ad-slot-dev" style={`height:${height + 24}px`} aria-hidden="true">
+      Ad slot "{name}" ({height}px). Hidden in production until AdSense is set up.
+    </aside>
+  )
+}

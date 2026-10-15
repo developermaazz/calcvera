@@ -1,0 +1,40 @@
+---
+/** Header links to each launched country. Remembers the choice so the banner stops suggesting another country. */
+import { LAUNCHED_COUNTRIES, type CountryCode } from '../countries';
+
+interface Props {
+  current?: CountryCode;
+  /** Paths of this page in other countries; falls back to the country hub. */
+  alternates?: Partial<Record<CountryCode, string>>;
+}
+
+const { current, alternates = {} } = Astro.props;
+---
+
+<nav class="country-switcher" aria-label="Choose your country">
+  <ul>
+    {
+      LAUNCHED_COUNTRIES.map((c) => (
+        <li>
+          <a
+            href={alternates[c.code] ?? `/${c.code}/`}
+            hreflang={c.hreflang}
+            aria-current={c.code === current ? 'page' : undefined}
+            data-set-country={c.code}
+            title={c.name}
+          >
+            {c.shortName}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<script>
+  import { writeStorage, STORAGE_KEYS } from '../lib/storage';
+
+  for (const link of document.querySelectorAll<HTMLAnchorElement>('[data-set-country]')) {
+    link.addEventListener('click', () => writeStorage(STORAGE_KEYS.country, link.dataset.setCountry ?? ''));
+  }
+</script>

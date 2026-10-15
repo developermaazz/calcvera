@@ -1,0 +1,79 @@
+---
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { CATEGORY_LABELS, calculatorPath, calculatorsFor, type Category } from '../../calculators/registry';
+import { SITE } from '../../config/site';
+import { LAUNCHED_COUNTRIES, getCountry, type CountryCode } from '../../countries';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export function getStaticPaths() {
+  return LAUNCHED_COUNTRIES.map((c) => ({ params: { country: c.code } }));
+}
+
+const country = getCountry(Astro.params.country);
+const calculators = calculatorsFor(country.code);
+
+const byCategory = new Map<Category, typeof calculators>();
+for (const calc of calculators) {
+  byCategory.set(calc.category, [...(byCategory.get(calc.category) ?? []), calc]);
+}
+
+const alternates: Partial<Record<CountryCode, string>> = Object.fromEntries(
+  LAUNCHED_COUNTRIES.map((c) => [c.code, `/${c.code}/`]),
+);
+
+const title = `${country.adjective} Finance Calculators | ${SITE.name}`;
+const description = `Free ${country.adjective} calculators for loans, debt, tax, savings and retirement, built on ${country.adjective} rules and figures.`;
+const pageUrl = new URL(`/${country.code}/`, SITE.url).href;
+
+const jsonLd = [
+  {
+    '@type': 'CollectionPage',
+    '@id': `${pageUrl}#page`,
+    name: `${country.adjective} finance calculators`,
+    url: pageUrl,
+    inLanguage: country.locale,
+  },
+  {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE.url + '/' },
+      { '@type': 'ListItem', position: 2, name: `${country.adjective} calculators`, item: pageUrl },
+    ],
+  },
+];
+---
+
+<BaseLayout title={title} description={description} country={country} alternates={alternates} xDefault="/" jsonLd={jsonLd}>
+  <div class="page-wide">
+    <Breadcrumbs
+      items={[
+        { name: 'Home', href: '/' },
+        { name: `${country.adjective} calculators`, href: `/${country.code}/` },
+      ]}
+    />
+    <h1>{country.adjective} finance calculators</h1>
+    <p class="lead">
+      Calculators built on {country.name} rules, in {country.currency}. Tax figures are for the {country.taxYear} tax year.
+    </p>
+
+    {
+      [...byCategory.entries()].map(([category, calcs]) => (
+        <section class="hub-section" aria-labelledby={`cat-${category}`}>
+          <h2 id={`cat-${category}`}>{CATEGORY_LABELS[category]}</h2>
+          <ul class="card-list">
+            {calcs.map((calc) => (
+              <li>
+                <a class="link-card" href={calculatorPath(country.code, calc.slug)}>
+                  <strong>{calc.name}</strong>
+                  <span>{calc.blurb}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+
+    <p class="muted">More {country.adjective} calculators are on the way. Each one ships only after its maths is tested.</p>
+  </div>
+</BaseLayout>

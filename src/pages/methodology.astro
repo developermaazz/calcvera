@@ -1,0 +1,62 @@
+---
+import { SITE } from '../config/site';
+import PageLayout from '../layouts/PageLayout.astro';
+---
+
+<PageLayout
+  title="How We Build Our Calculators"
+  description={`The methods, tests and sources behind every ${SITE.name} calculator, and how we keep tax figures up to date.`}
+>
+  <p>
+    Every {SITE.name} calculator follows the same process before it is published. This page explains it, so you can
+    judge how far to rely on our results.
+  </p>
+
+  <h2>1. Standard formulas, shown on the page</h2>
+  <p>
+    We use the standard method lenders and textbooks use for each calculation, and every calculator has a "How this is
+    calculated" box with the exact formula. For example, our loan calculator uses the standard amortisation formula,
+    with a monthly rate of APR ÷ 12.
+  </p>
+
+  <h2>2. Full precision, rounded only for display</h2>
+  <p>
+    Calculations run at full precision. We round only when we show a figure, to the nearest cent or penny. On a loan,
+    the final payment is adjusted so the balance ends at exactly zero. Lenders who round each payment first may differ
+    from us by a few cents or pence in total.
+  </p>
+
+  <h2>3. Tested against known answers</h2>
+  <p>
+    Each calculator's maths is covered by automated tests with known correct answers, including edge cases such as a 0%
+    interest rate, a one-month term, extra payments and very large values. We also compare at least three results with
+    a trusted independent calculator before publishing, and the tests run again before every update goes live.
+  </p>
+
+  <h2>4. Official sources for every tax figure</h2>
+  <p>We take tax bands, allowances and legal limits only from official government sources:</p>
+  <ul>
+    <li>United States: IRS.gov and SSA.gov</li>
+    <li>United Kingdom: GOV.UK and HMRC</li>
+    <li>Canada: canada.ca and the Canada Revenue Agency (coming soon)</li>
+    <li>Australia: the Australian Taxation Office (coming soon)</li>
+  </ul>
+  <p>Every tax calculator shows which tax year it uses.</p>
+
+  <h2>5. Updated when the rules change</h2>
+  <p>
+    We review each country's figures when its tax year changes: the US and Canada in January, the UK in April and
+    Australia in July. Each guide shows the date it was last updated.
+  </p>
+
+  <h2>6. Your data stays on your device</h2>
+  <p>
+    Calculations run in your browser. The numbers you enter are never sent to us. See our
+    <a href="/privacy/">Privacy Policy</a>.
+  </p>
+
+  <h2>Found a mistake?</h2>
+  <p>
+    Please <a href="/contact/">tell us</a>. We check every report and fix confirmed errors as a priority.
+  </p>
+</PageLayout>

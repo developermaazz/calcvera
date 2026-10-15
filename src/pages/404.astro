@@ -1,0 +1,18 @@
+---
+import { LAUNCHED_COUNTRIES } from '../countries';
+import PageLayout from '../layouts/PageLayout.astro';
+---
+
+<PageLayout title="Page not found" description="The page you were looking for doesn't exist." noindex>
+  <p>Sorry, we couldn't find that page. It may have moved, or the address may be mistyped.</p>
+  <ul>
+    <li><a href="/">Go to the homepage</a></li>
+    {
+      LAUNCHED_COUNTRIES.map((c) => (
+        <li>
+          <a href={`/${c.code}/`}>Browse {c.adjective} calculators</a>
+        </li>
+      ))
+    }
+  </ul>
+</PageLayout>

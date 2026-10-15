@@ -1,0 +1,283 @@
+---
+/**
+ * Loan calculator UI. Renders the default result at build time (fast first paint, no layout shift),
+ * then the script below recalculates live in the browser using the same engine and view code.
+ */
+import AdSlot from '../../components/AdSlot.astro';
+import AmortizationTable from '../../components/AmortizationTable.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import type { CountryConfig } from '../../countries';
+import { calculateLoan, type LoanInput } from '../../engines/loan';
+import { createFormatters } from '../../lib/format';
+import { buildLoanView, currentStartMonth } from './view';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.loan;
+if (!defaults) throw new Error(`Missing defaults.loan in the ${country.code} country config`);
+
+const f = createFormatters(country.locale, country.currency);
+const input: LoanInput = {
+  principal: defaults.amount,
+  aprPercent: defaults.aprPercent,
+  termMonths: defaults.termYears * 12,
+  extraMonthly: 0,
+};
+const view = buildLoanView(input, calculateLoan(input), f, currentStartMonth());
+const symbol = country.currencySymbol;
+---
+
+<div class="calc-block" data-loan-calc data-locale={country.locale} data-currency={country.currency}>
+  <CalculatorShell id="loan" label="Loan calculator">
+    <Fragment slot="inputs">
+      <div class="field">
+        <label for="loan-amount">Loan amount</label>
+        <div class="input-wrap">
+          <span class="affix affix-start" aria-hidden="true">{symbol}</span>
+          <input
+            id="loan-amount"
+            type="text"
+            inputmode="decimal"
+            value={f.number(defaults.amount)}
+            data-field="principal"
+            data-money
+            aria-describedby="loan-amount-msg"
+          />
+        </div>
+        <p class="field-msg" id="loan-amount-msg" data-msg="principal"></p>
+      </div>
+
+      <div class="field">
+        <label for="loan-apr">Interest rate (APR)</label>
+        <div class="input-wrap">
+          <input
+            id="loan-apr"
+            type="text"
+            inputmode="decimal"
+            value={String(defaults.aprPercent)}
+            data-field="aprPercent"
+            aria-describedby="loan-apr-msg"
+          />
+          <span class="affix affix-end" aria-hidden="true">%</span>
+        </div>
+        <p class="field-msg" id="loan-apr-msg" data-msg="aprPercent"></p>
+      </div>
+
+      <div class="field">
+        <label for="loan-term">Loan term</label>
+        <div class="input-row">
+          <input
+            id="loan-term"
+            type="text"
+            inputmode="decimal"
+            value={String(defaults.termYears)}
+            data-field="termMonths"
+            aria-describedby="loan-term-msg"
+          />
+          <select id="loan-term-unit" aria-label="Loan term unit" data-term-unit>
+            <option value="years" selected>years</option>
+            <option value="months">months</option>
+          </select>
+        </div>
+        <p class="field-msg" id="loan-term-msg" data-msg="termMonths"></p>
+      </div>
+
+      <div class="field">
+        <label for="loan-extra">Extra monthly payment <span class="optional">(optional)</span></label>
+        <div class="input-wrap">
+          <span class="affix affix-start" aria-hidden="true">{symbol}</span>
+          <input
+            id="loan-extra"
+            type="text"
+            inputmode="decimal"
+            value="0"
+            data-field="extraMonthly"
+            data-money
+            aria-describedby="loan-extra-msg loan-extra-hint"
+          />
+        </div>
+        <p class="field-hint" id="loan-extra-hint">Paid on top of your normal payment, straight off the balance.</p>
+        <p class="field-msg" id="loan-extra-msg" data-msg="extraMonthly"></p>
+      </div>
+    </Fragment>
+
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Monthly payment</p>
+        <p class="result-figure" data-out="monthlyPayment">{view.monthlyPayment}</p>
+        <p class="result-sub" data-show="extra" hidden={!view.hasExtra}>
+          With extra payment: <span data-out="withExtra">{view.withExtra}</span>
+        </p>
+      </div>
+      <dl class="result-list">
+        <div>
+          <dt>Total interest</dt>
+          <dd data-out="totalInterest">{view.totalInterest}</dd>
+        </div>
+        <div>
+          <dt>Total cost</dt>
+          <dd data-out="totalCost">{view.totalCost}</dd>
+        </div>
+        <div>
+          <dt>Payoff date</dt>
+          <dd data-out="payoffDate">{view.payoffDate}</dd>
+        </div>
+        <div data-show="extra" hidden={!view.hasExtra}>
+          <dt>Interest saved</dt>
+          <dd class="positive" data-out="interestSaved">{view.interestSaved}</dd>
+        </div>
+      </dl>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="loan-breakdown-title">
+    <h2 id="loan-breakdown-title" class="h3">Your repayment breakdown</h2>
+    <SvgChart
+      id="loan-chart"
+      title="Principal and interest repaid in each loan year"
+      legend={[
+        { label: 'Principal', className: 'chart-s1' },
+        { label: 'Interest', className: 'chart-s2' },
+      ]}
+      svg={view.chartSvg}
+    />
+    <AmortizationTable
+      summary="Repayment schedule"
+      views={[
+        { id: 'yearly', label: 'By year', headers: ['Year', 'Principal', 'Interest', 'Balance'], rowsHtml: view.yearlyRows },
+        {
+          id: 'monthly',
+          label: 'By month',
+          headers: ['#', 'Month', 'Payment', 'Principal', 'Interest', 'Balance'],
+          rowsHtml: view.monthlyRows,
+        },
+      ]}
+    />
+    <div class="formula" aria-labelledby="loan-formula-title">
+      <h3 id="loan-formula-title">How this is calculated</h3>
+      <p class="formula-eq"><code>M = P × r ÷ (1 − (1 + r)<sup>−n</sup>)</code></p>
+      <ul>
+        <li><strong>M</strong> is the monthly payment, <strong>P</strong> the loan amount and <strong>n</strong> the number of monthly payments.</li>
+        <li><strong>r</strong> is the monthly rate: APR ÷ 12 ÷ 100. A 7.5% APR gives r = 0.00625.</li>
+        <li>Each month, interest is the balance × r. The rest of the payment, plus any extra, reduces the balance.</li>
+        <li>At 0% APR the payment is simply P ÷ n. The last payment is adjusted so the balance ends at exactly {symbol}0.</li>
+        <li>Figures are calculated at full precision and rounded to the nearest penny or cent only for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { calculateLoan, validateLoanInput, type LoanField, type LoanInput } from '../../engines/loan';
+  import { createFormatters, parseNumber } from '../../lib/format';
+  import { buildLoanView, currentStartMonth, type LoanView } from './view';
+
+  const FIELDS: LoanField[] = ['principal', 'aprPercent', 'termMonths', 'extraMonthly'];
+
+  function init(root: HTMLElement) {
+    const f = createFormatters(root.dataset.locale ?? 'en-US', root.dataset.currency ?? 'USD');
+    const form = root.querySelector('form');
+    const unit = root.querySelector<HTMLSelectElement>('[data-term-unit]');
+    const summary = root.querySelector<HTMLElement>('[data-summary]');
+    const chart = root.querySelector<HTMLElement>('[data-chart]');
+    const schedule = root.querySelector<HTMLDetailsElement>('[data-schedule]');
+    const yearlyBody = root.querySelector<HTMLElement>('[data-rows="yearly"]');
+    const monthlyBody = root.querySelector<HTMLElement>('[data-rows="monthly"]');
+    if (!form || !unit || !summary || !chart || !schedule || !yearlyBody || !monthlyBody) return;
+
+    const inputs = Object.fromEntries(
+      FIELDS.map((field) => [field, root.querySelector<HTMLInputElement>(`[data-field="${field}"]`)!]),
+    ) as Record<LoanField, HTMLInputElement>;
+
+    // The monthly table can be long; only rebuild it when someone has the schedule open.
+    let pendingMonthly: string | null = null;
+
+    const readInput = (): LoanInput => {
+      const term = parseNumber(inputs.termMonths.value);
+      const extra = inputs.extraMonthly.value.trim();
+      return {
+        principal: parseNumber(inputs.principal.value),
+        aprPercent: parseNumber(inputs.aprPercent.value),
+        termMonths: unit.value === 'years' ? Math.round(term * 12) : term,
+        extraMonthly: extra === '' ? 0 : parseNumber(extra),
+      };
+    };
+
+    const render = (view: LoanView) => {
+      for (const el of root.querySelectorAll<HTMLElement>('[data-out]')) {
+        const key = el.dataset.out as keyof LoanView;
+        const value = view[key];
+        if (typeof value === 'string') el.textContent = value;
+      }
+      for (const el of root.querySelectorAll<HTMLElement>('[data-show="extra"]')) el.hidden = !view.hasExtra;
+      summary.textContent = view.summary;
+      chart.innerHTML = view.chartSvg;
+      yearlyBody.innerHTML = view.yearlyRows;
+      if (schedule.open) {
+        monthlyBody.innerHTML = view.monthlyRows;
+        pendingMonthly = null;
+      } else {
+        pendingMonthly = view.monthlyRows;
+      }
+    };
+
+    const update = () => {
+      const input = readInput();
+      const errors = validateLoanInput(input);
+      for (const field of FIELDS) {
+        const error = errors.find((e) => e.field === field);
+        const msg = root.querySelector<HTMLElement>(`[data-msg="${field}"]`);
+        if (msg) msg.textContent = error?.message ?? '';
+        inputs[field].setAttribute('aria-invalid', error ? 'true' : 'false');
+      }
+      root.toggleAttribute('data-stale', errors.length > 0);
+      if (errors.length > 0) {
+        summary.textContent = 'Check the highlighted field to update your results.';
+        return;
+      }
+      render(buildLoanView(input, calculateLoan(input), f, currentStartMonth()));
+    };
+
+    form.addEventListener('submit', (e) => e.preventDefault());
+    form.addEventListener('input', (e) => {
+      if (e.target !== unit) update();
+    });
+
+    // Switching units converts the number so the loan itself doesn't change.
+    unit.addEventListener('change', () => {
+      const value = parseNumber(inputs.termMonths.value);
+      if (Number.isFinite(value)) {
+        inputs.termMonths.value = unit.value === 'months' ? String(Math.round(value * 12)) : String(Number((value / 12).toFixed(2)));
+      }
+      update();
+    });
+
+    // Tidy money fields on blur: "20000" → "20,000".
+    for (const input of root.querySelectorAll<HTMLInputElement>('[data-money]')) {
+      input.addEventListener('blur', () => {
+        const value = parseNumber(input.value);
+        if (Number.isFinite(value) && value >= 0) input.value = f.number(value);
+      });
+    }
+
+    schedule.addEventListener('toggle', () => {
+      if (schedule.open && pendingMonthly !== null) {
+        monthlyBody.innerHTML = pendingMonthly;
+        pendingMonthly = null;
+      }
+    });
+
+    // Recalculate once on load so payoff dates count from the visitor's current month, not the build date.
+    update();
+  }
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-loan-calc]')) init(root);
+</script>

@@ -1,0 +1,23 @@
+---
+import { SITE } from '../config/site';
+import PageLayout from '../layouts/PageLayout.astro';
+---
+
+<PageLayout title="Contact" description={`How to contact ${SITE.name} about a calculator, a correction or anything else.`}>
+  <p>
+    Email us at <a href={`mailto:${SITE.email}`}>{SITE.email}</a>. We read every message and aim to reply within a few
+    working days.
+  </p>
+
+  <h2>Reporting a mistake</h2>
+  <p>
+    Accuracy matters most to us. If a result looks wrong, please include the calculator's web address, the numbers you
+    entered and the result you expected. We check every report and correct confirmed errors as a priority.
+  </p>
+
+  <h2>What we can't help with</h2>
+  <p>
+    We can't give personal financial advice or review your loan, tax or pension paperwork. For free, impartial help,
+    contact a non-profit adviser in your country.
+  </p>
+</PageLayout>

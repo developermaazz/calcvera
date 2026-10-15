@@ -1,0 +1,40 @@
+---
+import { SITE } from '../config/site';
+import PageLayout from '../layouts/PageLayout.astro';
+---
+
+<PageLayout title="Disclaimer" description={`${SITE.name}'s calculators are educational tools, not financial advice. Read how to use our results.`} updated="October 2026">
+  <h2>Not financial advice</h2>
+  <p>
+    Everything on {SITE.domain}, including calculators, guides and examples, is for educational and informational
+    purposes only. It is not financial, tax, legal or investment advice, and it is not a recommendation to take out,
+    repay or switch any product.
+  </p>
+
+  <h2>Results are estimates</h2>
+  <p>
+    Results depend entirely on the figures you enter and on simplifying assumptions explained on each page. Real
+    products can include fees, different compounding or payment dates, insurance or other terms that change the
+    numbers. Your lender's or tax authority's figures always take precedence.
+  </p>
+
+  <h2>Tax and legal figures</h2>
+  <p>
+    Pages that use tax rates, allowances or legal limits state the tax year they apply to. We check these figures
+    against official government sources, but rules change. Confirm current figures with the official source before
+    making a decision.
+  </p>
+
+  <h2>Get professional advice</h2>
+  <p>
+    For decisions about your own situation, speak to a qualified, regulated financial adviser or a free, impartial
+    money guidance service in your country.
+  </p>
+
+  <h2>Advertising and affiliate links</h2>
+  <p>
+    {SITE.name} is funded by advertising. Ads are provided by third parties and are not endorsements. We do not
+    currently use affiliate links. If we add them, each one will be labelled on the page, and this section will list
+    the companies we have affiliate relationships with. Affiliate relationships never change a calculator's results.
+  </p>
+</PageLayout>

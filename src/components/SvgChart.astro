@@ -1,0 +1,33 @@
+---
+/**
+ * Chart frame: title, legend and a box with a fixed aspect ratio so redraws never shift the layout.
+ * `svg` is markup from src/lib/charts.ts; calculator scripts replace it inside [data-chart].
+ */
+import { CHART_ASPECT } from '../lib/charts';
+
+interface Props {
+  id: string;
+  title: string;
+  legend: { label: string; className: string }[];
+  svg: string;
+}
+
+const { id, title, legend, svg } = Astro.props;
+---
+
+<figure class="chart" aria-labelledby={`${id}-title`}>
+  <figcaption id={`${id}-title`} class="chart-title">{title}</figcaption>
+  {
+    legend.length > 1 && (
+      <ul class="chart-legend">
+        {legend.map((item) => (
+          <li>
+            <span class={`chart-swatch ${item.className}`} aria-hidden="true" />
+            {item.label}
+          </li>
+        ))}
+      </ul>
+    )
+  }
+  <div class="chart-box" style={`aspect-ratio: ${CHART_ASPECT}`} data-chart set:html={svg} />
+</figure>

@@ -1,0 +1,131 @@
+---
+import '../styles/global.css';
+import CountryBanner from '../components/CountryBanner.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { SITE } from '../config/site';
+import { COUNTRIES, type CountryCode, type CountryConfig } from '../countries';
+
+interface Props {
+  /** Full <title>, already in the "{Name} ({Country}) | Calcvera" format where relevant. */
+  title: string;
+  description: string;
+  /** Country the page belongs to: sets <html lang>, the header switcher and the banner. */
+  country?: CountryConfig;
+  /** Paths of equivalent pages per country, including this one. Drives hreflang, switcher and banner. */
+  alternates?: Partial<Record<CountryCode, string>>;
+  /** Path for hreflang x-default. Defaults to the US alternate, else the homepage. */
+  xDefault?: string;
+  /** JSON-LD objects; combined into one @graph. */
+  jsonLd?: Record<string, unknown>[];
+  ogType?: 'website' | 'article';
+  noindex?: boolean;
+}
+
+const { title, description, country, alternates = {}, xDefault, jsonLd = [], ogType = 'website', noindex = false } = Astro.props;
+
+const abs = (path: string) => new URL(path, SITE.url).href;
+const canonical = abs(Astro.url.pathname);
+const lang = country?.locale ?? 'en';
+
+const hreflangLinks = Object.entries(alternates)
+  .filter((entry): entry is [CountryCode, string] => typeof entry[1] === 'string')
+  .map(([code, path]) => ({ hreflang: COUNTRIES[code]?.hreflang ?? code, href: abs(path) }));
+if (hreflangLinks.length > 0) {
+  hreflangLinks.push({ hreflang: 'x-default', href: abs(xDefault ?? alternates.us ?? '/') });
+}
+
+// Escape "<" so content can never close the script tag early.
+const jsonLdText =
+  jsonLd.length > 0 ? JSON.stringify({ '@context': 'https://schema.org', '@graph': jsonLd }).replace(/</g, '\\u003c') : '';
+const ogImage = SITE.OG_IMAGE ? abs(SITE.OG_IMAGE) : '';
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+    {hreflangLinks.map((link) => <link rel="alternate" hreflang={link.hreflang} href={link.href} />)}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#0F2A4A" />
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    {country && <meta property="og:locale" content={country.locale.replace('-', '_')} />}
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+
+    {jsonLdText && <script type="application/ld+json" is:inline set:html={jsonLdText} />}
+
+    {
+      (SITE.ADSENSE_CLIENT || SITE.GA_ID) && (
+        // Google Consent Mode: no ad or analytics cookies for UK/EEA/Swiss visitors until they accept
+        // in Google's consent message (AdSense → Privacy & messaging). Must run before any Google tag.
+        <script is:inline>
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('consent', 'default', {
+            ad_storage: 'denied',
+            ad_user_data: 'denied',
+            ad_personalization: 'denied',
+            analytics_storage: 'denied',
+            wait_for_update: 500,
+            region: ['GB', 'CH', 'IS', 'LI', 'NO', 'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE'],
+          });
+          gtag('consent', 'default', {
+            ad_storage: 'granted',
+            ad_user_data: 'granted',
+            ad_personalization: 'granted',
+            analytics_storage: 'granted',
+          });
+        </script>
+      )
+    }
+    {
+      SITE.ADSENSE_CLIENT && (
+        <script
+          is:inline
+          async
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${SITE.ADSENSE_CLIENT}`}
+          crossorigin="anonymous"
+        />
+      )
+    }
+    {
+      SITE.GA_ID && (
+        <>
+          <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${SITE.GA_ID}`} />
+          <script is:inline define:vars={{ id: SITE.GA_ID }}>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+              dataLayer.push(arguments);
+            }
+            gtag('js', new Date());
+            gtag('config', id);
+          </script>
+        </>
+      )
+    }
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Header country={country?.code} alternates={alternates} />
+    <main id="main" class="site-main">
+      <slot />
+    </main>
+    <Footer />
+    {country && <CountryBanner current={country.code} alternates={alternates} />}
+  </body>
+</html>

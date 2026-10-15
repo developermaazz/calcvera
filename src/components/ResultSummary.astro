@@ -1,0 +1,10 @@
+---
+/** One plain-English sentence describing the result. Announced to screen readers when it changes. */
+interface Props {
+  text: string;
+}
+
+const { text } = Astro.props;
+---
+
+<p class="result-summary" aria-live="polite" aria-atomic="true" data-summary>{text}</p>

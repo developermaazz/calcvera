@@ -1,0 +1,98 @@
+---
+import { calculatorPath, calculatorsFor } from '../calculators/registry';
+import { SITE } from '../config/site';
+import { ALL_COUNTRIES, LAUNCHED_COUNTRIES } from '../countries';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const title = `${SITE.name}: Finance Calculators for Your Country`;
+
+const jsonLd = [
+  {
+    '@type': 'WebSite',
+    '@id': `${SITE.url}/#website`,
+    name: SITE.name,
+    url: SITE.url + '/',
+    description: SITE.description,
+  },
+  {
+    '@type': 'Organization',
+    '@id': `${SITE.url}/#organization`,
+    name: SITE.name,
+    url: SITE.url + '/',
+    email: SITE.email,
+  },
+];
+---
+
+<BaseLayout title={title} description={SITE.description} jsonLd={jsonLd}>
+  <div class="page-wide">
+    <section class="hero">
+      <h1>{SITE.tagline}</h1>
+      <p class="lead">
+        Free, fast calculators for loans, debt, tax, savings and retirement. Each one uses your country's figures and
+        explains how the number was worked out.
+      </p>
+    </section>
+
+    <section aria-labelledby="pick-country">
+      <h2 id="pick-country">Choose your country</h2>
+      <ul class="country-grid">
+        {
+          ALL_COUNTRIES.map((c) =>
+            c.launched ? (
+              <li>
+                <a class="country-card" href={`/${c.code}/`} hreflang={c.hreflang} data-set-country={c.code}>
+                  <strong>{c.name}</strong>
+                  <span>{c.currency} · {calculatorsFor(c.code).length} calculators</span>
+                </a>
+              </li>
+            ) : (
+              <li>
+                <div class="country-card is-soon">
+                  <strong>{c.name}</strong>
+                  <span>Coming soon</span>
+                </div>
+              </li>
+            ),
+          )
+        }
+      </ul>
+    </section>
+
+    {
+      LAUNCHED_COUNTRIES.map((c) => {
+        const popular = calculatorsFor(c.code).filter((calc) => calc.popular);
+        return (
+          popular.length > 0 && (
+            <section class="hub-section" aria-labelledby={`popular-${c.code}`}>
+              <h2 id={`popular-${c.code}`}>Popular {c.adjective} calculators</h2>
+              <ul class="card-list">
+                {popular.map((calc) => (
+                  <li>
+                    <a class="link-card" href={calculatorPath(c.code, calc.slug)} hreflang={c.hreflang}>
+                      <strong>
+                        {c.adjective} {calc.name}
+                      </strong>
+                      <span>{calc.blurb}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        );
+      })
+    }
+
+    <section class="trust" aria-labelledby="why">
+      <h2 id="why">Why Calcvera</h2>
+      <ul class="trust-list">
+        <li><strong>Your country's rules.</strong> Separate calculators for each country, with the tax year shown on every tax page.</li>
+        <li><strong>Tested maths.</strong> Every calculator is checked against known answers before it goes live.</li>
+        <li><strong>Nothing leaves your device.</strong> Calculations run in your browser. We don't ask for your details.</li>
+        <li><strong>Formulas shown.</strong> Each result explains how it was calculated. <a href="/methodology/">How we build our calculators</a>.</li>
+      </ul>
+    </section>
+  </div>
+</BaseLayout>
+<!-- Country cards carry data-set-country; the CountrySwitcher script in the header remembers the choice. -->

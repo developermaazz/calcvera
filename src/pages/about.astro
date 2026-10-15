@@ -1,0 +1,43 @@
+---
+import { SITE } from '../config/site';
+import PageLayout from '../layouts/PageLayout.astro';
+---
+
+<PageLayout title="About Calcvera" description="Who runs Calcvera, why it exists and how we keep our finance calculators accurate.">
+  <p>
+    {SITE.name} is a set of free finance calculators for people in the United States and the United Kingdom, with more
+    countries to follow. The name comes from "calc" and "vera", Latin for true: the point of the site is calculators
+    you can trust.
+  </p>
+
+  <h2>Why this site exists</h2>
+  <p>
+    Many calculators online are built for one country and quietly used everywhere else, or give a number without
+    saying how they got it. {SITE.name} builds a separate version for each country, uses that country's rules and
+    currency, and shows the formula behind every result.
+  </p>
+
+  <h2>Who runs it</h2>
+  <p>
+    {SITE.name} is built and maintained by {SITE.owner}. Every calculator is tested against known correct answers
+    before it is published, and every tax figure is checked against the official government source.
+  </p>
+
+  <h2>What we don't do</h2>
+  <ul>
+    <li>We don't give financial advice. Our tools and guides are educational.</li>
+    <li>We don't collect the numbers you type. Calculations run in your browser.</li>
+    <li>We don't accept payment to change a calculator's results.</li>
+  </ul>
+
+  <h2>How the site is funded</h2>
+  <p>
+    {SITE.name} is free to use and is supported by advertising. If we ever include affiliate links, they will be
+    clearly labelled on the page and listed in our <a href="/disclaimer/">Disclaimer</a>.
+  </p>
+
+  <p>
+    Read <a href="/methodology/">how we build our calculators</a>, or <a href="/contact/">get in touch</a> if you spot
+    a mistake.
+  </p>
+</PageLayout>

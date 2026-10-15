@@ -1,0 +1,26 @@
+---
+import { SITE } from '../config/site';
+import type { CountryCode } from '../countries';
+import CountrySwitcher from './CountrySwitcher.astro';
+
+interface Props {
+  country?: CountryCode;
+  alternates?: Partial<Record<CountryCode, string>>;
+}
+
+const { country, alternates } = Astro.props;
+---
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="logo" href="/">
+      <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
+        <rect width="32" height="32" rx="7" fill="#1F8A5B"></rect>
+        <path d="M9 17l5 5 9-11" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"
+        ></path>
+      </svg>
+      <span>{SITE.name}</span>
+    </a>
+    <CountrySwitcher current={country} alternates={alternates} />
+  </div>
+</header>

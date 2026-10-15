@@ -1,0 +1,23 @@
+---
+/** Plain content pages: About, Contact, legal pages, methodology. */
+import { SITE } from '../config/site';
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  /** "Last updated" date shown under the heading, e.g. for legal pages. */
+  updated?: string;
+  noindex?: boolean;
+}
+
+const { title, description, updated, noindex } = Astro.props;
+---
+
+<BaseLayout title={`${title} | ${SITE.name}`} description={description} noindex={noindex}>
+  <article class="page prose">
+    <h1>{title}</h1>
+    {updated && <p class="muted">Last updated {updated}</p>}
+    <slot />
+  </article>
+</BaseLayout>

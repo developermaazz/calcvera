@@ -1,0 +1,123 @@
+---
+/**
+ * Every calculator page: breadcrumb, H1, intro, calculator, guide, FAQ, related, sources, disclaimer.
+ * The default slot is the calculator; the "guide" slot is the rendered markdown guide.
+ */
+import AdSlot from '../components/AdSlot.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import Disclaimer from '../components/Disclaimer.astro';
+import FAQ from '../components/FAQ.astro';
+import RelatedCalculators from '../components/RelatedCalculators.astro';
+import { calculatorPath, liveCountries, relatedFor, type CalculatorEntry } from '../calculators/registry';
+import { SITE } from '../config/site';
+import type { CountryCode, CountryConfig } from '../countries';
+import BaseLayout from './BaseLayout.astro';
+
+export interface GuideMeta {
+  h1: string;
+  description: string;
+  intro: string;
+  updated: Date;
+  faqs: { q: string; a: string }[];
+  sources: { name: string; url: string }[];
+}
+
+interface Props {
+  country: CountryConfig;
+  calc: CalculatorEntry;
+  guide: GuideMeta;
+}
+
+const { country, calc, guide } = Astro.props;
+
+const fullTitle = `${calc.name} (${country.shortName}) | ${SITE.name}`;
+const title = fullTitle.length <= 60 ? fullTitle : `${calc.name} (${country.shortName})`;
+
+const alternates: Partial<Record<CountryCode, string>> = Object.fromEntries(
+  liveCountries(calc).map((code) => [code, calculatorPath(code, calc.slug)]),
+);
+
+const pageUrl = new URL(calculatorPath(country.code, calc.slug), SITE.url).href;
+const hubUrl = new URL(`/${country.code}/`, SITE.url).href;
+const updatedLabel = new Intl.DateTimeFormat(country.locale, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(
+  guide.updated,
+);
+
+const breadcrumbs = [
+  { name: 'Home', href: '/' },
+  { name: `${country.adjective} calculators`, href: `/${country.code}/` },
+  { name: guide.h1, href: calculatorPath(country.code, calc.slug) },
+];
+
+const jsonLd = [
+  {
+    '@type': 'WebApplication',
+    '@id': `${pageUrl}#app`,
+    name: guide.h1,
+    url: pageUrl,
+    description: guide.description,
+    applicationCategory: 'FinanceApplication',
+    operatingSystem: 'Any',
+    browserRequirements: 'Requires JavaScript',
+    inLanguage: country.locale,
+    dateModified: guide.updated.toISOString().slice(0, 10),
+    isAccessibleForFree: true,
+    offers: { '@type': 'Offer', price: '0', priceCurrency: country.currency },
+    publisher: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+  },
+  {
+    '@type': 'FAQPage',
+    '@id': `${pageUrl}#faq`,
+    mainEntity: guide.faqs.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  },
+  {
+    '@type': 'BreadcrumbList',
+    '@id': `${pageUrl}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE.url + '/' },
+      { '@type': 'ListItem', position: 2, name: `${country.adjective} calculators`, item: hubUrl },
+      { '@type': 'ListItem', position: 3, name: guide.h1, item: pageUrl },
+    ],
+  },
+];
+---
+
+<BaseLayout title={title} description={guide.description} country={country} alternates={alternates} jsonLd={jsonLd}>
+  <div class="page-wide">
+    <Breadcrumbs items={breadcrumbs} />
+    <h1>{guide.h1}</h1>
+    <p class="lead">{guide.intro}</p>
+    <slot />
+  </div>
+
+  <article class="page guide">
+    <slot name="guide" />
+    <AdSlot name="guide" />
+    <FAQ faqs={guide.faqs} />
+    <RelatedCalculators country={country} calculators={relatedFor(calc, country.code)} />
+    <footer class="guide-meta">
+      <p>Last updated <time datetime={guide.updated.toISOString().slice(0, 10)}>{updatedLabel}</time>.</p>
+      {
+        guide.sources.length > 0 && (
+          <>
+            <h2 class="h3">Sources</h2>
+            <ul>
+              {guide.sources.map((s) => (
+                <li>
+                  <a href={s.url} rel="noopener">
+                    {s.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </>
+        )
+      }
+    </footer>
+    <Disclaimer />
+  </article>
+</BaseLayout>

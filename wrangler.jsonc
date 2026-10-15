@@ -1,0 +1,11 @@
+// Cloudflare Workers static-assets config. No Worker script: the site is plain files from dist/.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "calcvera",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./dist",
+    "html_handling": "force-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}

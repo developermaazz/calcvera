@@ -1,0 +1,63 @@
+---
+/**
+ * Collapsible schedule with a switch between views (e.g. by year / by month).
+ * Calculator scripts update each view's <tbody data-rows="{id}">.
+ */
+interface View {
+  id: string;
+  label: string;
+  headers: string[];
+  rowsHtml: string;
+}
+
+interface Props {
+  summary: string;
+  views: View[];
+}
+
+const { summary, views } = Astro.props;
+---
+
+<details class="schedule" data-schedule>
+  <summary>{summary}</summary>
+  <div class="schedule-toggle" role="group" aria-label="Schedule view">
+    {
+      views.map((view, i) => (
+        <button type="button" class="toggle-btn" aria-pressed={i === 0 ? 'true' : 'false'} data-view={view.id}>
+          {view.label}
+        </button>
+      ))
+    }
+  </div>
+  {
+    views.map((view, i) => (
+      <div class="table-scroll" data-panel={view.id} hidden={i !== 0} tabindex="0" role="region" aria-label={`${summary}, ${view.label.toLowerCase()}`}>
+        <table class="data-table">
+          <thead>
+            <tr>
+              {view.headers.map((h) => (
+                <th scope="col">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody data-rows={view.id} set:html={view.rowsHtml} />
+        </table>
+      </div>
+    ))
+  }
+</details>
+
+<script>
+  for (const schedule of document.querySelectorAll<HTMLDetailsElement>('[data-schedule]')) {
+    const buttons = schedule.querySelectorAll<HTMLButtonElement>('[data-view]');
+    for (const button of buttons) {
+      button.addEventListener('click', () => {
+        for (const b of buttons) b.setAttribute('aria-pressed', String(b === button));
+        for (const panel of schedule.querySelectorAll<HTMLElement>('[data-panel]')) {
+          panel.hidden = panel.dataset.panel !== button.dataset.view;
+        }
+        schedule.dispatchEvent(new CustomEvent('schedule-view', { detail: button.dataset.view }));
+      });
+    }
+  }
+</script>
