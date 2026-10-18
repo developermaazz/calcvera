@@ -128,3 +128,48 @@ export function stackedBarChart(opts: StackedBarOptions): string {
 }
 
 export const CHART_ASPECT = `${WIDTH} / ${HEIGHT}`;
+
+export interface SplitSegment {
+  value: number;
+  /** CSS class for the fill, e.g. "chart-s1". */
+  className: string;
+  /** Native tooltip text. */
+  tooltip: string;
+}
+
+const SPLIT_HEIGHT = 40;
+export const SPLIT_ASPECT = `${WIDTH} / ${SPLIT_HEIGHT}`;
+
+/**
+ * One horizontal bar split into parts of a whole (e.g. where income goes). Segments under 0.5px are
+ * skipped; a 2px surface gap separates the rest; the outer ends are rounded.
+ */
+export function splitBar(segments: SplitSegment[], ariaLabel: string): string {
+  const total = segments.reduce((sum, s) => sum + Math.max(0, s.value), 0);
+  const visible = segments.filter((s) => total > 0 && (Math.max(0, s.value) / total) * WIDTH >= 0.5);
+  const gapTotal = GAP * Math.max(0, visible.length - 1);
+  const usable = WIDTH - gapTotal;
+  const parts: string[] = [];
+  let x = 0;
+  visible.forEach((s, i) => {
+    const w = (Math.max(0, s.value) / total) * usable;
+    const rx = visible.length === 1 ? RADIUS : 0;
+    const shape =
+      visible.length > 1 && (i === 0 || i === visible.length - 1)
+        ? `<path class="${s.className}" d="${roundedEnd(n(x), n(w), SPLIT_HEIGHT, i === 0 ? 'left' : 'right')}"/>`
+        : `<rect class="${s.className}" x="${n(x)}" y="0" width="${n(w)}" height="${SPLIT_HEIGHT}" rx="${rx}"/>`;
+    parts.push(`<g class="chart-bar"><title>${escapeHtml(s.tooltip)}</title>${shape}</g>`);
+    x += w + GAP;
+  });
+  if (visible.length === 0) {
+    parts.push(`<rect class="chart-grid" x="0" y="0" width="${WIDTH}" height="${SPLIT_HEIGHT}" rx="${RADIUS}"/>`);
+  }
+  return `<svg class="chart-svg" viewBox="0 0 ${WIDTH} ${SPLIT_HEIGHT}" role="img" aria-label="${escapeHtml(ariaLabel)}" preserveAspectRatio="none">${parts.join('')}</svg>`;
+}
+
+function roundedEnd(x: number, w: number, h: number, side: 'left' | 'right'): string {
+  const r = Math.min(RADIUS, w / 2, h / 2);
+  return side === 'left'
+    ? `M${x + w},0H${x + r}Q${x},0 ${x},${r}V${h - r}Q${x},${h} ${x + r},${h}H${x + w}Z`
+    : `M${x},0H${x + w - r}Q${x + w},0 ${x + w},${r}V${h - r}Q${x + w},${h} ${x + w - r},${h}H${x}Z`;
+}

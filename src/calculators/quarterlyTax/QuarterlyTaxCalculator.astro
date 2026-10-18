@@ -1,0 +1,145 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import type { UsFilingStatus } from '../../countries/types';
+import type { SelfEmploymentTaxParams } from '../../engines/selfEmploymentTax';
+import { SPLIT_ASPECT } from '../../lib/charts';
+import { createFormatters } from '../../lib/format';
+import { FILING_STATUS_OPTIONS, QUARTERLY_DEFAULTS, buildQuarterlyView, type QuarterlyTaxParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const c = requireFigure(country.us, 'US figures');
+const se = c.selfEmployment;
+const statusParams = (s: UsFilingStatus): SelfEmploymentTaxParams => ({
+  bands: requireFigure(c.federalTax[s].bands, `federalTax.${s}.bands`),
+  standardDeduction: requireFigure(c.federalTax[s].standardDeduction, `federalTax.${s}.standardDeduction`),
+  netEarningsFactor: requireFigure(se.netEarningsFactor, 'selfEmployment.netEarningsFactor'),
+  socialSecurityRate: requireFigure(se.socialSecurityRate, 'selfEmployment.socialSecurityRate'),
+  medicareRate: requireFigure(se.medicareRate, 'selfEmployment.medicareRate'),
+  socialSecurityWageBase: requireFigure(se.socialSecurityWageBase, 'selfEmployment.socialSecurityWageBase'),
+  additionalMedicareRate: requireFigure(se.additionalMedicareRate, 'selfEmployment.additionalMedicareRate'),
+  additionalMedicareThreshold: requireFigure(se.additionalMedicareThreshold[s], `selfEmployment.additionalMedicareThreshold.${s}`),
+  deductibleShare: requireFigure(se.deductibleShare, 'selfEmployment.deductibleShare'),
+  minimumNetEarnings: requireFigure(se.minimumNetEarnings, 'selfEmployment.minimumNetEarnings'),
+  qbi: {
+    rate: requireFigure(c.qbi.rate, 'qbi.rate'),
+    minimumDeduction: requireFigure(c.qbi.minimumDeduction, 'qbi.minimumDeduction'),
+    minimumQbi: requireFigure(c.qbi.minimumQbi, 'qbi.minimumQbi'),
+    threshold: requireFigure(c.qbi.threshold[s], `qbi.threshold.${s}`),
+    phaseInEnd: requireFigure(c.qbi.phaseInEnd[s], `qbi.phaseInEnd.${s}`),
+  },
+});
+const params: QuarterlyTaxParams = {
+  locale: country.locale,
+  currency: country.currency,
+  taxYear: country.taxYear,
+  byStatus: {
+    single: statusParams('single'),
+    marriedJoint: statusParams('marriedJoint'),
+    marriedSeparate: statusParams('marriedSeparate'),
+    headOfHousehold: statusParams('headOfHousehold'),
+  },
+  dueDates: requireFigure(c.estimatedTaxDueDates, 'estimatedTaxDueDates'),
+};
+const { view } = buildQuarterlyView(QUARTERLY_DEFAULTS, params);
+if (!view) throw new Error('Quarterly tax defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const d = QUARTERLY_DEFAULTS;
+const sym = country.currencySymbol;
+const single = params.byStatus.single;
+---
+
+<div class="calc-block" data-calc="quarterly-tax" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="qtax" label="Quarterly estimated tax calculator">
+    <Fragment slot="inputs">
+      <Field id="qt-se" field="netSelfEmployment" label="Net self-employment income for the year" value={f.number(d.netSelfEmployment)} prefix={sym} money hint="Business income minus business expenses (Schedule C profit)." />
+      <SelectField id="qt-status" field="filingStatus" label="Filing status" value={d.filingStatus} options={FILING_STATUS_OPTIONS} />
+      <Field id="qt-wages" field="wages" label="W-2 wages from a job" value={f.number(d.wages)} prefix={sym} money optional />
+      <Field id="qt-other" field="otherIncome" label="Other taxable income" value={f.number(d.otherIncome)} prefix={sym} money optional hint="Interest, dividends, rental income." />
+      <SelectField
+        id="qt-deduction"
+        field="deduction"
+        label="Deduction"
+        value={d.deduction}
+        options={[
+          { value: 'standard', label: 'Standard deduction' },
+          { value: 'itemized', label: 'Itemized deductions' },
+        ]}
+      />
+      <Field id="qt-itemized" field="itemizedAmount" label="Total itemized deductions" value={f.number(d.itemizedAmount)} prefix={sym} money when="deduction:itemized" hidden={d.deduction !== 'itemized'} />
+      <Field id="qt-withheld" field="taxWithheld" label="Federal tax withheld from wages" value={f.number(d.taxWithheld)} prefix={sym} money optional />
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Each quarterly payment</p>
+        <p class="result-figure" data-out="quarterly">{view.quarterly}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Total federal tax</dt><dd data-out="totalTax">{view.totalTax}</dd></div>
+        <div><dt>Self-employment tax</dt><dd data-out="seTax">{view.seTax}</dd></div>
+        <div><dt>Federal income tax</dt><dd data-out="incomeTax">{view.incomeTax}</dd></div>
+        <div data-show="hasAdditionalMedicare" hidden={!view.hasAdditionalMedicare}><dt>Additional Medicare Tax</dt><dd data-out="additionalMedicare">{view.additionalMedicare}</dd></div>
+        <div data-show="hasWithholding" hidden={!view.hasWithholding}><dt>Already withheld</dt><dd data-out="withheld">{view.withheld}</dd></div>
+      </dl>
+      <p class="result-note">Federal tax only. State income tax is not included.</p>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="qt-breakdown-title">
+    <h2 id="qt-breakdown-title" class="h3">Your {params.taxYear} payment schedule</h2>
+    <div class="table-scroll table-plain">
+      <table class="data-table">
+        <thead><tr><th scope="col">Payment</th><th scope="col">Due date</th><th scope="col">Amount</th></tr></thead>
+        <tbody data-html="scheduleHtml" set:html={view.scheduleHtml} />
+      </table>
+    </div>
+    <SvgChart
+      id="qt-chart"
+      title="What makes up your federal tax"
+      legend={[
+        { label: 'Self-employment tax', className: 'chart-s1' },
+        { label: 'Income tax', className: 'chart-s2' },
+        { label: 'Additional Medicare Tax', className: 'chart-s3' },
+      ]}
+      svg={view.chartSvg}
+      aspect={SPLIT_ASPECT}
+      htmlKey="chartSvg"
+    />
+    <dl class="result-list">
+      <div><dt>Qualified business income deduction</dt><dd data-out="qbi">{view.qbi}</dd></div>
+      <div><dt>Taxable income</dt><dd data-out="taxableIncome">{view.taxableIncome}</dd></div>
+    </dl>
+    <p class="result-note" data-show="qbiLimited" hidden={!view.qbiLimited}>Your income is in or above the range where the qualified business income deduction depends on W-2 wages paid by your business and the type of business. This estimate assumes no employees and no business property, which may understate the deduction.</p>
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <ul>
+        <li><strong>Self-employment tax</strong> = {f.percent(single.socialSecurityRate * 100)} Social Security on net earnings up to {f.moneyWhole(single.socialSecurityWageBase)} (less any W-2 wages) + {f.percent(single.medicareRate * 100)} Medicare on all net earnings. Net earnings = profit × {f.percent(single.netEarningsFactor * 100)}. None is due if net earnings are under {f.moneyWhole(single.minimumNetEarnings)}.</li>
+        <li><strong>Additional Medicare Tax</strong> = {f.percent(single.additionalMedicareRate * 100)} of net earnings above your filing status threshold ({f.moneyWhole(single.additionalMedicareThreshold)} single), after wages.</li>
+        <li><strong>Income tax</strong>: income − half of self-employment tax − your deduction − the qualified business income deduction (up to {f.percent(single.qbi.rate * 100)}), taxed at the {params.taxYear} federal rates for your filing status.</li>
+        <li><strong>Quarterly payment</strong> = (total tax − withholding) ÷ 4. Credits, state tax and safe-harbor rules are not included.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildQuarterlyView, readQuarterlyInput, type QuarterlyTaxParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="quarterly-tax"]')) {
+    const params = embeddedParams<QuarterlyTaxParams>(root);
+    bindCalculator(root, (read) => buildQuarterlyView(readQuarterlyInput(read), params));
+  }
+</script>

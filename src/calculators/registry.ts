@@ -1,6 +1,15 @@
 import { isLaunched, type CountryCode } from '../countries';
 
-export type EngineName = 'loan';
+export type EngineName =
+  | 'loan'
+  | 'dti'
+  | 'carAffordability'
+  | 'debtConsolidation'
+  | 'redundancyPay'
+  | 'inheritanceTax'
+  | 'selfEmploymentTax'
+  | 'fhsa'
+  | 'novatedLease';
 
 export type Category = 'loans' | 'debt' | 'tax' | 'savings' | 'retirement' | 'property';
 
@@ -29,6 +38,8 @@ export interface CalculatorEntry {
   related: string[];
   /** Shown in "Popular calculators" on the homepage. */
   popular?: boolean;
+  /** Planned but not built: no page, not linked, not in the sitemap. Remove when the definition of done is met. */
+  draft?: boolean;
 }
 
 /**
@@ -46,6 +57,82 @@ export const CALCULATORS: CalculatorEntry[] = [
     related: ['personal-loan-payoff-calculator', 'used-car-loan-calculator', 'credit-card-payoff-calculator', 'car-finance-calculator'],
     popular: true,
   },
+
+  // ---------- Batch 2 (CLAUDE.md section 12) ----------
+  {
+    slug: 'debt-to-income-ratio-calculator',
+    engine: 'dti',
+    category: 'debt',
+    countries: ['us'],
+    name: 'Debt-to-Income Ratio Calculator',
+    blurb: 'Front-end and back-end DTI, what lenders look for, and how much debt to cut to reach a target ratio.',
+    related: ['debt-consolidation-calculator', 'credit-card-payoff-calculator', 'car-affordability-calculator', 'loan-calculator'],
+  },
+  {
+    // Uses the loan engine in reverse: budget → maximum loan → maximum price.
+    slug: 'car-affordability-calculator',
+    engine: 'carAffordability',
+    category: 'loans',
+    countries: ['us'],
+    name: 'Car Affordability Calculator',
+    blurb: 'The most car you can afford from a monthly budget, with trade-in, sales tax and fees included.',
+    related: ['used-car-loan-calculator', 'auto-loan-refinance-calculator', 'loan-calculator', 'debt-to-income-ratio-calculator'],
+  },
+  {
+    // Uses the debtPayoff engine for current debts and the loan engine for the new loan.
+    slug: 'debt-consolidation-calculator',
+    engine: 'debtConsolidation',
+    category: 'debt',
+    countries: ['us'],
+    name: 'Debt Consolidation Calculator',
+    blurb: 'Compare paying off up to 10 debts as they are with one consolidation loan, including fees and break-even.',
+    related: ['credit-card-payoff-calculator', 'debt-snowball-calculator', 'personal-loan-payoff-calculator', 'debt-to-income-ratio-calculator'],
+  },
+  {
+    slug: 'redundancy-pay-calculator',
+    engine: 'redundancyPay',
+    category: 'tax',
+    countries: ['uk'],
+    name: 'Redundancy Pay Calculator',
+    blurb: 'Statutory redundancy pay from your age, service and weekly pay, for Great Britain or Northern Ireland.',
+    related: ['take-home-pay-calculator', 'pension-tax-relief-calculator', 'credit-card-payoff-calculator', 'loan-calculator'],
+  },
+  {
+    slug: 'inheritance-tax-calculator',
+    engine: 'inheritanceTax',
+    category: 'tax',
+    countries: ['uk'],
+    name: 'Inheritance Tax Calculator',
+    blurb: 'Nil-rate bands, residence allowance after taper, and the tax due on an estate, including the charity rate.',
+    related: ['stamp-duty-calculator', 'pension-tax-relief-calculator', 'isa-savings-calculator'],
+  },
+  {
+    slug: 'quarterly-estimated-tax-calculator',
+    engine: 'selfEmploymentTax',
+    category: 'tax',
+    countries: ['us'],
+    name: 'Quarterly Estimated Tax Calculator',
+    blurb: 'Self-employment tax, federal income tax and your four quarterly payments with due dates.',
+    related: ['paycheck-calculator', 'roth-ira-calculator', '401k-match-calculator', 'debt-to-income-ratio-calculator'],
+  },
+  {
+    slug: 'fhsa-calculator',
+    engine: 'fhsa',
+    category: 'savings',
+    countries: ['ca'],
+    name: 'FHSA Calculator',
+    blurb: 'Project your First Home Savings Account balance, contributions and tax refunds, with limit warnings.',
+    related: ['rrsp-vs-tfsa-calculator', 'mortgage-payment-calculator', 'land-transfer-tax-calculator', 'income-tax-calculator'],
+  },
+  {
+    slug: 'novated-lease-calculator',
+    engine: 'novatedLease',
+    category: 'tax',
+    countries: ['au'],
+    name: 'Novated Lease Calculator',
+    blurb: 'Pre-tax and post-tax deductions, take-home pay change and the true cost against buying outright.',
+    related: ['take-home-pay-calculator', 'home-loan-repayment-calculator', 'super-calculator'],
+  },
 ];
 
 export function getCalculator(slug: string): CalculatorEntry {
@@ -54,19 +141,20 @@ export function getCalculator(slug: string): CalculatorEntry {
   return calc;
 }
 
-/** Launched countries this calculator has a page in. */
+/** Launched countries this calculator has a page in. Drafts have none. */
 export function liveCountries(calc: CalculatorEntry): CountryCode[] {
-  return calc.countries.filter(isLaunched);
+  return calc.draft ? [] : calc.countries.filter(isLaunched);
 }
 
+/** Published (non-draft) calculators for a country. */
 export function calculatorsFor(country: CountryCode): CalculatorEntry[] {
-  return CALCULATORS.filter((c) => c.countries.includes(country));
+  return CALCULATORS.filter((c) => !c.draft && c.countries.includes(country));
 }
 
 export function relatedFor(calc: CalculatorEntry, country: CountryCode): CalculatorEntry[] {
   return calc.related
     .map((slug) => CALCULATORS.find((c) => c.slug === slug))
-    .filter((c): c is CalculatorEntry => c !== undefined && c.countries.includes(country))
+    .filter((c): c is CalculatorEntry => c !== undefined && !c.draft && c.countries.includes(country))
     .slice(0, 5);
 }
 

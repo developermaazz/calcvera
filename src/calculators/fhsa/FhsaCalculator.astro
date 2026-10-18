@@ -1,0 +1,150 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import type { CaTaxParams } from '../../engines/caIncomeTax';
+import { createFormatters } from '../../lib/format';
+import { FHSA_DEFAULTS, buildFhsaView, type FhsaPageParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const c = requireFigure(country.ca, 'Canada figures');
+const lastFederal = country.incomeTax.bands.at(-1);
+const fourthFederal = country.incomeTax.bands.at(-2);
+if (!lastFederal || !fourthFederal) throw new Error('Federal bands missing');
+const surtax = c.extras.ontarioSurtax;
+
+const taxByProvince: Record<string, CaTaxParams> = {};
+for (const prov of c.provinces) {
+  taxByProvince[prov.code] = {
+    federalBands: country.incomeTax.bands,
+    federalBpa: country.incomeTax.allowance,
+    // Federal BPA phases from the 4th bracket threshold to the 5th (CRA T4127).
+    federalBpaPhaseOut: {
+      start: fourthFederal.from,
+      end: lastFederal.from,
+      minimum: requireFigure(c.extras.basicPersonalAmountMinimum, 'extras.basicPersonalAmountMinimum'),
+    },
+    provinceBands: requireFigure(prov.bands, `provinces.${prov.code}.bands`),
+    provinceBpa: requireFigure(prov.basicPersonalAmount, `provinces.${prov.code}.basicPersonalAmount`),
+    provinceBpaPhaseOut: prov.basicPersonalAmountPhaseOut,
+    quebecAbatement: prov.code === 'QC' ? requireFigure(c.extras.quebecAbatement, 'extras.quebecAbatement') : 0,
+    ontarioSurtax:
+      prov.code === 'ON'
+        ? {
+            firstThreshold: requireFigure(surtax.firstThreshold, 'ontarioSurtax.firstThreshold'),
+            firstRate: requireFigure(surtax.firstRate, 'ontarioSurtax.firstRate'),
+            secondThreshold: requireFigure(surtax.secondThreshold, 'ontarioSurtax.secondThreshold'),
+            secondRate: requireFigure(surtax.secondRate, 'ontarioSurtax.secondRate'),
+          }
+        : undefined,
+  };
+}
+
+const params: FhsaPageParams = {
+  locale: country.locale,
+  currency: country.currency,
+  taxYear: country.taxYear,
+  fhsa: {
+    annualLimit: requireFigure(c.fhsa.annualLimit, 'fhsa.annualLimit'),
+    lifetimeLimit: requireFigure(c.fhsa.lifetimeLimit, 'fhsa.lifetimeLimit'),
+    maxCarryForward: requireFigure(c.fhsa.maxCarryForward, 'fhsa.maxCarryForward'),
+    maxParticipationYears: requireFigure(c.fhsa.maxParticipationYears, 'fhsa.maxParticipationYears'),
+  },
+  provinces: c.provinces.map((p) => ({ code: p.code, name: p.name })),
+  taxByProvince,
+};
+const { view } = buildFhsaView(FHSA_DEFAULTS, params);
+if (!view) throw new Error('FHSA defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const d = FHSA_DEFAULTS;
+const sym = country.currencySymbol;
+---
+
+<div class="calc-block" data-calc="fhsa" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="fhsa" label="FHSA calculator">
+    <Fragment slot="inputs">
+      <Field id="fhsa-annual" field="annualContribution" label="Planned contribution each year" value={f.number(d.annualContribution)} prefix={sym} money />
+      <Field id="fhsa-years" field="years" label="Years until you buy" value={String(d.years)} suffix="years" inputmode="numeric" hint={`An FHSA can stay open for up to ${params.fhsa.maxParticipationYears} years.`} />
+      <Field id="fhsa-return" field="returnPercent" label="Expected yearly return" value={String(d.returnPercent)} suffix="%" />
+      <Field id="fhsa-start" field="startBalance" label="Current FHSA balance" value={f.number(d.startBalance)} prefix={sym} money />
+      <Field id="fhsa-sofar" field="contributionsSoFar" label="Contributions made so far" value="" placeholder="Same as balance" prefix={sym} money optional hint="Counts towards the lifetime limit. Leave empty if your whole balance came from contributions." />
+      <Field id="fhsa-carry" field="carryForward" label="Unused room carried forward" value={f.number(d.carryForward)} prefix={sym} money hint={`Up to ${f.moneyWhole(params.fhsa.maxCarryForward)}, shown on your CRA account.`} />
+      <SelectField id="fhsa-province" field="province" label="Province or territory" value={d.province} options={params.provinces.map((p) => ({ value: p.code, label: p.name }))} />
+      <SelectField
+        id="fhsa-mode"
+        field="rateMode"
+        label="Work out my tax refund from"
+        value={d.rateMode}
+        options={[
+          { value: 'income', label: 'My income' },
+          { value: 'rate', label: 'A marginal tax rate I know' },
+        ]}
+      />
+      <Field id="fhsa-income" field="income" label="Taxable income" value={f.number(d.income)} prefix={sym} money when="rateMode:income" hidden={d.rateMode !== 'income'} />
+      <Field id="fhsa-rate" field="marginalRatePercent" label="Marginal tax rate" value={String(d.marginalRatePercent)} suffix="%" when="rateMode:rate" hidden={d.rateMode !== 'rate'} />
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Projected FHSA balance</p>
+        <p class="result-figure" data-out="balance">{view.balance}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Total contributions</dt><dd data-out="contributions">{view.contributions}</dd></div>
+        <div><dt>Investment growth</dt><dd data-out="growth">{view.growth}</dd></div>
+        <div><dt>Total tax refunds</dt><dd class="positive" data-out="refunds">{view.refunds}</dd></div>
+        <div><dt>Refund as share of contributions</dt><dd data-out="refundRate">{view.refundRate}</dd></div>
+      </dl>
+      <ul class="result-warn-list" data-show="hasWarnings" hidden={!view.hasWarnings} data-html="warningsHtml" set:html={view.warningsHtml} />
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="fhsa-breakdown-title">
+    <h2 id="fhsa-breakdown-title" class="h3">Year by year</h2>
+    <SvgChart
+      id="fhsa-chart"
+      title="Balance at the end of each year"
+      legend={[
+        { label: 'Money put in', className: 'chart-s1' },
+        { label: 'Growth', className: 'chart-s2' },
+      ]}
+      svg={view.chartSvg}
+      htmlKey="chartSvg"
+    />
+    <div class="table-scroll table-plain">
+      <table class="data-table">
+        <thead><tr><th scope="col">Year</th><th scope="col">Room</th><th scope="col">Contribution</th><th scope="col">Tax refund</th><th scope="col">Balance</th></tr></thead>
+        <tbody data-html="rowsHtml" set:html={view.rowsHtml} />
+      </table>
+    </div>
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <ul>
+        <li><strong>Room each year</strong> = {f.moneyWhole(params.fhsa.annualLimit)} + unused room carried forward (up to {f.moneyWhole(params.fhsa.maxCarryForward)}). Total contributions can't go over {f.moneyWhole(params.fhsa.lifetimeLimit)}.</li>
+        <li><strong>Balance</strong>: each year's contribution goes in at the start of the year, then the balance grows by the expected return.</li>
+        <li><strong>Tax refund</strong> = tax on your income − tax on your income minus the contribution, using the {params.taxYear} federal and provincial rates, basic personal amounts, the Ontario surtax and the Quebec abatement. Or, if you choose, contribution × your marginal rate. It assumes the same income every year and that you deduct each contribution in the year you make it.</li>
+        <li>Not included: other tax credits, the Ontario Health Premium, transfers from an RRSP (not deductible) and inflation.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildFhsaView, readFhsaInput, type FhsaPageParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="fhsa"]')) {
+    const params = embeddedParams<FhsaPageParams>(root);
+    bindCalculator(root, (read) => buildFhsaView(readFhsaInput(read), params));
+  }
+</script>

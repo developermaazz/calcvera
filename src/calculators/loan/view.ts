@@ -4,7 +4,7 @@
  */
 import { summariseByYear, type LoanInput, type LoanResult } from '../../engines/loan';
 import { stackedBarChart } from '../../lib/charts';
-import { addMonths, escapeHtml, type Formatters } from '../../lib/format';
+import { addMonths, escapeHtml, formatDuration, type Formatters } from '../../lib/format';
 
 export interface StartMonth {
   year: number;
@@ -30,15 +30,7 @@ export function currentStartMonth(now = new Date()): StartMonth {
   return { year: now.getFullYear(), monthIndex: now.getMonth() };
 }
 
-/** "4 years 1 month", "11 months" */
-export function formatDuration(months: number): string {
-  const y = Math.floor(months / 12);
-  const m = months % 12;
-  const parts: string[] = [];
-  if (y > 0) parts.push(`${y} ${y === 1 ? 'year' : 'years'}`);
-  if (m > 0 || y === 0) parts.push(`${m} ${m === 1 ? 'month' : 'months'}`);
-  return parts.join(' ');
-}
+export { formatDuration };
 
 /** Month of payment k (1-based), with the first payment one month after the start month. */
 function paymentMonth(start: StartMonth, k: number): StartMonth {

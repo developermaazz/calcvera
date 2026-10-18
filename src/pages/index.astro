@@ -43,7 +43,9 @@ const jsonLd = [
               <li>
                 <a class="country-card" href={`/${c.code}/`} hreflang={c.hreflang} data-set-country={c.code}>
                   <strong>{c.name}</strong>
-                  <span>{c.currency} · {calculatorsFor(c.code).length} calculators</span>
+                  <span>
+                    {c.currency} · {calculatorsFor(c.code).length} {calculatorsFor(c.code).length === 1 ? 'calculator' : 'calculators'}
+                  </span>
                 </a>
               </li>
             ) : (

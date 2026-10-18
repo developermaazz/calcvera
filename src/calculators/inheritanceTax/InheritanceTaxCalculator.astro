@@ -1,0 +1,109 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import CheckboxField from '../../components/CheckboxField.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import { SPLIT_ASPECT } from '../../lib/charts';
+import { createFormatters } from '../../lib/format';
+import { IHT_DEFAULTS, MARITAL_OPTIONS, buildInheritanceTaxView, type InheritanceTaxPageParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const t = requireFigure(country.uk, 'UK figures').inheritanceTax;
+const params: InheritanceTaxPageParams = {
+  locale: country.locale,
+  currency: country.currency,
+  nilRateBand: requireFigure(t.nilRateBand, 'inheritanceTax.nilRateBand'),
+  residenceNilRateBand: requireFigure(t.residenceNilRateBand, 'inheritanceTax.residenceNilRateBand'),
+  taperThreshold: requireFigure(t.taperThreshold, 'inheritanceTax.taperThreshold'),
+  taperRate: requireFigure(t.taperRate, 'inheritanceTax.taperRate'),
+  standardRate: requireFigure(t.standardRate, 'inheritanceTax.standardRate'),
+  charityReducedRate: requireFigure(t.charityReducedRate, 'inheritanceTax.charityReducedRate'),
+  charityQualifyingShare: requireFigure(t.charityQualifyingShare, 'inheritanceTax.charityQualifyingShare'),
+  maxTransferableShare: requireFigure(t.maxTransferableShare, 'inheritanceTax.maxTransferableShare'),
+};
+const { view } = buildInheritanceTaxView(IHT_DEFAULTS, params);
+if (!view) throw new Error('Inheritance Tax defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const d = IHT_DEFAULTS;
+const sym = country.currencySymbol;
+---
+
+<div class="calc-block" data-calc="iht" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="iht" label="Inheritance Tax calculator">
+    <Fragment slot="inputs">
+      <Field id="iht-estate" field="estateValue" label="Total value of the estate" value={f.number(d.estateValue)} prefix={sym} money hint="Property, savings, investments and possessions, including the home." />
+      <Field id="iht-debts" field="debtsAndFuneral" label="Debts and funeral costs" value={f.number(d.debtsAndFuneral)} prefix={sym} money hint="Mortgage, loans, bills and reasonable funeral costs." />
+      <Field id="iht-gifts" field="giftsLast7Years" label="Gifts in the last 7 years" value={f.number(d.giftsLast7Years)} prefix={sym} money hint="Gifts that count towards Inheritance Tax, after exemptions such as the annual exemption." />
+      <CheckboxField id="iht-home" field="homeToDescendants" label="Leaving a home to children or grandchildren" checked={d.homeToDescendants} hint="Direct descendants include step-children, adopted and foster children." />
+      <Field id="iht-homevalue" field="homeValue" label="Value of the home (your share, minus any mortgage on it)" value={f.number(d.homeValue)} prefix={sym} money when="homeToDescendants:true" hidden={!d.homeToDescendants} />
+      <SelectField id="iht-status" field="maritalStatus" label="Marital status" value={d.maritalStatus} options={MARITAL_OPTIONS} />
+      <Field id="iht-spouse" field="leftToSpouse" label="Amount left to your spouse or civil partner" value={f.number(d.leftToSpouse)} prefix={sym} money when="maritalStatus:married" hidden={d.maritalStatus !== 'married'} />
+      <Field id="iht-tnrb" field="transferredNrbPercent" label="Unused nil-rate band from your late spouse" value={String(d.transferredNrbPercent)} suffix="%" when="maritalStatus:widowed" hidden={d.maritalStatus !== 'widowed'} hint="100% if they left everything to you." />
+      <Field id="iht-trnrb" field="transferredRnrbPercent" label="Unused residence nil-rate band from your late spouse" value={String(d.transferredRnrbPercent)} suffix="%" when="maritalStatus:widowed" hidden={d.maritalStatus !== 'widowed'} />
+      <Field id="iht-charity" field="charityPercent" label="Share of the estate left to charity" value={String(d.charityPercent)} suffix="%" />
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Inheritance Tax due</p>
+        <p class="result-figure" data-out="tax">{view.tax}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Tax-free bands used</dt><dd data-out="thresholdTotal">{view.thresholdTotal}</dd></div>
+        <div><dt>Taxable amount</dt><dd data-out="taxable">{view.taxable}</dd></div>
+        <div><dt>Tax rate</dt><dd data-out="rate">{view.rate}</dd></div>
+      </dl>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="iht-breakdown-title">
+    <h2 id="iht-breakdown-title" class="h3">How the tax is worked out</h2>
+    <SvgChart
+      id="iht-chart"
+      title="Your estate after debts"
+      legend={[
+        { label: 'Covered by tax-free bands', className: 'chart-s1' },
+        { label: 'Exempt (spouse and charity)', className: 'chart-s2' },
+        { label: 'Taxed', className: 'chart-s3' },
+      ]}
+      svg={view.chartSvg}
+      aspect={SPLIT_ASPECT}
+      htmlKey="chartSvg"
+    />
+    <div class="table-scroll table-plain">
+      <table class="data-table"><tbody data-html="breakdownHtml" set:html={view.breakdownHtml} /></table>
+    </div>
+    <ul class="notes" data-show="hasNotes" hidden={!view.hasNotes} data-html="notesHtml" set:html={view.notesHtml} />
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <p class="formula-eq"><code>Tax = (estate − exemptions − nil-rate band − residence band) × rate</code></p>
+      <ul>
+        <li>The nil-rate band is {f.moneyWhole(params.nilRateBand)}, reduced by gifts made in the 7 years before death. A late spouse's unused share is added on top.</li>
+        <li>The residence nil-rate band is {f.moneyWhole(params.residenceNilRateBand)} when a home goes to direct descendants, limited to the home's value. It falls by £1 for every £2 the estate is over {f.moneyWhole(params.taperThreshold)}.</li>
+        <li>Anything left to a spouse, civil partner or charity is exempt.</li>
+        <li>The rate is {f.percent(params.standardRate * 100)}, or {f.percent(params.charityReducedRate * 100)} if charity gifts are at least 10% of the baseline amount (the estate after exemptions and the nil-rate band, with the charity gifts added back).</li>
+        <li>Not included: tax on the gifts themselves, taper relief on gifts, Business and Agricultural Relief, and the downsizing addition.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildInheritanceTaxView, readInheritanceTaxInput, type InheritanceTaxPageParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="iht"]')) {
+    const params = embeddedParams<InheritanceTaxPageParams>(root);
+    bindCalculator(root, (read) => buildInheritanceTaxView(readInheritanceTaxInput(read), params));
+  }
+</script>

@@ -1,0 +1,101 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import type { RedundancyParams } from '../../engines/redundancyPay';
+import { createFormatters } from '../../lib/format';
+import { REDUNDANCY_DEFAULTS, REGION_LABELS, buildRedundancyView, type RedundancyPageParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const r = requireFigure(country.uk, 'UK figures').redundancy;
+const regionParams = (region: 'greatBritain' | 'northernIreland'): RedundancyParams => ({
+  weeklyPayCap: requireFigure(r.weeklyPayCap[region], `redundancy.weeklyPayCap.${region}`),
+  minYearsService: requireFigure(r.minYearsService, 'redundancy.minYearsService'),
+  maxYearsCounted: requireFigure(r.maxYearsCounted, 'redundancy.maxYearsCounted'),
+  ageBands: requireFigure(r.ageBands, 'redundancy.ageBands'),
+  taxFreeLimit: requireFigure(r.taxFreeLimit, 'redundancy.taxFreeLimit'),
+});
+const params: RedundancyPageParams = {
+  locale: country.locale,
+  currency: country.currency,
+  effectiveFrom: requireFigure(r.effectiveFrom, 'redundancy.effectiveFrom'),
+  regions: { greatBritain: regionParams('greatBritain'), northernIreland: regionParams('northernIreland') },
+};
+const { view } = buildRedundancyView(REDUNDANCY_DEFAULTS, params);
+if (!view) throw new Error('Redundancy defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const d = REDUNDANCY_DEFAULTS;
+const gb = params.regions.greatBritain;
+const ni = params.regions.northernIreland;
+---
+
+<div class="calc-block" data-calc="redundancy" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="redundancy" label="Redundancy pay calculator">
+    <Fragment slot="inputs">
+      <SelectField
+        id="red-region"
+        field="region"
+        label="Where you work"
+        value={d.region}
+        options={Object.entries(REGION_LABELS).map(([value, label]) => ({ value, label }))}
+      />
+      <Field id="red-age" field="age" label="Your age on the date you're made redundant" value={String(d.age)} suffix="years" inputmode="numeric" />
+      <Field id="red-years" field="yearsOfService" label="Full years of service" value={String(d.yearsOfService)} suffix="years" inputmode="numeric" hint="Count only complete years with this employer." />
+      <Field id="red-pay" field="weeklyPay" label="Weekly pay before tax" value={f.number(d.weeklyPay)} prefix={country.currencySymbol} money hint="Your normal gross weekly pay." />
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Statutory redundancy pay</p>
+        <p class="result-figure" data-out="amount">{view.amount}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Weeks of pay</dt><dd data-out="weeks">{view.weeks}</dd></div>
+        <div><dt>Weekly pay used</dt><dd data-out="weeklyPayUsed">{view.weeklyPayUsed}</dd></div>
+        <div><dt>Years counted</dt><dd data-out="yearsCounted">{view.yearsCounted}</dd></div>
+      </dl>
+      <p class="result-note" data-show="showCapNote" hidden={!view.showCapNote} data-out="capNote">{view.capNote}</p>
+      <p class="result-warn" data-show="notEligible" hidden={!view.notEligible}>You need at least {gb.minYearsService} full years of service to qualify.</p>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="red-breakdown-title">
+    <h2 id="red-breakdown-title" class="h3">How your weeks add up</h2>
+    <div class="table-scroll table-plain">
+      <table class="data-table">
+        <thead><tr><th scope="col">Age band</th><th scope="col">Years</th><th scope="col">Per year</th><th scope="col">Weeks</th></tr></thead>
+        <tbody data-html="bandsHtml" set:html={view.bandsHtml} />
+      </table>
+    </div>
+    <p class="muted" data-out="taxNote">{view.taxNote}</p>
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <p class="formula-eq"><code>Redundancy pay = weeks × weekly pay (capped)</code></p>
+      <ul>
+        <li>Counting back from your redundancy date, each full year of service earns half a week's pay if you were under 22 for that year, one week if you were 22 to 40, and one and a half weeks if you were 41 or older.</li>
+        <li>At most {gb.maxYearsCounted} years count (the most recent ones), so the most you can get is {gb.maxYearsCounted * 1.5} weeks.</li>
+        <li>Weekly pay is capped at {f.moneyWhole(gb.weeklyPayCap)} in England, Scotland and Wales for redundancies on or after {f.date(params.effectiveFrom)}, and at {f.moneyWhole(ni.weeklyPayCap)} in Northern Ireland (the current NI figure).</li>
+        <li>You need at least {gb.minYearsService} full years of continuous service with your employer.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildRedundancyView, readRedundancyInput, type RedundancyPageParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="redundancy"]')) {
+    const params = embeddedParams<RedundancyPageParams>(root);
+    bindCalculator(root, (read) => buildRedundancyView(readRedundancyInput(read), params));
+  }
+</script>

@@ -1,0 +1,25 @@
+---
+/** Labelled select. Same data-field / data-msg / data-when conventions as Field. */
+interface Props {
+  id: string;
+  field: string;
+  label: string;
+  value: string;
+  options: { value: string; label: string }[];
+  hint?: string;
+  when?: string;
+  /** Initial visibility for a conditional field, so the static HTML matches the defaults. */
+  hidden?: boolean;
+}
+
+const { id, field, label, value, options, hint, when, hidden } = Astro.props;
+---
+
+<div class="field" data-when={when} hidden={hidden}>
+  <label for={id}>{label}</label>
+  <select id={id} data-field={field} aria-describedby={hint ? `${id}-hint` : undefined}>
+    {options.map((o) => <option value={o.value} selected={o.value === value}>{o.label}</option>)}
+  </select>
+  {hint && <p class="field-hint" id={`${id}-hint`}>{hint}</p>}
+  <p class="field-msg" data-msg={field}></p>
+</div>

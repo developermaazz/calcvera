@@ -10,9 +10,13 @@ interface Props {
   title: string;
   legend: { label: string; className: string }[];
   svg: string;
+  /** CSS aspect-ratio of the drawing; defaults to the bar chart's. Use SPLIT_ASPECT for splitBar. */
+  aspect?: string;
+  /** View key the calculator script writes new markup from (data-html). */
+  htmlKey?: string;
 }
 
-const { id, title, legend, svg } = Astro.props;
+const { id, title, legend, svg, aspect = CHART_ASPECT, htmlKey } = Astro.props;
 ---
 
 <figure class="chart" aria-labelledby={`${id}-title`}>
@@ -29,5 +33,5 @@ const { id, title, legend, svg } = Astro.props;
       </ul>
     )
   }
-  <div class="chart-box" style={`aspect-ratio: ${CHART_ASPECT}`} data-chart set:html={svg} />
+  <div class="chart-box" style={`aspect-ratio: ${aspect}`} data-chart data-html={htmlKey} set:html={svg} />
 </figure>

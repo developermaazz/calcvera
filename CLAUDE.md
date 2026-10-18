@@ -19,6 +19,7 @@ Read this file first in every session. It is the single source of truth for this
 2. **Phase 2 (month 4–6):** Canada + Australia
 3. **Phase 3 (later):** India + Pakistan
 4. Keep at least 50% of traffic from US/UK/CA/AU/NZ (Raptive requirement).
+5. CA and AU start early with one calculator each (FHSA, novated lease); their full rollout stays in Phase 2.
 
 ## 3. Tech stack (fixed, do not swap without the owner's approval)
 
@@ -58,9 +59,11 @@ src/
   calculators/registry.ts   every calculator: slug, engine, countries, category, title, related slugs
   calculators/<engine>/     engine UI (LoanCalculator.astro) + view.ts (result → display strings/markup)
   components/               CalculatorShell, ResultSummary, SvgChart, AmortizationTable, AdSlot,
-                            CountryBanner, CountrySwitcher, Breadcrumbs, FAQ, RelatedCalculators
+                            CountryBanner, CountrySwitcher, Breadcrumbs, FAQ, RelatedCalculators,
+                            Field, SelectField, CheckboxField (form fields with data-field/data-msg/data-when)
   layouts/                  BaseLayout.astro, CalculatorLayout.astro, PageLayout.astro
-  lib/                      format.ts (Intl), charts.ts (SVG builders), storage.ts (localStorage)
+  lib/                      format.ts (Intl), charts.ts (SVG builders), storage.ts (localStorage),
+                            calcUi.ts (shared live-update wiring for calculators: model.ts builds the view)
   content.config.ts         guides collection schema
   content/guides/[country]/ one .md guide per calculator, file name = slug
   pages/                    index, [country]/index, [country]/[slug], about, contact, privacy,
@@ -75,7 +78,7 @@ public/                     robots.txt, ads.txt, favicon.svg, _headers, og-defau
 
 - **Engines are pure:** input object in, result object out. No DOM, no formatting, no country lookups inside an engine. Country values are passed in.
 - **Countries are data:** every country-specific number lives in `src/countries/*.ts`, never in an engine or component.
-- **One registry:** a calculator page exists only if it is listed in `registry.ts` for that country. Pages are generated with `getStaticPaths` from the registry.
+- **One registry:** a calculator page exists only if it is listed in `registry.ts` for that country and not marked `draft: true`. Pages are generated with `getStaticPaths` from the registry. Drafts get no page, no links and no sitemap entry; remove `draft` only when section 16 is met.
 - **Shared UI:** every calculator page uses CalculatorShell + ResultSummary + AdSlot + FAQ + RelatedCalculators. No one-off page layouts.
 - **No server, no cookies set by us, no user data sent anywhere.** All math runs in the browser.
 - **localStorage** only for the remembered country and dismissed banner, always wrapped in try/catch.
@@ -98,6 +101,7 @@ public/                     robots.txt, ads.txt, favicon.svg, _headers, og-defau
 - Every tax band, allowance, limit or rate has a comment: `// VERIFY: <official source URL> (tax year)`.
 - Official sources only: US IRS.gov / SSA.gov; UK GOV.UK / HMRC; Canada canada.ca / CRA; Australia ATO.gov.au; India incometax.gov.in; Pakistan FBR.gov.pk.
 - Never invent or guess a tax figure. If unknown, stop and ask the owner for the official figure.
+- Unfilled figures are `null` (type `Pending<T>`) with their VERIFY comment. Engines and pages read them only through `requireFigure()`, which fails the build while a figure is still null.
 - Each country config holds `taxYear`, and every tax calculator page shows "Updated for the [tax year] tax year".
 - Update windows: US in January, UK and Australia by April/July (new tax years), Canada in January, Pakistan after the June budget, India after the February budget.
 
@@ -147,6 +151,19 @@ public/                     robots.txt, ads.txt, favicon.svg, _headers, og-defau
 | 10 | UK | car-finance-calculator | loan + balloon (PCP) |
 
 **Next (Phase 1 continued):** US/UK debt-snowball-calculator, compound-interest-calculator, savings-goal-calculator, rent-vs-buy-calculator; US roth-ira-calculator, heloc-payment-calculator, paycheck-calculator; UK isa-savings-calculator, pension-tax-relief-calculator, mortgage-overpayment-calculator.
+
+**Batch 2 (built 16 Oct 2026; live in the registry):**
+
+| # | Country | Slug | Engine | Inputs | Outputs |
+| --- | --- | --- | --- | --- | --- |
+| B1 | US | debt-to-income-ratio-calculator | dti | Gross monthly income; rent or mortgage; car loans; student loans; credit card minimums; other monthly debts | Front-end and back-end DTI %; what common lender ranges mean; how much debt to cut to reach a target ratio |
+| B2 | US | car-affordability-calculator | loan (inverse) | Monthly budget, down payment, trade-in value, amount owed on trade-in, APR, term, sales tax %, fees | Maximum car price, loan amount, total interest |
+| B3 | US | debt-consolidation-calculator | debtPayoff + loan | Up to 10 debts (balance, APR, monthly payment), new loan APR, term, origination fee % | Current payoff time and interest; new payment and interest; total savings or extra cost; break-even month |
+| B4 | UK | redundancy-pay-calculator | redundancyPay | Age, full years of service, weekly pay before tax, region (England/Scotland/Wales or Northern Ireland) | Statutory amount; tax-free portion note. Rule: half a week's pay per year under 22, one week for 22 to 40, one and a half weeks for 41+, max 20 years, weekly pay capped. Caps and tax-free limit from uk.ts |
+| B5 | UK | inheritance-tax-calculator | inheritanceTax | Estate value, debts and funeral costs, gifts in last 7 years, home passed to direct descendants (yes/no + value), married/civil partner, transferred unused allowances, % left to charity | Nil-rate band, residence nil-rate band after taper, taxable amount, tax due (standard rate, or reduced rate if the charity condition is met) |
+| B6 | US | quarterly-estimated-tax-calculator | selfEmploymentTax | Net self-employment income, filing status, other income, deductions (standard or itemized amount) | Self-employment tax, estimated federal income tax, total, the 4 quarterly payments with due dates. Federal only; say on the page that state tax is out of scope |
+| B7 | CA | fhsa-calculator | fhsa | Starting balance, annual contribution, years, expected return %, province, marginal tax rate (or income to estimate it), unused carry-forward room | Projected balance, total contributions, total tax refunds, a warning when annual or lifetime limits are hit |
+| B8 | AU | novated-lease-calculator | novatedLease | Annual salary, car price, lease term, interest rate, annual running costs, electric vehicle (FBT-exempt) yes/no | Pre-tax and post-tax deductions, change in take-home pay, total cost vs buying outright with savings. Residual uses the ATO minimum residual for the term |
 
 **Phase 2:** CA rrsp-vs-tfsa-calculator, income-tax-calculator, cpp-calculator, land-transfer-tax-calculator, mortgage-payment-calculator. AU super-calculator, take-home-pay-calculator, stamp-duty-calculator, hecs-help-repayment-calculator, home-loan-repayment-calculator.
 

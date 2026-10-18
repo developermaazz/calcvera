@@ -1,6 +1,6 @@
 import type { CountryConfig } from './types';
 
-// Phase 2 (month 4–6). Not launched: no pages are generated until `launched` is true.
+// Early start with one calculator; full rollout in Phase 2 (CLAUDE.md section 2).
 export const au: CountryConfig = {
   code: 'au',
   name: 'Australia',
@@ -11,7 +11,7 @@ export const au: CountryConfig = {
   currency: 'AUD',
   currencySymbol: '$',
   taxYear: '2026–27',
-  launched: false,
+  launched: true,
   detect: {
     timezones: [
       'Australia/Sydney',
@@ -40,4 +40,52 @@ export const au: CountryConfig = {
     ],
   },
   defaults: {},
+  au: {
+    medicareLevy: {
+      // VERIFY: https://www.ato.gov.au/individuals-and-families/medicare-and-private-health-insurance/medicare-levy/what-is-the-medicare-levy (2%). Checked 16 Oct 2026.
+      rate: 0.02,
+      // VERIFY: https://www.ato.gov.au/individuals-and-families/medicare-and-private-health-insurance/medicare-levy/medicare-levy-reduction/medicare-levy-reduction-for-low-income-earners
+      // Latest published single thresholds are for 2025–26 ($28,011 / $35,013). Update when the ATO publishes 2026–27. Checked 16 Oct 2026.
+      thresholdsIncomeYear: '2025–26',
+      lowIncomeThreshold: 28_011,
+      lowIncomeUpperThreshold: 35_013,
+      // VERIFY: https://www.ato.gov.au/tax-rates-and-codes/payg-withholding-schedule-1-statement-of-formulas-for-calculating-amounts-to-be-withheld/medicare-levy-adjustment
+      // ("shaded in at the rate of 10% of the excess"). Checked 16 Oct 2026.
+      shadeInRate: 0.1,
+    },
+    // VERIFY: https://www.ato.gov.au/individuals-and-families/income-deductions-offsets-and-records/tax-offsets/low-income-tax-offset
+    // ($700 up to $37,500; less 5c per $1 to $45,000; less 1.5c per $1 to $66,667). Checked 16 Oct 2026.
+    lowIncomeTaxOffset: {
+      maxOffset: 700,
+      firstTaperStart: 37_500,
+      firstTaperRate: 0.05,
+      secondTaperStart: 45_000,
+      secondTaperRate: 0.015,
+      cutOut: 66_667,
+    },
+    // Working Australians tax offset starts in 2027–28, so it doesn't apply to 2026–27:
+    // https://www.ato.gov.au/about-ato/new-legislation/in-detail/individuals/working-australians-tax-offset
+    fbt: {
+      // VERIFY: https://www.ato.gov.au/tax-rates-and-codes/fringe-benefits-tax-rates-and-thresholds (47% for FBT years to 31 March 2027). Checked 16 Oct 2026.
+      fbtYear: 'year ending 31 March 2027',
+      rate: 0.47,
+      // VERIFY: same ATO page (flat 20% statutory rate for car benefits). Checked 16 Oct 2026.
+      statutoryFraction: 0.2,
+      // VERIFY: https://www.ato.gov.au/tax-rates-and-codes/luxury-car-tax-rate-and-thresholds (fuel-efficient threshold $91,661, 2026–27). Checked 16 Oct 2026.
+      evExemptionPriceThreshold: 91_661,
+      // VERIFY: https://www.ato.gov.au/about-ato/new-legislation/in-detail/businesses/electric-car-discount-more-sustainable-fbt-treatment-of-electric-cars
+      // (full exemption to 31 March 2027; existing leases not affected by the announced change). Checked 16 Oct 2026.
+      evExemptionChangesOn: '2027-04-01',
+    },
+    novatedLease: {
+      // VERIFY: https://www.ato.gov.au/law/view/document?docid=aid%2Faid20021004%2F00001 (ATO ID 2002/1004, cars, 8-year effective life)
+      // and https://www.ato.gov.au/law/view/document?DocID=TXD%2FTD93142%2FNAT%2FATO%2F00001 (TD 93/142). Checked 16 Oct 2026.
+      minimumResidualByTermYears: { 1: 0.6563, 2: 0.5625, 3: 0.4688, 4: 0.375, 5: 0.2813 },
+      // VERIFY: https://www.ato.gov.au/tax-rates-and-codes/luxury-car-tax-rate-and-thresholds (car limit $69,883, 2026–27). Checked 16 Oct 2026.
+      carCostLimit: 69_883,
+      // VERIFY: https://www.ato.gov.au/businesses-and-organisations/gst-excise-and-indirect-taxes/gst/in-detail/your-industry/motor-vehicle-and-transport/gst-and-motor-vehicles/purchasing-a-motor-vehicle
+      // (GST 10%; credit capped at one-eleventh of the car limit). Checked 16 Oct 2026.
+      gstRate: 0.1,
+    },
+  },
 };

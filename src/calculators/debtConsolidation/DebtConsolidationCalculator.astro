@@ -1,0 +1,122 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import type { CountryConfig } from '../../countries';
+import { MAX_DEBTS, debtField } from '../../engines/debtConsolidation';
+import { createFormatters } from '../../lib/format';
+import {
+  CONSOLIDATION_DEFAULTS,
+  CONSOLIDATION_TERMS,
+  VISIBLE_DEBT_ROWS,
+  buildDebtConsolidationView,
+  type DebtConsolidationParams,
+} from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const params: DebtConsolidationParams = { locale: country.locale, currency: country.currency };
+const { view } = buildDebtConsolidationView(CONSOLIDATION_DEFAULTS, params);
+if (!view) throw new Error('Debt consolidation defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const d = CONSOLIDATION_DEFAULTS;
+const sym = country.currencySymbol;
+const rows = Array.from({ length: MAX_DEBTS }, (_, i) => ({ index: i, debt: d.debts[i] }));
+---
+
+<div class="calc-block" data-calc="debt-consolidation" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="consolidation" label="Debt consolidation calculator">
+    <Fragment slot="inputs">
+      <fieldset class="field-group">
+        <legend>Your current debts</legend>
+        {
+          rows.map(({ index, debt }) => (
+            <div class="debt-row" data-row-group="debt" hidden={index >= VISIBLE_DEBT_ROWS} role="group" aria-label={`Debt ${index + 1}`}>
+              <p class="debt-row-title">Debt {index + 1}</p>
+              <div class="debt-row-fields">
+                <Field id={`dc-balance-${index}`} field={debtField('balance', index)} label="Balance" value={debt ? f.number(debt.balance) : ''} prefix={sym} money />
+                <Field id={`dc-apr-${index}`} field={debtField('aprPercent', index)} label="APR" value={debt ? String(debt.aprPercent) : ''} suffix="%" />
+                <Field id={`dc-pay-${index}`} field={debtField('monthlyPayment', index)} label="Monthly payment" value={debt ? f.number(debt.monthlyPayment) : ''} prefix={sym} money />
+              </div>
+            </div>
+          ))
+        }
+        <button type="button" class="link-btn" data-reveal="debt">+ Add another debt</button>
+        <p class="field-hint">Leave a balance empty to skip that row. Up to {MAX_DEBTS} debts.</p>
+      </fieldset>
+      <fieldset class="field-group">
+        <legend>Consolidation loan</legend>
+        <Field id="dc-newapr" field="newAprPercent" label="New loan APR" value={String(d.newAprPercent)} suffix="%" />
+        <SelectField
+          id="dc-term"
+          field="newTermMonths"
+          label="New loan term"
+          value={String(d.newTermMonths)}
+          options={CONSOLIDATION_TERMS.map((m) => ({ value: String(m), label: `${m} months (${m / 12} years)` }))}
+        />
+        <Field id="dc-fee" field="originationFeePercent" label="Origination fee" value={String(d.originationFeePercent)} suffix="%" hint="Usually taken out of the loan, so you borrow a little more to clear every balance." />
+      </fieldset>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label" data-out="verdictLabel">{view.verdictLabel}</p>
+        <p class="result-figure" data-out="verdictAmount">{view.verdictAmount}</p>
+      </div>
+      <table class="compare-table">
+        <thead><tr><th scope="col"></th><th scope="col">Now</th><th scope="col">Consolidated</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Monthly payment</th><td data-out="currentPayment">{view.currentPayment}</td><td data-out="newPayment">{view.newPayment}</td></tr>
+          <tr><th scope="row">Debt-free in</th><td data-out="currentTime">{view.currentTime}</td><td data-out="newTime">{view.newTime}</td></tr>
+          <tr><th scope="row">Interest</th><td data-out="currentInterest">{view.currentInterest}</td><td data-out="newInterest">{view.newInterest}</td></tr>
+          <tr><th scope="row">Fee</th><td>{f.money(0)}</td><td data-out="fee">{view.fee}</td></tr>
+        </tbody>
+      </table>
+      <dl class="result-list">
+        <div><dt>Break-even</dt><dd data-out="breakEven">{view.breakEven}</dd></div>
+      </dl>
+      <p class="result-warn" data-show="infeasible" hidden={!view.infeasible} data-out="infeasibleText">{view.infeasibleText}</p>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="dc-breakdown-title">
+    <h2 id="dc-breakdown-title" class="h3">Interest and fees compared</h2>
+    <SvgChart
+      id="dc-chart"
+      title="Total interest and fees"
+      legend={[
+        { label: 'Interest', className: 'chart-s2' },
+        { label: 'Origination fee', className: 'chart-s3' },
+      ]}
+      svg={view.chartSvg}
+      htmlKey="chartSvg"
+    />
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <ul>
+        <li><strong>Now:</strong> each debt is paid at its own monthly payment until it's gone. Interest each month = balance × APR ÷ 12. No payments are moved between debts.</li>
+        <li><strong>Loan amount</strong> = total balances ÷ (1 − fee %), so the money you receive after the fee clears every debt.</li>
+        <li><strong>New payment</strong> = loan × r ÷ (1 − (1 + r)<sup>−n</sup>), with r = APR ÷ 12 ÷ 100 and n = months.</li>
+        <li><strong>Savings</strong> = current interest − (new interest + fee). <strong>Break-even</strong> is the first month when the interest you've avoided adds up to the fee.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildDebtConsolidationView, readDebtConsolidationInput, type DebtConsolidationParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="debt-consolidation"]')) {
+    const params = embeddedParams<DebtConsolidationParams>(root);
+    bindCalculator(root, (read) => buildDebtConsolidationView(readDebtConsolidationInput(read), params));
+  }
+</script>

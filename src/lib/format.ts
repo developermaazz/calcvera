@@ -13,6 +13,8 @@ export interface Formatters {
   monthYear: (year: number, monthIndex: number) => string;
   /** Plain number with separators: 1,234 */
   number: (value: number) => string;
+  /** "15 April 2026" / "April 15, 2026" from an ISO date. */
+  date: (iso: string) => string;
 }
 
 export function createFormatters(locale: string, currency: string): Formatters {
@@ -27,6 +29,7 @@ export function createFormatters(locale: string, currency: string): Formatters {
   const percent = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 });
   const number = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 });
   const monthYear = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric', timeZone: 'UTC' });
+  const fullDate = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 
   // Avoid "-$0.00" from floating-point noise.
   const clean = (v: number) => (Math.abs(v) < 0.005 ? 0 : v);
@@ -38,7 +41,18 @@ export function createFormatters(locale: string, currency: string): Formatters {
     percent: (v) => `${percent.format(v)}%`,
     monthYear: (year, monthIndex) => monthYear.format(new Date(Date.UTC(year, monthIndex, 1))),
     number: (v) => number.format(v),
+    date: (iso) => fullDate.format(new Date(`${iso}T00:00:00Z`)),
   };
+}
+
+/** "4 years 1 month", "11 months" */
+export function formatDuration(months: number): string {
+  const y = Math.floor(months / 12);
+  const m = months % 12;
+  const parts: string[] = [];
+  if (y > 0) parts.push(`${y} ${y === 1 ? 'year' : 'years'}`);
+  if (m > 0 || y === 0) parts.push(`${m} ${m === 1 ? 'month' : 'months'}`);
+  return parts.join(' ');
 }
 
 /** Parses user input like "20,000", "$20000" or " 7.5 % ". Returns NaN for empty or invalid input. */

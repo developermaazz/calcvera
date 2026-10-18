@@ -1,0 +1,23 @@
+---
+/** Yes/no question as a large, tappable checkbox. */
+interface Props {
+  id: string;
+  field: string;
+  label: string;
+  checked: boolean;
+  hint?: string;
+  when?: string;
+  /** Initial visibility for a conditional field, so the static HTML matches the defaults. */
+  hidden?: boolean;
+}
+
+const { id, field, label, checked, hint, when, hidden } = Astro.props;
+---
+
+<div class="field field-check" data-when={when} hidden={hidden}>
+  <label class="check" for={id}>
+    <input id={id} type="checkbox" checked={checked} data-field={field} aria-describedby={hint ? `${id}-hint` : undefined} />
+    <span>{label}</span>
+  </label>
+  {hint && <p class="field-hint" id={`${id}-hint`}>{hint}</p>}
+</div>

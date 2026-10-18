@@ -1,0 +1,100 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import CheckboxField from '../../components/CheckboxField.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import type { CountryConfig } from '../../countries';
+import { SPLIT_ASPECT } from '../../lib/charts';
+import { createFormatters } from '../../lib/format';
+import { CAR_DEFAULTS, CAR_TERMS, buildCarAffordabilityView, type CarAffordabilityParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const params: CarAffordabilityParams = { locale: country.locale, currency: country.currency };
+const { view } = buildCarAffordabilityView(CAR_DEFAULTS, params);
+if (!view) throw new Error('Car affordability defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const d = CAR_DEFAULTS;
+const sym = country.currencySymbol;
+---
+
+<div class="calc-block" data-calc="car-affordability" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="car" label="Car affordability calculator">
+    <Fragment slot="inputs">
+      <Field id="car-budget" field="monthlyBudget" label="Monthly car payment budget" value={f.number(d.monthlyBudget)} prefix={sym} money />
+      <Field id="car-down" field="downPayment" label="Down payment" value={f.number(d.downPayment)} prefix={sym} money />
+      <Field id="car-trade" field="tradeInValue" label="Trade-in value" value={f.number(d.tradeInValue)} prefix={sym} money />
+      <Field id="car-owed" field="tradeInOwed" label="Amount owed on trade-in" value={f.number(d.tradeInOwed)} prefix={sym} money />
+      <Field id="car-apr" field="aprPercent" label="Interest rate (APR)" value={String(d.aprPercent)} suffix="%" />
+      <SelectField
+        id="car-term"
+        field="termMonths"
+        label="Loan term"
+        value={String(d.termMonths)}
+        options={CAR_TERMS.map((m) => ({ value: String(m), label: `${m} months (${m / 12} years)` }))}
+      />
+      <Field id="car-tax" field="salesTaxPercent" label="Sales tax rate" value={String(d.salesTaxPercent)} suffix="%" hint="Your state plus any local rate." />
+      <Field id="car-fees" field="fees" label="Fees (dealer, title, registration)" value={f.number(d.fees)} prefix={sym} money hint="Assumed to be added to the loan." />
+      <CheckboxField id="car-taxcredit" field="taxAfterTradeIn" label="My state charges sales tax after subtracting the trade-in" checked={d.taxAfterTradeIn} hint="Rules vary by state. Check with your state's tax or motor vehicle agency." />
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Car price you can afford</p>
+        <p class="result-figure" data-out="maxPrice">{view.maxPrice}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Loan amount</dt><dd data-out="loanAmount">{view.loanAmount}</dd></div>
+        <div><dt>Sales tax</dt><dd data-out="salesTax">{view.salesTax}</dd></div>
+        <div><dt>Trade-in equity</dt><dd data-out="tradeInEquity">{view.tradeInEquity}</dd></div>
+        <div><dt>Total interest</dt><dd data-out="totalInterest">{view.totalInterest}</dd></div>
+        <div><dt>Total cost</dt><dd data-out="totalCost">{view.totalCost}</dd></div>
+      </dl>
+      <p class="result-warn" data-show="notAffordable" hidden={!view.notAffordable}>This budget can't cover the fees and any amount still owed on your trade-in.</p>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="car-breakdown-title">
+    <h2 id="car-breakdown-title" class="h3">What you'd pay in total</h2>
+    <SvgChart
+      id="car-chart"
+      title="Total cost of the car and loan"
+      legend={[
+        { label: 'Car price', className: 'chart-s1' },
+        { label: 'Sales tax and fees', className: 'chart-s3' },
+        { label: 'Interest', className: 'chart-s2' },
+      ]}
+      svg={view.chartSvg}
+      aspect={SPLIT_ASPECT}
+      htmlKey="chartSvg"
+    />
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <p class="formula-eq"><code>Loan = budget × (1 − (1 + r)<sup>−n</sup>) ÷ r</code></p>
+      <ul>
+        <li><strong>r</strong> is the monthly rate (APR ÷ 12 ÷ 100) and <strong>n</strong> the number of months. At 0% APR the loan is budget × n.</li>
+        <li>Cash available = loan + down payment + trade-in equity − fees. Trade-in equity is the trade-in value minus what you still owe.</li>
+        <li>If tax is charged after the trade-in: price = (cash available + tax rate × trade-in value) ÷ (1 + tax rate). Otherwise: price = cash available ÷ (1 + tax rate).</li>
+        <li>Fees are assumed to be financed. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildCarAffordabilityView, readCarAffordabilityInput, type CarAffordabilityParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="car-affordability"]')) {
+    const params = embeddedParams<CarAffordabilityParams>(root);
+    bindCalculator(root, (read) => buildCarAffordabilityView(readCarAffordabilityInput(read), params));
+  }
+</script>

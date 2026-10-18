@@ -1,6 +1,14 @@
 ---
 import { getEntry, render } from 'astro:content';
+import CarAffordabilityCalculator from '../../calculators/carAffordability/CarAffordabilityCalculator.astro';
+import DebtConsolidationCalculator from '../../calculators/debtConsolidation/DebtConsolidationCalculator.astro';
+import DtiCalculator from '../../calculators/dti/DtiCalculator.astro';
+import FhsaCalculator from '../../calculators/fhsa/FhsaCalculator.astro';
+import InheritanceTaxCalculator from '../../calculators/inheritanceTax/InheritanceTaxCalculator.astro';
 import LoanCalculator from '../../calculators/loan/LoanCalculator.astro';
+import NovatedLeaseCalculator from '../../calculators/novatedLease/NovatedLeaseCalculator.astro';
+import QuarterlyTaxCalculator from '../../calculators/quarterlyTax/QuarterlyTaxCalculator.astro';
+import RedundancyPayCalculator from '../../calculators/redundancyPay/RedundancyPayCalculator.astro';
 import { CALCULATORS, getCalculator, liveCountries, type EngineName } from '../../calculators/registry';
 import { getCountry } from '../../countries';
 import CalculatorLayout from '../../layouts/CalculatorLayout.astro';
@@ -11,10 +19,18 @@ export function getStaticPaths() {
   );
 }
 
-/** Engine → calculator UI. Add one line per new engine. */
-const ENGINE_UI = {
+/** Engine → calculator UI. Add one line per new engine when its calculator is built. */
+const ENGINE_UI: Partial<Record<EngineName, typeof LoanCalculator>> = {
   loan: LoanCalculator,
-} satisfies Record<EngineName, unknown>;
+  dti: DtiCalculator,
+  carAffordability: CarAffordabilityCalculator,
+  debtConsolidation: DebtConsolidationCalculator,
+  redundancyPay: RedundancyPayCalculator,
+  inheritanceTax: InheritanceTaxCalculator,
+  selfEmploymentTax: QuarterlyTaxCalculator,
+  fhsa: FhsaCalculator,
+  novatedLease: NovatedLeaseCalculator,
+};
 
 const { country: countryCode, slug } = Astro.params;
 const country = getCountry(countryCode);
@@ -26,6 +42,7 @@ if (!guide) {
 }
 const { Content } = await render(guide);
 const Calculator = ENGINE_UI[calc.engine];
+if (!Calculator) throw new Error(`No UI registered for engine "${calc.engine}" (${calc.slug})`);
 ---
 
 <CalculatorLayout country={country} calc={calc} guide={guide.data}>

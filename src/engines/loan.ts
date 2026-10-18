@@ -116,6 +116,13 @@ export function monthlyPayment(principal: number, aprPercent: number, termMonths
   return (principal * r) / (1 - Math.pow(1 + r, -termMonths));
 }
 
+/** Largest loan a monthly payment repays over the term: the inverse of monthlyPayment. */
+export function maxPrincipalForPayment(payment: number, aprPercent: number, termMonths: number): number {
+  const r = aprPercent / 100 / 12;
+  if (r === 0) return payment * termMonths;
+  return (payment * -Math.expm1(-termMonths * Math.log1p(r))) / r;
+}
+
 /** Builds the full schedule. Throws a RangeError if the input is invalid; call validateLoanInput first. */
 export function calculateLoan(input: LoanInput): LoanResult {
   const errors = validateLoanInput(input);

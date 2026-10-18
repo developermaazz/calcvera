@@ -1,0 +1,47 @@
+---
+/**
+ * Labelled number input with optional currency/unit affixes, hint and inline validation message.
+ * `field` is the name the calculator script reads (data-field) and reports errors against (data-msg).
+ */
+interface Props {
+  id: string;
+  field: string;
+  label: string;
+  value: string;
+  prefix?: string;
+  suffix?: string;
+  hint?: string;
+  optional?: boolean;
+  /** Format with thousands separators on blur. */
+  money?: boolean;
+  inputmode?: 'decimal' | 'numeric';
+  /** Show only when another field has a value, e.g. "deduction:itemized" or "homeToDescendants:true". */
+  when?: string;
+  /** Initial visibility for a conditional field, so the static HTML matches the defaults. */
+  hidden?: boolean;
+  placeholder?: string;
+}
+
+const { id, field, label, value, prefix, suffix, hint, optional, money, inputmode = 'decimal', when, placeholder, hidden } = Astro.props;
+const describedBy = [`${id}-msg`, hint ? `${id}-hint` : ''].filter(Boolean).join(' ');
+---
+
+<div class="field" data-when={when} hidden={hidden}>
+  <label for={id}>{label}{optional && <span class="optional"> (optional)</span>}</label>
+  <div class="input-wrap">
+    {prefix && <span class="affix affix-start" aria-hidden="true">{prefix}</span>}
+    <input
+      id={id}
+      type="text"
+      inputmode={inputmode}
+      value={value}
+      placeholder={placeholder}
+      data-field={field}
+      data-money={money ? '' : undefined}
+      aria-describedby={describedBy}
+    />
+    {suffix && <span class="affix affix-end" aria-hidden="true">{suffix}</span>}
+  </div>
+  {hint && <p class="field-hint" id={`${id}-hint`}>{hint}</p>}
+  <p class="field-msg" id={`${id}-msg`} data-msg={field}></p>
+</div>

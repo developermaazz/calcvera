@@ -1,0 +1,95 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import { SPLIT_ASPECT } from '../../lib/charts';
+import { createFormatters } from '../../lib/format';
+import { DTI_DEFAULTS, buildDtiView, type DtiParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const params: DtiParams = {
+  locale: country.locale,
+  currency: country.currency,
+  references: requireFigure(requireFigure(country.us, 'US figures').dtiReferences, 'us.dtiReferences'),
+};
+const { view } = buildDtiView(DTI_DEFAULTS, params);
+if (!view) throw new Error('DTI defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const d = DTI_DEFAULTS;
+const sym = country.currencySymbol;
+---
+
+<div class="calc-block" data-calc="dti" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="dti" label="Debt-to-income ratio calculator">
+    <Fragment slot="inputs">
+      <Field id="dti-income" field="grossMonthlyIncome" label="Gross monthly income" value={f.number(d.grossMonthlyIncome)} prefix={sym} money hint="Before tax and other deductions, from all borrowers on the loan." />
+      <Field id="dti-housing" field="housing" label="Rent or mortgage payment" value={f.number(d.housing)} prefix={sym} money hint="Include property tax, homeowners insurance and HOA dues if you own." />
+      <Field id="dti-car" field="carLoans" label="Car loan payments" value={f.number(d.carLoans)} prefix={sym} money />
+      <Field id="dti-student" field="studentLoans" label="Student loan payments" value={f.number(d.studentLoans)} prefix={sym} money />
+      <Field id="dti-cards" field="creditCards" label="Credit card minimum payments" value={f.number(d.creditCards)} prefix={sym} money />
+      <Field id="dti-other" field="otherDebts" label="Other monthly debt payments" value={f.number(d.otherDebts)} prefix={sym} money hint="Personal loans, child support, alimony." />
+      <Field id="dti-target" field="targetPercent" label="Target back-end ratio" value={String(d.targetPercent)} suffix="%" />
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Back-end DTI (all debts)</p>
+        <p class="result-figure" data-out="backEnd">{view.backEnd}</p>
+        <p class="result-sub">Front-end DTI (housing): <span data-out="frontEnd">{view.frontEnd}</span></p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Monthly debt payments</dt><dd data-out="totalDebts">{view.totalDebts}</dd></div>
+        <div data-show="needsCut" hidden={!view.needsCut}><dt>Cut to reach target</dt><dd data-out="debtToCut">{view.debtToCut}</dd></div>
+        <div data-show="needsCut" hidden={!view.needsCut}><dt>Or income needed</dt><dd data-out="incomeNeeded">{view.incomeNeeded}</dd></div>
+      </dl>
+      <p class="result-note" data-out="verdict">{view.verdict}</p>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="dti-breakdown-title">
+    <h2 id="dti-breakdown-title" class="h3">Where your income goes</h2>
+    <SvgChart
+      id="dti-chart"
+      title="Gross monthly income"
+      legend={[
+        { label: 'Housing', className: 'chart-s1' },
+        { label: 'Other debt payments', className: 'chart-s2' },
+        { label: 'Left after debt payments', className: 'chart-rest' },
+      ]}
+      svg={view.chartSvg}
+      aspect={SPLIT_ASPECT}
+      htmlKey="chartSvg"
+    />
+    <h3>What lenders look for</h3>
+    <p class="muted">Published mortgage limits from Fannie Mae. Other lenders and loan types use their own limits.</p>
+    <ul class="ref-list" data-html="referencesHtml" set:html={view.referencesHtml} />
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <p class="formula-eq"><code>Back-end DTI = all monthly debt payments ÷ gross monthly income</code></p>
+      <ul>
+        <li><strong>Front-end DTI</strong> is your housing payment ÷ gross monthly income.</li>
+        <li>Use minimum payments for credit cards, not balances. Don't include utilities, groceries or insurance that isn't part of your housing payment.</li>
+        <li><strong>Debt to cut</strong> = monthly debts − target ratio × income. <strong>Income needed</strong> = monthly debts ÷ target ratio.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildDtiView, readDtiInput, type DtiParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="dti"]')) {
+    const params = embeddedParams<DtiParams>(root);
+    bindCalculator(root, (read) => buildDtiView(readDtiInput(read), params));
+  }
+</script>

@@ -1,0 +1,143 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import CheckboxField from '../../components/CheckboxField.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import { createFormatters } from '../../lib/format';
+import { NOVATED_DEFAULTS, buildNovatedLeaseView, type NovatedLeasePageParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const c = requireFigure(country.au, 'Australia figures');
+const lito = c.lowIncomeTaxOffset;
+const res = c.novatedLease.minimumResidualByTermYears;
+const params: NovatedLeasePageParams = {
+  locale: country.locale,
+  currency: country.currency,
+  taxYear: country.taxYear,
+  fbtYear: requireFigure(c.fbt.fbtYear, 'fbt.fbtYear'),
+  evChangesOn: requireFigure(c.fbt.evExemptionChangesOn, 'fbt.evExemptionChangesOn'),
+  medicareThresholdsYear: requireFigure(c.medicareLevy.thresholdsIncomeYear, 'medicareLevy.thresholdsIncomeYear'),
+  lease: {
+    tax: {
+      taxFreeThreshold: country.incomeTax.allowance,
+      bands: country.incomeTax.bands,
+      lito: {
+        maxOffset: requireFigure(lito.maxOffset, 'lito.maxOffset'),
+        firstTaperStart: requireFigure(lito.firstTaperStart, 'lito.firstTaperStart'),
+        firstTaperRate: requireFigure(lito.firstTaperRate, 'lito.firstTaperRate'),
+        secondTaperStart: requireFigure(lito.secondTaperStart, 'lito.secondTaperStart'),
+        secondTaperRate: requireFigure(lito.secondTaperRate, 'lito.secondTaperRate'),
+        cutOut: requireFigure(lito.cutOut, 'lito.cutOut'),
+      },
+      medicare: {
+        rate: requireFigure(c.medicareLevy.rate, 'medicareLevy.rate'),
+        lowIncomeThreshold: requireFigure(c.medicareLevy.lowIncomeThreshold, 'medicareLevy.lowIncomeThreshold'),
+        lowIncomeUpperThreshold: requireFigure(c.medicareLevy.lowIncomeUpperThreshold, 'medicareLevy.lowIncomeUpperThreshold'),
+        shadeInRate: requireFigure(c.medicareLevy.shadeInRate, 'medicareLevy.shadeInRate'),
+      },
+    },
+    minimumResidualByTermYears: {
+      1: requireFigure(res[1], 'residual 1'),
+      2: requireFigure(res[2], 'residual 2'),
+      3: requireFigure(res[3], 'residual 3'),
+      4: requireFigure(res[4], 'residual 4'),
+      5: requireFigure(res[5], 'residual 5'),
+    },
+    carCostLimit: requireFigure(c.novatedLease.carCostLimit, 'novatedLease.carCostLimit'),
+    gstRate: requireFigure(c.novatedLease.gstRate, 'novatedLease.gstRate'),
+    statutoryFraction: requireFigure(c.fbt.statutoryFraction, 'fbt.statutoryFraction'),
+    evExemptionPriceThreshold: requireFigure(c.fbt.evExemptionPriceThreshold, 'fbt.evExemptionPriceThreshold'),
+  },
+};
+const { view } = buildNovatedLeaseView(NOVATED_DEFAULTS, params);
+if (!view) throw new Error('Novated lease defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const d = NOVATED_DEFAULTS;
+const sym = country.currencySymbol;
+const L = params.lease;
+---
+
+<div class="calc-block" data-calc="novated-lease" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="novated" label="Novated lease calculator">
+    <Fragment slot="inputs">
+      <Field id="nl-salary" field="salary" label="Annual salary before tax" value={f.number(d.salary)} prefix={sym} money hint="Excluding super." />
+      <Field id="nl-price" field="carPrice" label="Car price (drive-away)" value={f.number(d.carPrice)} prefix={sym} money />
+      <SelectField
+        id="nl-term"
+        field="termYears"
+        label="Lease term"
+        value={String(d.termYears)}
+        options={[1, 2, 3, 4, 5].map((y) => ({ value: String(y), label: `${y} ${y === 1 ? 'year' : 'years'}` }))}
+      />
+      <Field id="nl-rate" field="interestRatePercent" label="Lease interest rate" value={String(d.interestRatePercent)} suffix="%" />
+      <Field id="nl-running" field="runningCostsAnnual" label="Running costs per year" value={f.number(d.runningCostsAnnual)} prefix={sym} money hint="Fuel or charging, insurance, servicing, tyres and registration." />
+      <CheckboxField id="nl-ev" field="isElectric" label="Battery electric or hydrogen fuel cell car" checked={d.isElectric} hint={`FBT-exempt if priced at or below ${f.moneyWhole(L.evExemptionPriceThreshold)}. Plug-in hybrids don't qualify.`} />
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Less take-home pay each month</p>
+        <p class="result-figure" data-out="takeHomeMonth">{view.takeHomeMonth}</p>
+        <p class="result-sub"><span data-out="takeHomeYear">{view.takeHomeYear}</span> a year</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Pre-tax deduction per year</dt><dd data-out="preTax">{view.preTax}</dd></div>
+        <div><dt>Post-tax deduction per year</dt><dd data-out="postTax">{view.postTax}</dd></div>
+        <div><dt>Total cost: novated lease</dt><dd data-out="leaseTotal">{view.leaseTotal}</dd></div>
+        <div><dt>Total cost: buy outright</dt><dd data-out="buyTotal">{view.buyTotal}</dd></div>
+        <div><dt data-out="verdictLabel">{view.verdictLabel}</dt><dd data-out="verdictAmount">{view.verdictAmount}</dd></div>
+      </dl>
+      <p class="result-warn" data-show="evOverThreshold" hidden={!view.evOverThreshold}>This EV costs more than {f.moneyWhole(L.evExemptionPriceThreshold)}, so it isn't FBT-exempt.</p>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="nl-breakdown-title">
+    <h2 id="nl-breakdown-title" class="h3">Lease or buy over the same term</h2>
+    <SvgChart
+      id="nl-chart"
+      title="Total cost over the lease term"
+      legend={[
+        { label: 'Lease: take-home pay / Buy: car price', className: 'chart-s1' },
+        { label: 'Lease: residual / Buy: running costs', className: 'chart-s2' },
+      ]}
+      svg={view.chartSvg}
+      htmlKey="chartSvg"
+    />
+    <dl class="result-list">
+      <div><dt>Monthly lease payment (ex GST)</dt><dd data-out="leasePayment">{view.leasePayment}</dd></div>
+      <div><dt>Residual (balloon) at the end</dt><dd data-out="residual">{view.residual}</dd></div>
+    </dl>
+    <p class="muted" data-out="fbtNote">{view.fbtNote}</p>
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <ul>
+        <li>Your employer claims the GST on the car (up to {f.moneyWhole(L.carCostLimit / 11)}, one-eleventh of the {f.moneyWhole(L.carCostLimit)} car limit) and on running costs, so the lease finances the price without that GST.</li>
+        <li><strong>Residual</strong> = ATO minimum for the term × financed amount: 1 year {f.percent(L.minimumResidualByTermYears[1] * 100)}, 3 years {f.percent(L.minimumResidualByTermYears[3] * 100)}, 5 years {f.percent(L.minimumResidualByTermYears[5] * 100)}. You pay it at the end, plus GST.</li>
+        <li><strong>Lease payment</strong>: monthly, in arrears, so that payments plus the residual repay the financed amount at the interest rate.</li>
+        <li><strong>Petrol, diesel and hybrid cars</strong>: a post-tax contribution of {f.percent(L.statutoryFraction * 100)} of the car price each year removes fringe benefits tax. Eligible EVs need no post-tax contribution.</li>
+        <li><strong>Take-home pay</strong> uses {params.taxYear} resident tax rates, the low income tax offset and the 2% Medicare levy (low-income thresholds from {params.medicareThresholdsYear}, the latest published). Not included: Medicare levy surcharge, HELP repayments, provider fees and insurance excess.</li>
+        <li>The EV exemption applies to leases that start before {f.date(params.evChangesOn)}; new rules announced in the 2026–27 Budget apply to leases from that date.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildNovatedLeaseView, readNovatedLeaseInput, type NovatedLeasePageParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="novated-lease"]')) {
+    const params = embeddedParams<NovatedLeasePageParams>(root);
+    bindCalculator(root, (read) => buildNovatedLeaseView(readNovatedLeaseInput(read), params));
+  }
+</script>

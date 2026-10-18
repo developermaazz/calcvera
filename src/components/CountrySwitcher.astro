@@ -23,7 +23,8 @@ const { current, alternates = {} } = Astro.props;
             data-set-country={c.code}
             title={c.name}
           >
-            {c.shortName}
+            <span aria-hidden="true">{c.code.toUpperCase()}</span>
+            <span class="visually-hidden">{c.name}</span>
           </a>
         </li>
       ))
