@@ -126,7 +126,26 @@ export function bindCalculator<V extends CalcView>(root: HTMLElement, compute: (
     });
   }
 
-  update();
+  if (needsRefresh(form)) update();
+}
+
+/**
+ * The built HTML already shows the result for the default inputs, so the first recalculation is skipped
+ * unless the browser restored edited values (back button, autofill) or the build is from an earlier month
+ * (payoff dates count from the current month).
+ */
+export function needsRefresh(form: HTMLFormElement): boolean {
+  const built = document.documentElement.dataset.built;
+  const now = new Date();
+  if (built !== `${now.getFullYear()}-${now.getMonth()}`) return true;
+  for (const el of form.elements) {
+    if (el instanceof HTMLInputElement) {
+      if (el.type === 'checkbox' || el.type === 'radio' ? el.checked !== el.defaultChecked : el.value !== el.defaultValue) return true;
+    } else if (el instanceof HTMLSelectElement) {
+      for (const option of el.options) if (option.selected !== option.defaultSelected) return true;
+    }
+  }
+  return false;
 }
 
 /** Reads the resolved figures the page embedded for the browser. */

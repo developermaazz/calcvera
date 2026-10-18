@@ -41,7 +41,7 @@ The results compare your monthly payment, time left and interest on both loans, 
 
 Say you owe $18,000 at 9.9% APR with 48 payments left, and you're offered 6.4% APR over 48 months with $300 in fees, paid up front.
 
-| | Keep current loan | Refinance |
+| Item | Keep current loan | Refinance |
 | --- | --- | --- |
 | Monthly payment | $455.66 | $426.04 |
 | Interest from today | $3,871.80 | $2,449.89 |

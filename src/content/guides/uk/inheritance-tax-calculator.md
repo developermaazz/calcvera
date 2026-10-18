@@ -44,7 +44,7 @@ The result updates as you type.
 
 Say an estate is worth £750,000, with £15,000 of debts and funeral costs. The home, worth £350,000, goes to the children. The person was single.
 
-| | Amount |
+| Item | Amount |
 | --- | --- |
 | Estate after debts | £735,000 |
 | Nil-rate band | − £325,000 |

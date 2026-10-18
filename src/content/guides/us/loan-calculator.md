@@ -40,7 +40,7 @@ The results show your monthly payment, the total interest, the total cost of the
 
 Say you borrow $20,000 at 7.5% APR over 5 years (60 months).
 
-| | Result |
+| Item | Result |
 | --- | --- |
 | Monthly payment | $400.76 |
 | Total interest | $4,045.54 |

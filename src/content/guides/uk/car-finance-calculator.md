@@ -40,7 +40,7 @@ The results show your monthly payment, the amount borrowed, the final payment, t
 
 Say you're buying a £25,000 car with a £3,000 deposit, over 48 months at 9.9% APR, with a £9,000 optional final payment. Both options include a £10 option-to-purchase fee.
 
-| | PCP | Hire purchase |
+| Item | PCP | Hire purchase |
 | --- | --- | --- |
 | Amount borrowed | £22,000.00 | £22,000.00 |
 | Monthly payment | £403.34 | £556.92 |

@@ -39,10 +39,13 @@ if (hreflangLinks.length > 0) {
 const jsonLdText =
   jsonLd.length > 0 ? JSON.stringify({ '@context': 'https://schema.org', '@graph': jsonLd }).replace(/</g, '\\u003c') : '';
 const ogImage = SITE.OG_IMAGE ? abs(SITE.OG_IMAGE) : '';
+// Calculators compare this with the visitor's month to decide whether dates in the built HTML need a refresh.
+const now = new Date();
+const builtMonth = `${now.getFullYear()}-${now.getMonth()}`;
 ---
 
 <!doctype html>
-<html lang={lang}>
+<html lang={lang} data-built={builtMonth}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -106,14 +109,34 @@ const ogImage = SITE.OG_IMAGE ? abs(SITE.OG_IMAGE) : '';
     {
       SITE.GA_ID && (
         <>
-          <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${SITE.GA_ID}`} />
           <script is:inline define:vars={{ id: SITE.GA_ID }}>
+            // GA loads on the first interaction, or 3.5 s after the page loads, so it never competes
+            // with the calculator for the main thread while the page starts up. Queued calls still count.
             window.dataLayer = window.dataLayer || [];
             function gtag() {
               dataLayer.push(arguments);
             }
             gtag('js', new Date());
             gtag('config', id);
+            var gaEvents = ['pointerdown', 'keydown', 'scroll', 'touchstart'];
+            var gaLoaded = false;
+            function loadGa() {
+              if (gaLoaded) return;
+              gaLoaded = true;
+              gaEvents.forEach(function (e) {
+                removeEventListener(e, loadGa);
+              });
+              var s = document.createElement('script');
+              s.async = true;
+              s.src = 'https://www.googletagmanager.com/gtag/js?id=' + id;
+              document.head.appendChild(s);
+            }
+            gaEvents.forEach(function (e) {
+              addEventListener(e, loadGa, { passive: true });
+            });
+            addEventListener('load', function () {
+              setTimeout(loadGa, 3500);
+            });
           </script>
         </>
       )

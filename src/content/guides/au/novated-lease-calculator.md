@@ -56,7 +56,7 @@ Say you earn $90,000, and the car costs $55,000 drive-away. The lease runs for 3
 
 Your employer claims the $5,000 GST on the car, so the lease finances $50,000. The ATO minimum residual for 3 years is 46.88%, or $23,440, and the lease payment is $988.56 a month.
 
-| | Petrol car | Eligible EV |
+| Item | Petrol car | Eligible EV |
 | --- | --- | --- |
 | Pre-tax deduction per year | $5,499.09 | $15,499.09 |
 | Post-tax deduction per year | $11,000.00 | $0 |

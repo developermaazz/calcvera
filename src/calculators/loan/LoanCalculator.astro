@@ -178,6 +178,7 @@ const symbol = country.currencySymbol;
 <script>
   import { calculateLoan, validateLoanInput, type LoanField, type LoanInput } from '../../engines/loan';
   import { createFormatters, parseNumber } from '../../lib/format';
+  import { needsRefresh } from '../../lib/calcUi';
   import { buildLoanView, currentStartMonth, type LoanView } from './view';
 
   const FIELDS: LoanField[] = ['principal', 'aprPercent', 'termMonths', 'extraMonthly'];
@@ -275,8 +276,8 @@ const symbol = country.currencySymbol;
       }
     });
 
-    // Recalculate once on load so payoff dates count from the visitor's current month, not the build date.
-    update();
+    // Recalculate on load only if the built result is out of date (new month, or restored inputs).
+    if (needsRefresh(form)) update();
   }
 
   for (const root of document.querySelectorAll<HTMLElement>('[data-loan-calc]')) init(root);

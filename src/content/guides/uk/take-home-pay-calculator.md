@@ -47,7 +47,7 @@ The results show your monthly, yearly and weekly take-home pay, and each deducti
 
 Say you earn £35,000 in England, pay 5% into a net pay pension and have no student loan.
 
-| | Year | Month |
+| Item | Year | Month |
 | --- | --- | --- |
 | Gross pay | £35,000.00 | £2,916.67 |
 | Pension (5%) | − £1,750.00 | − £145.83 |

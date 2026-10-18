@@ -44,7 +44,7 @@ The results update as you type.
 
 Say you live in Ontario, earn $80,000 a year and put $8,000 into your FHSA at the start of each year for 5 years, earning 5% a year.
 
-| | Result |
+| Item | Result |
 | --- | --- |
 | Total contributions | $40,000 |
 | Investment growth | $6,415.30 |

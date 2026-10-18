@@ -35,7 +35,7 @@ Enter the numbers you know. The result updates as you type.
 
 Say you can pay $500 a month for 60 months at 7% APR. You have $3,000 for a down payment and a trade-in worth $5,000 with $2,000 still owed. Sales tax is 6%, charged after the trade-in, and fees are $800.
 
-| | Result |
+| Item | Result |
 | --- | --- |
 | Loan amount | $25,251.00 |
 | Car price you can afford | $29,010 |

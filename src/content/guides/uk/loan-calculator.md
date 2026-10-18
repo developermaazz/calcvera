@@ -40,7 +40,7 @@ The results show your monthly repayment, the total interest, the total amount re
 
 Say you borrow £10,000 at 6.9% APR over 5 years (60 months).
 
-| | Result |
+| Item | Result |
 | --- | --- |
 | Monthly repayment | £197.54 |
 | Total interest | £1,852.43 |

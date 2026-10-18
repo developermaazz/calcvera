@@ -46,7 +46,7 @@ Enter your best estimate for the full 2026 tax year. The results update as you t
 
 Say you're single, with $60,000 of net self-employment income and nothing else.
 
-| | 2026 estimate |
+| Item | 2026 estimate |
 | --- | --- |
 | Self-employment tax | $8,477.73 |
 | Federal income tax | $3,559.47 |

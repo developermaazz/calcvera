@@ -39,7 +39,7 @@ The results show your monthly payment, the amount financed, sales tax, total int
 
 Say you're buying a $22,000 used car. You're putting $2,000 down and trading in a car worth $4,000 that still has $1,500 owing. Sales tax is 6%, charged after the trade-in, fees are $600, and you're offered 9.5% APR over 60 months.
 
-| | Amount |
+| Item | Amount |
 | --- | --- |
 | Car price | $22,000.00 |
 | Down payment | − $2,000.00 |

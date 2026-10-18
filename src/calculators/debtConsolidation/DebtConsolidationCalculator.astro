@@ -69,7 +69,7 @@ const rows = Array.from({ length: MAX_DEBTS }, (_, i) => ({ index: i, debt: d.de
         <p class="result-figure" data-out="verdictAmount">{view.verdictAmount}</p>
       </div>
       <table class="compare-table">
-        <thead><tr><th scope="col"></th><th scope="col">Now</th><th scope="col">Consolidated</th></tr></thead>
+        <thead><tr><th scope="col"><span class="visually-hidden">Item</span></th><th scope="col">Now</th><th scope="col">Consolidated</th></tr></thead>
         <tbody>
           <tr><th scope="row">Monthly payment</th><td data-out="currentPayment">{view.currentPayment}</td><td data-out="newPayment">{view.newPayment}</td></tr>
           <tr><th scope="row">Debt-free in</th><td data-out="currentTime">{view.currentTime}</td><td data-out="newTime">{view.newTime}</td></tr>
