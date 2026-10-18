@@ -1,11 +1,11 @@
 export const SITE = {
   name: 'Calcvera',
-  domain: 'calcvera.com',
-  url: 'https://calcvera.com',
+  domain: 'calc-vera.com',
+  url: 'https://calc-vera.com',
   tagline: "Money calculators that get your country's rules right.",
   description:
     'Free, fast finance calculators built for your country: loans, debt, tax, savings and retirement, each with a plain-English guide.',
-  email: 'hello@calcvera.com',
+  email: 'hello@calc-vera.com',
   /** Shown on the About and Privacy pages. */
   owner: 'M. Maaz Ali',
   /** AdSense publisher ID, e.g. 'ca-pub-1234567890123456'. Leave '' until approved: no ad code loads. */

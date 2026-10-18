@@ -3,7 +3,7 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-  site: 'https://calcvera.com',
+  site: 'https://calc-vera.com',
   output: 'static',
   trailingSlash: 'always',
   build: { format: 'directory' },

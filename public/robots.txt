@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://calcvera.com/sitemap-index.xml
+Sitemap: https://calc-vera.com/sitemap-index.xml

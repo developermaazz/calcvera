@@ -5,9 +5,9 @@ Read this file first in every session. It is the single source of truth for this
 ## 1. Identity
 
 - **Name:** Calcvera ("calc" + "vera", truth: accurate calculators)
-- **Domain:** calcvera.com
+- **Domain:** calc-vera.com
 - **Tagline:** Money calculators that get your country's rules right.
-- **Email:** hello@calcvera.com
+- **Email:** hello@calc-vera.com
 - **What it is:** free, fast, country-specific finance calculators, each with a short guide that explains the result.
 - **Audience:** adults in the US, UK, Canada and Australia making loan, debt, tax, savings and retirement decisions. India and Pakistan are added later for extra volume.
 - **Business model:** display ads (AdSense first, then Journey by Mediavine, then Raptive), plus clearly disclosed affiliate links.

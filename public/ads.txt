@@ -1,3 +1,3 @@
-# ads.txt for calcvera.com
+# ads.txt for calc-vera.com
 # After AdSense approval, replace this comment with the line AdSense gives you. It looks like:
 # google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0
