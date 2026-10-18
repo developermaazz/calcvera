@@ -16,7 +16,7 @@ export const SITE = {
     guide: '',
   },
   /** Google Analytics 4 measurement ID, e.g. 'G-XXXXXXXXXX'. Leave '' to load no analytics. */
-  GA_ID: '',
+  GA_ID: 'G-EN4Y8D6GZY',
   /** Default Open Graph image path in public/, e.g. '/og-default.png'. Leave '' until the image exists. */
   OG_IMAGE: '/og-default.png',
 } as const;
