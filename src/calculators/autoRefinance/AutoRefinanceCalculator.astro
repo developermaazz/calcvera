@@ -1,0 +1,108 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import CheckboxField from '../../components/CheckboxField.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import type { CountryConfig } from '../../countries';
+import { createFormatters } from '../../lib/format';
+import { REFINANCE_TERMS, buildRefinanceView, refinanceDefaults, type AutoRefinanceParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.autoRefinance;
+if (!defaults) throw new Error(`Missing defaults.autoRefinance in the ${country.code} country config`);
+const params: AutoRefinanceParams = { locale: country.locale, currency: country.currency };
+const d = refinanceDefaults(defaults);
+const { view } = buildRefinanceView(d, params);
+if (!view) throw new Error('Refinance defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+---
+
+<div class="calc-block" data-calc="refinance" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="rf" label="Auto loan refinance calculator">
+    <Fragment slot="inputs">
+      <fieldset class="field-group">
+        <legend>Your current loan</legend>
+        <Field id="rf-balance" field="balance" label="Payoff balance" value={f.number(d.balance)} prefix={sym} money hint="Ask your lender for the payoff amount." />
+        <Field id="rf-apr" field="currentAprPercent" label="Current APR" value={String(d.currentAprPercent)} suffix="%" />
+        <Field id="rf-left" field="remainingMonths" label="Payments left" value={String(d.remainingMonths)} suffix="months" inputmode="numeric" />
+      </fieldset>
+      <fieldset class="field-group">
+        <legend>New loan</legend>
+        <Field id="rf-newapr" field="newAprPercent" label="New APR" value={String(d.newAprPercent)} suffix="%" />
+        <SelectField
+          id="rf-term"
+          field="newTermMonths"
+          label="New loan term"
+          value={String(d.newTermMonths)}
+          options={REFINANCE_TERMS.map((m) => ({ value: String(m), label: `${m} months (${m / 12} years)` }))}
+        />
+        <Field id="rf-fees" field="fees" label="Fees" value={f.number(d.fees)} prefix={sym} money optional hint="Lender, title and registration fees." />
+        <CheckboxField id="rf-feesin" field="feesInLoan" label="Add the fees to the new loan" checked={d.feesInLoan} />
+      </fieldset>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label" data-out="headlineLabel">{view.headlineLabel}</p>
+        <p class="result-figure" data-out="headline">{view.headline}</p>
+      </div>
+      <table class="compare-table">
+        <thead><tr><th scope="col"></th><th scope="col">Now</th><th scope="col">Refinanced</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Monthly payment</th><td data-out="currentPayment">{view.currentPayment}</td><td data-out="newPayment">{view.newPayment}</td></tr>
+          <tr><th scope="row">Time left</th><td data-out="currentTime">{view.currentTime}</td><td data-out="newTime">{view.newTime}</td></tr>
+          <tr><th scope="row">Interest</th><td data-out="currentInterest">{view.currentInterest}</td><td data-out="newInterest">{view.newInterest}</td></tr>
+          <tr><th scope="row">Fees</th><td>{f.money(0)}</td><td data-out="fees">{view.fees}</td></tr>
+        </tbody>
+      </table>
+      <dl class="result-list">
+        <div><dt>Monthly payment</dt><dd data-out="monthlyChange">{view.monthlyChange}</dd></div>
+        <div><dt>Break-even</dt><dd data-out="breakEven">{view.breakEven}</dd></div>
+      </dl>
+      <p class="result-warn" data-show="costsMore" hidden={!view.costsMore}>A lower payment from a longer loan can still cost more in total.</p>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="rf-breakdown-title">
+    <h2 id="rf-breakdown-title" class="h3">Interest and fees compared</h2>
+    <SvgChart
+      id="rf-chart"
+      title="Interest and fees from today"
+      legend={[
+        { label: 'Interest', className: 'chart-s2' },
+        { label: 'Fees', className: 'chart-s3' },
+      ]}
+      svg={view.chartSvg}
+      htmlKey="chartSvg"
+    />
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <ul>
+        <li><strong>Payments</strong> = loan × r ÷ (1 − (1 + r)<sup>−n</sup>), with r = APR ÷ 12 ÷ 100 and n = months. The current loan uses your payoff balance and payments left.</li>
+        <li><strong>New loan amount</strong> = payoff balance, plus the fees if you add them to the loan.</li>
+        <li><strong>Overall saving</strong> = what's left to pay on the current loan − (the new loan's payments + any fees paid up front).</li>
+        <li><strong>Break-even</strong> is the first month when the interest you've avoided adds up to the fees.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildRefinanceView, readRefinanceInput, type AutoRefinanceParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="refinance"]')) {
+    const params = embeddedParams<AutoRefinanceParams>(root);
+    bindCalculator(root, (read) => buildRefinanceView(readRefinanceInput(read), params));
+  }
+</script>

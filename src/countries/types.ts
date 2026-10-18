@@ -25,6 +25,42 @@ export interface CreditCardDefaults {
   targetMonths: number;
 }
 
+export interface AutoRefinanceDefaults {
+  balance: number;
+  currentAprPercent: number;
+  remainingMonths: number;
+  newAprPercent: number;
+  newTermMonths: number;
+  fees: number;
+}
+
+export interface RetirementMatchDefaults {
+  salary: number;
+  contributionPercent: number;
+  matchRatePercent: number;
+  matchCapPercent: number;
+  age: number;
+  currentBalance: number;
+  retirementAge: number;
+  returnPercent: number;
+  salaryGrowthPercent: number;
+}
+
+export interface StudentLoanDefaults {
+  balance: number;
+  salary: number;
+  salaryGrowthPercent: number;
+}
+
+export interface CarFinanceDefaults {
+  price: number;
+  deposit: number;
+  termMonths: number;
+  aprPercent: number;
+  finalPayment: number;
+  optionFee: number;
+}
+
 export interface StampDutyDefaults {
   price: number;
 }
@@ -98,6 +134,19 @@ export interface UsDtiReference {
   label: string;
 }
 
+export interface UsRetirementLimits {
+  /** 401(k) elective deferral limit. */
+  deferralLimit: Pending<number>;
+  /** Catch-up for ages 50 and over. */
+  catchUp: Pending<number>;
+  /** Higher catch-up for ages 60 to 63. */
+  catchUpAge60to63: Pending<number>;
+  /** Section 415(c) limit on total annual additions (excluding catch-up). */
+  annualAdditionsLimit: Pending<number>;
+  /** Most compensation that can be used for contributions. */
+  compensationLimit: Pending<number>;
+}
+
 export interface UsQbiConfig {
   /** Deduction as a share of qualified business income. */
   rate: Pending<number>;
@@ -147,6 +196,17 @@ export interface UkTakeHomePayConfig {
   studentLoans: Record<'plan1' | 'plan2' | 'plan4' | 'plan5' | 'postgraduate', Pending<UkStudentLoanPlan>>;
   /** Basic-rate relief added by the provider under relief at source. */
   reliefAtSourceRate: Pending<number>;
+}
+
+export type UkStudentLoanPlanCode = 'plan1' | 'plan2' | 'plan4' | 'plan5' | 'postgraduate';
+
+export interface UkStudentLoanInterestConfig {
+  /** Fixed yearly interest rate for plans that don't vary with income. */
+  rates: Record<Exclude<UkStudentLoanPlanCode, 'plan2'>, Pending<number>>;
+  /** Plan 2 after study: minRate up to lowerIncome, rising to maxRate at upperIncome. */
+  plan2: { minRate: Pending<number>; maxRate: Pending<number>; lowerIncome: Pending<number>; upperIncome: Pending<number> };
+  /** Years after the April you were first due to repay when the loan is written off. */
+  writeOffYears: Record<UkStudentLoanPlanCode, Pending<number>>;
 }
 
 export interface UkStampDutyConfig {
@@ -290,6 +350,10 @@ export interface CountryConfig {
     usedCarLoan?: UsedCarLoanDefaults;
     takeHomePay?: TakeHomePayDefaults;
     stampDuty?: StampDutyDefaults;
+    autoRefinance?: AutoRefinanceDefaults;
+    retirementMatch?: RetirementMatchDefaults;
+    studentLoan?: StudentLoanDefaults;
+    carFinance?: CarFinanceDefaults;
   };
 
   // Country-specific figures, present only on the country that needs them.
@@ -299,6 +363,7 @@ export interface CountryConfig {
     /** The four estimated tax due dates for the tax year (ISO dates). */
     estimatedTaxDueDates: Pending<[string, string, string, string]>;
     qbi: UsQbiConfig;
+    retirement: UsRetirementLimits;
     /** Published lender limits shown next to the result, lowest first. */
     dtiReferences: Pending<UsDtiReference[]>;
   };
@@ -306,6 +371,7 @@ export interface CountryConfig {
     redundancy: UkRedundancyConfig;
     takeHomePay: UkTakeHomePayConfig;
     stampDuty: UkStampDutyConfig;
+    studentLoanInterest: UkStudentLoanInterestConfig;
     inheritanceTax: UkInheritanceTaxConfig;
   };
   ca?: {

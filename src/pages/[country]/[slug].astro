@@ -1,6 +1,10 @@
 ---
 import { getEntry, render } from 'astro:content';
+import AutoRefinanceCalculator from '../../calculators/autoRefinance/AutoRefinanceCalculator.astro';
 import CarAffordabilityCalculator from '../../calculators/carAffordability/CarAffordabilityCalculator.astro';
+import CarFinanceCalculator from '../../calculators/carFinance/CarFinanceCalculator.astro';
+import RetirementMatchCalculator from '../../calculators/retirementMatch/RetirementMatchCalculator.astro';
+import StudentLoanCalculator from '../../calculators/studentLoan/StudentLoanCalculator.astro';
 import CreditCardPayoffCalculator from '../../calculators/creditCardPayoff/CreditCardPayoffCalculator.astro';
 import DebtConsolidationCalculator from '../../calculators/debtConsolidation/DebtConsolidationCalculator.astro';
 import DtiCalculator from '../../calculators/dti/DtiCalculator.astro';
@@ -32,6 +36,10 @@ const ENGINE_UI: Partial<Record<EngineName, typeof LoanCalculator>> = {
   usedCarLoan: UsedCarLoanCalculator,
   takeHomePay: TakeHomePayCalculator,
   stampDuty: StampDutyCalculator,
+  autoRefinance: AutoRefinanceCalculator,
+  retirementMatch: RetirementMatchCalculator,
+  studentLoan: StudentLoanCalculator,
+  carFinance: CarFinanceCalculator,
   dti: DtiCalculator,
   carAffordability: CarAffordabilityCalculator,
   debtConsolidation: DebtConsolidationCalculator,

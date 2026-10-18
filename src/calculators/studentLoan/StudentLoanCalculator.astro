@@ -1,0 +1,119 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import type { StudentLoanInput } from '../../engines/studentLoan';
+import { createFormatters } from '../../lib/format';
+import { PLAN_OPTIONS, buildStudentLoanView, type StudentLoanPageParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.studentLoan;
+if (!defaults) throw new Error(`Missing defaults.studentLoan in the ${country.code} country config`);
+const u = requireFigure(country.uk, 'UK figures');
+const sl = u.takeHomePay.studentLoans;
+const li = u.studentLoanInterest;
+const params: StudentLoanPageParams = {
+  locale: country.locale,
+  currency: country.currency,
+  thresholds: {
+    plan1: requireFigure(sl.plan1, 'studentLoans.plan1'),
+    plan2: requireFigure(sl.plan2, 'studentLoans.plan2'),
+    plan4: requireFigure(sl.plan4, 'studentLoans.plan4'),
+    plan5: requireFigure(sl.plan5, 'studentLoans.plan5'),
+    postgraduate: requireFigure(sl.postgraduate, 'studentLoans.postgraduate'),
+  },
+  interest: {
+    plan1: requireFigure(li.rates.plan1, 'studentLoanInterest.rates.plan1'),
+    plan4: requireFigure(li.rates.plan4, 'studentLoanInterest.rates.plan4'),
+    plan5: requireFigure(li.rates.plan5, 'studentLoanInterest.rates.plan5'),
+    postgraduate: requireFigure(li.rates.postgraduate, 'studentLoanInterest.rates.postgraduate'),
+  },
+  plan2: {
+    minRate: requireFigure(li.plan2.minRate, 'studentLoanInterest.plan2.minRate'),
+    maxRate: requireFigure(li.plan2.maxRate, 'studentLoanInterest.plan2.maxRate'),
+    lowerIncome: requireFigure(li.plan2.lowerIncome, 'studentLoanInterest.plan2.lowerIncome'),
+    upperIncome: requireFigure(li.plan2.upperIncome, 'studentLoanInterest.plan2.upperIncome'),
+  },
+  writeOffYears: {
+    plan1: requireFigure(li.writeOffYears.plan1, 'writeOffYears.plan1'),
+    plan2: requireFigure(li.writeOffYears.plan2, 'writeOffYears.plan2'),
+    plan4: requireFigure(li.writeOffYears.plan4, 'writeOffYears.plan4'),
+    plan5: requireFigure(li.writeOffYears.plan5, 'writeOffYears.plan5'),
+    postgraduate: requireFigure(li.writeOffYears.postgraduate, 'writeOffYears.postgraduate'),
+  },
+};
+const d: StudentLoanInput = { plan: 'plan2', yearsRepaid: 0, ...defaults };
+const { view } = buildStudentLoanView(d, params);
+if (!view) throw new Error('Student loan defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+const P = params;
+---
+
+<div class="calc-block" data-calc="student-loan" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="sl" label="Student loan repayment calculator">
+    <Fragment slot="inputs">
+      <SelectField id="sl-plan" field="plan" label="Your loan plan" value={d.plan} options={PLAN_OPTIONS} hint="Check your plan in your online repayment account." />
+      <Field id="sl-balance" field="balance" label="Loan balance" value={f.number(d.balance)} prefix={sym} money />
+      <Field id="sl-salary" field="salary" label="Yearly salary before tax" value={f.number(d.salary)} prefix={sym} money />
+      <Field id="sl-growth" field="salaryGrowthPercent" label="Expected yearly pay rise" value={String(d.salaryGrowthPercent)} suffix="%" />
+      <Field id="sl-years" field="yearsRepaid" label="Years since you were first due to repay" value={String(d.yearsRepaid)} suffix="years" inputmode="numeric" hint="0 if you start repaying this April." />
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Monthly repayment now</p>
+        <p class="result-figure" data-out="monthly">{view.monthly}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Interest rate now</dt><dd data-out="rate">{view.rate}</dd></div>
+        <div><dt data-out="outcomeLabel">{view.outcomeLabel}</dt><dd data-out="outcome">{view.outcome}</dd></div>
+        <div><dt>Total you repay</dt><dd data-out="totalRepaid">{view.totalRepaid}</dd></div>
+        <div data-show="hasWriteOff" hidden={!view.hasWriteOff}><dt>Written off</dt><dd data-out="writtenOff">{view.writtenOff}</dd></div>
+      </dl>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="sl-breakdown-title">
+    <h2 id="sl-breakdown-title" class="h3">Your loan over time</h2>
+    <SvgChart id="sl-chart" title="Balance at the end of each year" legend={[{ label: 'Balance', className: 'chart-s2' }]} svg={view.chartSvg} htmlKey="chartSvg" />
+    <details class="schedule">
+      <summary>Year-by-year table</summary>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th scope="col">Year</th><th scope="col">Salary</th><th scope="col">Repaid</th><th scope="col">Interest</th><th scope="col">Balance</th></tr></thead>
+          <tbody data-html="rowsHtml" set:html={view.rowsHtml} />
+        </table>
+      </div>
+    </details>
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <ul>
+        <li><strong>Repayments</strong>: 9% of income over your plan's threshold (Plan 1 {f.moneyWhole(P.thresholds.plan1.threshold)}, Plan 2 {f.moneyWhole(P.thresholds.plan2.threshold)}, Plan 4 {f.moneyWhole(P.thresholds.plan4.threshold)}, Plan 5 {f.moneyWhole(P.thresholds.plan5.threshold)}), or 6% over {f.moneyWhole(P.thresholds.postgraduate.threshold)} for a Postgraduate Loan.</li>
+        <li><strong>Interest</strong>: {f.percent(P.interest.plan1 * 100)} on Plans 1, 4 and 5, {f.percent(P.interest.postgraduate * 100)} on Postgraduate Loans. Plan 2 is {f.percent(P.plan2.minRate * 100)} up to {f.moneyWhole(P.plan2.lowerIncome)} income, rising to {f.percent(P.plan2.maxRate * 100)} at {f.moneyWhole(P.plan2.upperIncome)}. Interest is added monthly.</li>
+        <li><strong>Write-off</strong>: Plan 1 after {P.writeOffYears.plan1} years, Plans 2 and 4 and Postgraduate after {P.writeOffYears.plan2} years, Plan 5 after {P.writeOffYears.plan5} years, counted from the April you were first due to repay. Older Plan 1 and Plan 4 loans have different rules.</li>
+        <li>Assumes today's thresholds and interest rates stay the same while your pay rises each year. Both change over time.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildStudentLoanView, readStudentLoanInput, type StudentLoanPageParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="student-loan"]')) {
+    const params = embeddedParams<StudentLoanPageParams>(root);
+    bindCalculator(root, (read) => buildStudentLoanView(readStudentLoanInput(read), params));
+  }
+</script>

@@ -32,6 +32,8 @@ export const uk: CountryConfig = {
     creditCard: { balance: 3_000, aprPercent: 24.9, monthlyPayment: 150, targetMonths: 24 },
     takeHomePay: { grossSalary: 35_000, pensionPercent: 5 },
     stampDuty: { price: 295_000 },
+    studentLoan: { balance: 45_000, salary: 35_000, salaryGrowthPercent: 3 },
+    carFinance: { price: 25_000, deposit: 3_000, termMonths: 48, aprPercent: 9.9, finalPayment: 9_000, optionFee: 10 },
   },
   uk: {
     redundancy: {
@@ -109,6 +111,16 @@ export const uk: CountryConfig = {
       // (2 percentage points on top of all residential rates, purchases of £40,000 or more). Checked 18 Oct 2026.
       nonResidentSurcharge: 0.02,
       nonResidentMinPrice: 40_000,
+    },
+    studentLoanInterest: {
+      // VERIFY: https://www.gov.uk/repaying-your-student-loan/what-you-pay ("currently" 4.1% Plans 1, 4, 5; 6% Postgraduate).
+      // Rates change in September (and can change in March); recheck then. Checked 18 Oct 2026.
+      rates: { plan1: 0.041, plan4: 0.041, plan5: 0.041, postgraduate: 0.06 },
+      // VERIFY: same page (Plan 2 after study: 4.1% up to £29,385, plus up to 1.9% to £52,884, 6% from £52,885). Checked 18 Oct 2026.
+      plan2: { minRate: 0.041, maxRate: 0.06, lowerIncome: 29_385, upperIncome: 52_885 },
+      // VERIFY: https://www.gov.uk/repaying-your-student-loan/when-your-student-loan-gets-written-off-or-cancelled
+      // (Plan 1 from Sept 2006: 25 years; Plan 2: 30; Plan 4 from Aug 2007: 30; Plan 5: 40; Postgraduate: 30). Checked 18 Oct 2026.
+      writeOffYears: { plan1: 25, plan2: 30, plan4: 30, plan5: 40, postgraduate: 30 },
     },
     inheritanceTax: {
       // VERIFY: https://www.gov.uk/inheritance-tax (£325,000). Fixed to 5 April 2031:

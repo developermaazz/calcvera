@@ -1,0 +1,97 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import type { CountryConfig } from '../../countries';
+import { SPLIT_ASPECT } from '../../lib/charts';
+import { createFormatters } from '../../lib/format';
+import { CAR_FINANCE_TERMS, buildCarFinanceView, carFinanceDefaults, type CarFinanceParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.carFinance;
+if (!defaults) throw new Error(`Missing defaults.carFinance in the ${country.code} country config`);
+const params: CarFinanceParams = { locale: country.locale, currency: country.currency };
+const d = carFinanceDefaults(defaults);
+const { view } = buildCarFinanceView(d, params);
+if (!view) throw new Error('Car finance defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+---
+
+<div class="calc-block" data-calc="car-finance" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="cf" label="Car finance calculator">
+    <Fragment slot="inputs">
+      <Field id="cf-price" field="price" label="Car price" value={f.number(d.price)} prefix={sym} money />
+      <Field id="cf-deposit" field="deposit" label="Deposit (including part-exchange)" value={f.number(d.deposit)} prefix={sym} money />
+      <SelectField
+        id="cf-term"
+        field="termMonths"
+        label="Agreement length"
+        value={String(d.termMonths)}
+        options={CAR_FINANCE_TERMS.map((m) => ({ value: String(m), label: `${m} months (${m / 12} years)` }))}
+      />
+      <Field id="cf-apr" field="aprPercent" label="APR" value={String(d.aprPercent)} suffix="%" />
+      <Field id="cf-final" field="finalPayment" label="Optional final payment (PCP)" value={f.number(d.finalPayment)} prefix={sym} money hint="Also called the balloon or GMFV. Enter 0 for hire purchase." />
+      <Field id="cf-fee" field="optionFee" label="Option to purchase fee" value={f.number(d.optionFee)} prefix={sym} money optional />
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Monthly payment</p>
+        <p class="result-figure" data-out="monthly">{view.monthly}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Amount borrowed</dt><dd data-out="financed">{view.financed}</dd></div>
+        <div data-show="isPcp" hidden={!view.isPcp}><dt>Optional final payment</dt><dd data-out="finalPayment">{view.finalPayment}</dd></div>
+        <div><dt>Total amount payable</dt><dd data-out="totalPayable">{view.totalPayable}</dd></div>
+        <div><dt>Interest and fees</dt><dd data-out="totalCharges">{view.totalCharges}</dd></div>
+        <div data-show="isPcp" hidden={!view.isPcp}><dt>Monthly as hire purchase</dt><dd data-out="hpPayment">{view.hpPayment}</dd></div>
+      </dl>
+      <p class="result-note">You can usually hand the car back once you've paid half the total amount payable: <span data-out="vtPoint">{view.vtPoint}</span>.</p>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="cf-breakdown-title">
+    <h2 id="cf-breakdown-title" class="h3">What you'd pay in total</h2>
+    <SvgChart
+      id="cf-chart"
+      title="Total amount payable"
+      legend={[
+        { label: 'Deposit', className: 'chart-s1' },
+        { label: 'Monthly payments', className: 'chart-s2' },
+        { label: 'Final payment and fee', className: 'chart-s3' },
+      ]}
+      svg={view.chartSvg}
+      aspect={SPLIT_ASPECT}
+      htmlKey="chartSvg"
+    />
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <ul>
+        <li><strong>Amount borrowed</strong> = car price − deposit.</li>
+        <li><strong>Monthly payment</strong> = (amount borrowed − final payment ÷ (1 + r)<sup>n</sup>) × r ÷ (1 − (1 + r)<sup>−n</sup>), with r = APR ÷ 12 ÷ 100 and n = months. With no final payment, this is a standard hire purchase payment.</li>
+        <li><strong>Total amount payable</strong> = deposit + monthly payments + final payment + option fee.</li>
+        <li>Lenders work out payments from the APR as an annual compound rate, so a quote may differ by a few pence a month. Mileage limits and excess wear charges on PCP aren't included.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildCarFinanceView, readCarFinanceInput, type CarFinanceParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="car-finance"]')) {
+    const params = embeddedParams<CarFinanceParams>(root);
+    bindCalculator(root, (read) => buildCarFinanceView(readCarFinanceInput(read), params));
+  }
+</script>

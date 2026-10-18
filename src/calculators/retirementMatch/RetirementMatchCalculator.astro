@@ -1,0 +1,116 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import type { RetirementMatchInput } from '../../engines/retirementMatch';
+import { createFormatters } from '../../lib/format';
+import { buildRetirementMatchView, type RetirementMatchParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.retirementMatch;
+if (!defaults) throw new Error(`Missing defaults.retirementMatch in the ${country.code} country config`);
+const l = requireFigure(country.us, 'US figures').retirement;
+const params: RetirementMatchParams = {
+  locale: country.locale,
+  currency: country.currency,
+  taxYear: country.taxYear,
+  deferralLimit: requireFigure(l.deferralLimit, 'retirement.deferralLimit'),
+  catchUp: requireFigure(l.catchUp, 'retirement.catchUp'),
+  catchUpAge60to63: requireFigure(l.catchUpAge60to63, 'retirement.catchUpAge60to63'),
+  annualAdditionsLimit: requireFigure(l.annualAdditionsLimit, 'retirement.annualAdditionsLimit'),
+  compensationLimit: requireFigure(l.compensationLimit, 'retirement.compensationLimit'),
+};
+const d: RetirementMatchInput = { ...defaults };
+const { view } = buildRetirementMatchView(d, params);
+if (!view) throw new Error('401(k) defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+const P = params;
+---
+
+<div class="calc-block" data-calc="401k" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="k" label="401(k) match calculator">
+    <Fragment slot="inputs">
+      <Field id="k-salary" field="salary" label="Yearly salary" value={f.number(d.salary)} prefix={sym} money />
+      <Field id="k-contrib" field="contributionPercent" label="Your contribution" value={String(d.contributionPercent)} suffix="% of pay" />
+      <fieldset class="field-group">
+        <legend>Your employer's match</legend>
+        <Field id="k-rate" field="matchRatePercent" label="Employer matches" value={String(d.matchRatePercent)} suffix="% of what you put in" hint="For example, 50% means 50 cents for every dollar you contribute." />
+        <Field id="k-cap" field="matchCapPercent" label="Up to" value={String(d.matchCapPercent)} suffix="% of your pay" />
+      </fieldset>
+      <Field id="k-age" field="age" label="Your age" value={String(d.age)} suffix="years" inputmode="numeric" />
+      <Field id="k-balance" field="currentBalance" label="Current 401(k) balance" value={f.number(d.currentBalance)} prefix={sym} money />
+      <Field id="k-retire" field="retirementAge" label="Retirement age" value={String(d.retirementAge)} suffix="years" inputmode="numeric" />
+      <Field id="k-return" field="returnPercent" label="Expected yearly return" value={String(d.returnPercent)} suffix="%" />
+      <Field id="k-growth" field="salaryGrowthPercent" label="Yearly pay raise" value={String(d.salaryGrowthPercent)} suffix="%" />
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Employer match this year</p>
+        <p class="result-figure" data-out="match">{view.match}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Your contribution</dt><dd data-out="employee">{view.employee}</dd></div>
+        <div><dt>Total going in this year</dt><dd data-out="total">{view.total}</dd></div>
+        <div data-show="hasMissed" hidden={!view.hasMissed}><dt>Match you're missing</dt><dd data-out="missed">{view.missed}</dd></div>
+        <div><dt data-out="retireLabel">{view.retireLabel}</dt><dd data-out="balance">{view.balance}</dd></div>
+      </dl>
+      <p class="result-warn" data-show="hasMissed" hidden={!view.hasMissed} data-out="missedText">{view.missedText}</p>
+      <p class="result-note" data-show="hasMissed" hidden={!view.hasMissed} data-out="fullMatchText">{view.fullMatchText}</p>
+      <p class="result-note" data-show="hitLimit" hidden={!view.hitLimit}>Your contribution is capped at the {P.taxYear} IRS limit.</p>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="k-breakdown-title">
+    <h2 id="k-breakdown-title" class="h3">How your 401(k) could grow</h2>
+    <SvgChart
+      id="k-chart"
+      title="Balance by age"
+      legend={[
+        { label: 'Your money (incl. today’s balance)', className: 'chart-s1' },
+        { label: 'Employer match', className: 'chart-s2' },
+        { label: 'Investment growth', className: 'chart-s3' },
+      ]}
+      svg={view.chartSvg}
+      htmlKey="chartSvg"
+    />
+    <details class="schedule">
+      <summary>Year-by-year table</summary>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr><th scope="col">Age</th><th scope="col">You</th><th scope="col">Employer</th><th scope="col">Balance</th></tr></thead>
+          <tbody data-html="rowsHtml" set:html={view.rowsHtml} />
+        </table>
+      </div>
+    </details>
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <ul>
+        <li><strong>Employer match</strong> = match rate × your contribution, on contributions up to the match cap. With a 50% match up to 6%, contributing 6% of pay earns 3% of pay from your employer.</li>
+        <li><strong>{P.taxYear} limits</strong>: you can defer up to {f.moneyWhole(P.deferralLimit)}, plus a {f.moneyWhole(P.catchUp)} catch-up from age 50 ({f.moneyWhole(P.catchUpAge60to63)} at ages 60 to 63). Total yearly additions are capped at {f.moneyWhole(P.annualAdditionsLimit)}, and only the first {f.moneyWhole(P.compensationLimit)} of pay counts.</li>
+        <li><strong>Projection</strong>: each year the balance grows by your expected return, then that year's contributions are added. Pay rises each year; the limits stay at today's values.</li>
+        <li>Plans differ: some match each paycheck rather than yearly, and some have vesting rules. Check your plan's summary description.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildRetirementMatchView, readRetirementMatchInput, type RetirementMatchParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="401k"]')) {
+    const params = embeddedParams<RetirementMatchParams>(root);
+    bindCalculator(root, (read) => buildRetirementMatchView(readRetirementMatchInput(read), params));
+  }
+</script>

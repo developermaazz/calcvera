@@ -7,6 +7,10 @@ export type EngineName =
   | 'usedCarLoan'
   | 'takeHomePay'
   | 'stampDuty'
+  | 'autoRefinance'
+  | 'retirementMatch'
+  | 'studentLoan'
+  | 'carFinance'
   | 'dti'
   | 'carAffordability'
   | 'debtConsolidation'
@@ -123,6 +127,50 @@ export const CALCULATORS: CalculatorEntry[] = [
     blurb: 'Stamp Duty Land Tax on a home in England or Northern Ireland, for first-time buyers, movers and additional properties.',
     related: ['take-home-pay-calculator', 'inheritance-tax-calculator', 'mortgage-overpayment-calculator', 'loan-calculator'],
     popular: true,
+  },
+
+  {
+    // Launch set #3. Uses the refinance engine (loan engine for both loans).
+    slug: 'auto-loan-refinance-calculator',
+    engine: 'autoRefinance',
+    category: 'loans',
+    countries: ['us'],
+    name: 'Auto Loan Refinance Calculator',
+    blurb: 'Whether refinancing your car loan saves money, your new payment, and when the fees pay for themselves.',
+    related: ['used-car-loan-calculator', 'car-affordability-calculator', 'loan-calculator', 'debt-consolidation-calculator'],
+  },
+  {
+    // Launch set #6.
+    slug: '401k-match-calculator',
+    engine: 'retirementMatch',
+    usesTaxYear: true,
+    category: 'retirement',
+    countries: ['us'],
+    name: '401(k) Match Calculator',
+    blurb: 'How much your employer adds to your 401(k), the match you might be missing, and what it could grow to.',
+    related: ['roth-ira-calculator', 'quarterly-estimated-tax-calculator', 'debt-to-income-ratio-calculator', 'paycheck-calculator'],
+    popular: true,
+  },
+  {
+    // Launch set #9.
+    slug: 'student-loan-repayment-calculator',
+    engine: 'studentLoan',
+    usesTaxYear: true,
+    category: 'debt',
+    countries: ['uk'],
+    name: 'Student Loan Repayment Calculator',
+    blurb: 'Your monthly student loan repayment, how long it takes, and how much may be written off, for every plan.',
+    related: ['take-home-pay-calculator', 'credit-card-payoff-calculator', 'loan-calculator', 'redundancy-pay-calculator'],
+  },
+  {
+    // Launch set #10. Uses the carFinance engine (loan + balloon).
+    slug: 'car-finance-calculator',
+    engine: 'carFinance',
+    category: 'loans',
+    countries: ['uk'],
+    name: 'Car Finance Calculator',
+    blurb: 'Monthly PCP or hire purchase payments, the final payment, and the total you pay for the car.',
+    related: ['loan-calculator', 'take-home-pay-calculator', 'credit-card-payoff-calculator'],
   },
 
   // ---------- Batch 2 (CLAUDE.md section 12) ----------

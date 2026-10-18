@@ -58,6 +58,18 @@ export const us: CountryConfig = {
     loan: { amount: 20_000, aprPercent: 7.5, termYears: 5 },
     creditCard: { balance: 5_000, aprPercent: 21.99, monthlyPayment: 200, targetMonths: 24 },
     personalLoanPayoff: { balance: 12_000, aprPercent: 11.5, monthlyPayment: 350, extraMonthly: 100 },
+    autoRefinance: { balance: 18_000, currentAprPercent: 9.9, remainingMonths: 48, newAprPercent: 6.4, newTermMonths: 48, fees: 300 },
+    retirementMatch: {
+      salary: 75_000,
+      contributionPercent: 4,
+      matchRatePercent: 50,
+      matchCapPercent: 6,
+      age: 35,
+      currentBalance: 20_000,
+      retirementAge: 65,
+      returnPercent: 7,
+      salaryGrowthPercent: 3,
+    },
     usedCarLoan: {
       price: 22_000,
       downPayment: 2_000,
@@ -141,6 +153,15 @@ export const us: CountryConfig = {
       // VERIFY: https://www.irs.gov/pub/irs-drop/rp-25-32.pdf, section 4.26 (2026). Checked 16 Oct 2026.
       threshold: { single: 201_750, marriedJoint: 403_500, marriedSeparate: 201_775, headOfHousehold: 201_750 },
       phaseInEnd: { single: 276_750, marriedJoint: 553_500, marriedSeparate: 276_775, headOfHousehold: 276_750 },
+    },
+    retirement: {
+      // VERIFY: https://www.irs.gov/newsroom/401k-limit-increases-to-24500-for-2026-ira-limit-increases-to-7500
+      // and https://www.irs.gov/pub/irs-drop/n-25-67.pdf (Notice 2025-67, 2026). Checked 18 Oct 2026.
+      deferralLimit: 24_500,
+      catchUp: 8_000,
+      catchUpAge60to63: 11_250,
+      annualAdditionsLimit: 72_000,
+      compensationLimit: 360_000,
     },
     // VERIFY: https://selling-guide.fanniemae.com/sel/b3-6-02/debt-income-ratios (B3-6-02, 04/02/2025). Checked 16 Oct 2026.
     // CFPB notes limits vary by lender and loan type: https://www.consumerfinance.gov/ask-cfpb/what-is-a-debt-to-income-ratio-en-1791/
