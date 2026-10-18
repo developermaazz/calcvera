@@ -58,6 +58,16 @@ export const us: CountryConfig = {
     loan: { amount: 20_000, aprPercent: 7.5, termYears: 5 },
     creditCard: { balance: 5_000, aprPercent: 21.99, monthlyPayment: 200, targetMonths: 24 },
     personalLoanPayoff: { balance: 12_000, aprPercent: 11.5, monthlyPayment: 350, extraMonthly: 100 },
+    usedCarLoan: {
+      price: 22_000,
+      downPayment: 2_000,
+      tradeInValue: 4_000,
+      tradeInOwed: 1_500,
+      salesTaxPercent: 6,
+      fees: 600,
+      aprPercent: 9.5,
+      termMonths: 60,
+    },
   },
   us: {
     federalTax: {

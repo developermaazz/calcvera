@@ -4,6 +4,7 @@ export type EngineName =
   | 'loan'
   | 'creditCardPayoff'
   | 'personalLoanPayoff'
+  | 'usedCarLoan'
   | 'dti'
   | 'carAffordability'
   | 'debtConsolidation'
@@ -60,6 +61,17 @@ export const CALCULATORS: CalculatorEntry[] = [
     popular: true,
   },
 
+  {
+    // Launch set #2. Uses the carLoan engine (amount financed) and the loan engine.
+    slug: 'used-car-loan-calculator',
+    engine: 'usedCarLoan',
+    category: 'loans',
+    countries: ['us'],
+    name: 'Used Car Loan Calculator',
+    blurb: 'Monthly payment and total cost for a used car loan, with trade-in, sales tax and fees included.',
+    related: ['car-affordability-calculator', 'auto-loan-refinance-calculator', 'loan-calculator', 'debt-to-income-ratio-calculator'],
+    popular: true,
+  },
   {
     // Launch set #4. Uses the debtPayoff engine (one card, fixed payment or target date).
     slug: 'credit-card-payoff-calculator',

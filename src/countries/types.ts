@@ -25,6 +25,17 @@ export interface CreditCardDefaults {
   targetMonths: number;
 }
 
+export interface UsedCarLoanDefaults {
+  price: number;
+  downPayment: number;
+  tradeInValue: number;
+  tradeInOwed: number;
+  salesTaxPercent: number;
+  fees: number;
+  aprPercent: number;
+  termMonths: number;
+}
+
 export interface PersonalLoanPayoffDefaults {
   balance: number;
   aprPercent: number;
@@ -227,6 +238,7 @@ export interface CountryConfig {
     loan?: LoanDefaults;
     creditCard?: CreditCardDefaults;
     personalLoanPayoff?: PersonalLoanPayoffDefaults;
+    usedCarLoan?: UsedCarLoanDefaults;
   };
 
   // Country-specific figures, present only on the country that needs them.
