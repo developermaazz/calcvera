@@ -2,6 +2,7 @@ import { isLaunched, type CountryCode } from '../countries';
 
 export type EngineName =
   | 'loan'
+  | 'creditCardPayoff'
   | 'dti'
   | 'carAffordability'
   | 'debtConsolidation'
@@ -55,6 +56,18 @@ export const CALCULATORS: CalculatorEntry[] = [
     name: 'Loan Calculator',
     blurb: 'Monthly payment, total interest and payoff date for any fixed-rate loan, with extra payments.',
     related: ['personal-loan-payoff-calculator', 'used-car-loan-calculator', 'credit-card-payoff-calculator', 'car-finance-calculator'],
+    popular: true,
+  },
+
+  {
+    // Launch set #4. Uses the debtPayoff engine (one card, fixed payment or target date).
+    slug: 'credit-card-payoff-calculator',
+    engine: 'creditCardPayoff',
+    category: 'debt',
+    countries: ['us', 'uk'],
+    name: 'Credit Card Payoff Calculator',
+    blurb: 'How long it takes to clear a credit card, the interest you pay, or the payment needed to be debt-free by a date.',
+    related: ['debt-consolidation-calculator', 'debt-to-income-ratio-calculator', 'debt-snowball-calculator', 'loan-calculator', 'personal-loan-payoff-calculator'],
     popular: true,
   },
 

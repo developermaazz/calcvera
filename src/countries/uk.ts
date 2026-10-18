@@ -29,6 +29,7 @@ export const uk: CountryConfig = {
   },
   defaults: {
     loan: { amount: 10_000, aprPercent: 6.9, termYears: 5 },
+    creditCard: { balance: 3_000, aprPercent: 24.9, monthlyPayment: 150, targetMonths: 24 },
   },
   uk: {
     redundancy: {

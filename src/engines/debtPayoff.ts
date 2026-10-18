@@ -1,7 +1,10 @@
 /**
- * Paying off several debts at their current monthly payments, each on its own (no snowball).
- * Monthly rate = APR / 12. Pure: no formatting, no country lookups.
+ * Paying off debts at fixed monthly payments: several debts each on its own (no snowball), or one credit
+ * card by a fixed payment or a target number of months. Monthly rate = APR / 12; no new spending.
+ * Pure: no formatting, no country lookups.
  */
+import { calculateLoan, type LoanScheduleRow } from './loan';
+import { checkRange, type FieldError } from './validation';
 
 export interface DebtInput {
   balance: number;
@@ -60,5 +63,123 @@ export function simulatePayoff(debts: DebtInput[]): DebtPayoffResult {
     totalInterest: perDebt.reduce((sum, d) => sum + d.interest, 0),
     monthlyInterest: Array.from(monthlyInterest, (v) => v ?? 0),
     perDebt,
+  };
+}
+
+// ---------- One credit card ----------
+
+export type CardPayoffMode = 'payment' | 'months';
+
+export interface CardPayoffInput {
+  balance: number;
+  aprPercent: number;
+  /** Pay a fixed amount, or clear the card in a set number of months. */
+  mode: CardPayoffMode;
+  monthlyPayment: number;
+  targetMonths: number;
+}
+
+export interface CardPayoffResult {
+  monthlyPayment: number;
+  months: number;
+  totalInterest: number;
+  totalPaid: number;
+  /** Interest charged in the first month: a payment must be above this to reduce the balance. */
+  firstMonthInterest: number;
+  schedule: LoanScheduleRow[];
+}
+
+export const CARD_LIMITS = { balance: 10_000_000, months: 600 } as const;
+
+export function validateCardPayoffInput(input: CardPayoffInput): FieldError[] {
+  const errors: FieldError[] = [];
+  checkRange(errors, 'balance', input.balance, {
+    min: 1,
+    max: CARD_LIMITS.balance,
+    empty: 'Enter your card balance.',
+    range: 'Enter a balance between 1 and 10,000,000.',
+  });
+  checkRange(errors, 'aprPercent', input.aprPercent, {
+    min: 0,
+    max: 100,
+    empty: 'Enter the interest rate (APR).',
+    range: 'Enter an APR between 0% and 100%.',
+  });
+  if (input.mode === 'months') {
+    checkRange(errors, 'targetMonths', input.targetMonths, {
+      min: 1,
+      max: CARD_LIMITS.months,
+      integer: true,
+      empty: 'Enter how many months you want to take.',
+      range: 'Enter between 1 and 600 months.',
+    });
+  } else {
+    checkRange(errors, 'monthlyPayment', input.monthlyPayment, {
+      min: 1,
+      max: CARD_LIMITS.balance,
+      empty: 'Enter your monthly payment.',
+      range: 'Enter a monthly payment of at least 1.',
+    });
+    const balanceOk = Number.isFinite(input.balance) && input.balance > 0;
+    if (balanceOk && Number.isFinite(input.aprPercent) && errors.length === 0) {
+      const interest = (input.balance * input.aprPercent) / 1200;
+      if (input.monthlyPayment <= interest) {
+        errors.push({ field: 'monthlyPayment', message: 'This payment does not cover the monthly interest, so the balance never goes down.' });
+      } else if (fixedPaymentMonths(input.balance, input.aprPercent, input.monthlyPayment) > MAX_PAYOFF_MONTHS) {
+        errors.push({ field: 'monthlyPayment', message: 'At this payment the card would take more than 100 years to clear.' });
+      }
+    }
+  }
+  return errors;
+}
+
+/** Months to clear a balance at a fixed payment (closed form), or Infinity if the payment never clears it. */
+export function fixedPaymentMonths(balance: number, aprPercent: number, payment: number): number {
+  const r = aprPercent / 1200;
+  if (r === 0) return Math.ceil(balance / payment - 1e-9);
+  if (payment <= balance * r) return Number.POSITIVE_INFINITY;
+  return Math.ceil(-Math.log(1 - (balance * r) / payment) / Math.log1p(r) - 1e-9);
+}
+
+export function calculateCardPayoff(input: CardPayoffInput): CardPayoffResult {
+  const errors = validateCardPayoffInput(input);
+  if (errors.length > 0) throw new RangeError(errors.map((e) => e.message).join(' '));
+
+  const r = input.aprPercent / 1200;
+  const firstMonthInterest = input.balance * r;
+
+  if (input.mode === 'months') {
+    // Same maths as an amortising loan over the target term.
+    const loan = calculateLoan({ principal: input.balance, aprPercent: input.aprPercent, termMonths: input.targetMonths });
+    return {
+      monthlyPayment: loan.monthlyPayment,
+      months: loan.payoffMonths,
+      totalInterest: loan.totalInterest,
+      totalPaid: loan.totalCost,
+      firstMonthInterest,
+      schedule: loan.schedule,
+    };
+  }
+
+  const schedule: LoanScheduleRow[] = [];
+  let balance = input.balance;
+  let totalInterest = 0;
+  for (let month = 1; balance > 1e-9 && month <= MAX_PAYOFF_MONTHS; month++) {
+    const interest = balance * r;
+    const payment = Math.min(input.monthlyPayment, balance + interest);
+    const principal = payment - interest;
+    balance = Math.max(0, balance - principal);
+    if (balance < 1e-7) balance = 0;
+    totalInterest += interest;
+    schedule.push({ month, payment, interest, principal, extra: 0, balance });
+  }
+
+  return {
+    monthlyPayment: input.monthlyPayment,
+    months: schedule.length,
+    totalInterest,
+    totalPaid: input.balance + totalInterest,
+    firstMonthInterest,
+    schedule,
   };
 }

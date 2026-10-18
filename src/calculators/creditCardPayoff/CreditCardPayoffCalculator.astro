@@ -1,0 +1,129 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import AmortizationTable from '../../components/AmortizationTable.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import type { CountryConfig } from '../../countries';
+import { createFormatters } from '../../lib/format';
+import { COMPARISON_STEP, buildCardPayoffView, cardDefaults, type CardPayoffParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.creditCard;
+if (!defaults) throw new Error(`Missing defaults.creditCard in the ${country.code} country config`);
+const params: CardPayoffParams = { locale: country.locale, currency: country.currency, comparisonStep: COMPARISON_STEP };
+const d = cardDefaults(defaults);
+const { view } = buildCardPayoffView(d, params);
+if (!view) throw new Error('Credit card defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+const uk = country.code === 'uk';
+---
+
+<div class="calc-block" data-calc="card-payoff" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="card" label="Credit card payoff calculator">
+    <Fragment slot="inputs">
+      <Field id="cc-balance" field="balance" label="Card balance" value={f.number(d.balance)} prefix={sym} money />
+      <Field
+        id="cc-apr"
+        field="aprPercent"
+        label={uk ? 'Interest rate (purchase rate)' : 'Interest rate (APR)'}
+        value={String(d.aprPercent)}
+        suffix="%"
+        hint={uk ? 'The annual interest rate on your statement.' : 'The purchase APR on your statement.'}
+      />
+      <SelectField
+        id="cc-mode"
+        field="mode"
+        label="How do you want to pay it off?"
+        value={d.mode}
+        options={[
+          { value: 'payment', label: 'Pay a fixed amount each month' },
+          { value: 'months', label: 'Clear it by a target date' },
+        ]}
+      />
+      <Field id="cc-payment" field="monthlyPayment" label="Monthly payment" value={f.number(d.monthlyPayment)} prefix={sym} money when="mode:payment" hidden={d.mode !== 'payment'} />
+      <Field id="cc-months" field="targetMonths" label="Months to pay it off" value={String(d.targetMonths)} suffix="months" inputmode="numeric" when="mode:months" hidden={d.mode !== 'months'} />
+      <p class="field-hint">Assumes you stop using the card while you pay it off.</p>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label" data-out="headlineLabel">{view.headlineLabel}</p>
+        <p class="result-figure" data-out="headline">{view.headline}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Monthly payment</dt><dd data-out="monthlyPayment">{view.monthlyPayment}</dd></div>
+        <div><dt>Debt-free by</dt><dd data-out="payoffDate">{view.payoffDate}</dd></div>
+        <div><dt>Total interest</dt><dd data-out="totalInterest">{view.totalInterest}</dd></div>
+        <div><dt>Total paid</dt><dd data-out="totalPaid">{view.totalPaid}</dd></div>
+      </dl>
+      <p class="result-note" data-show="hasFaster" hidden={!view.hasFaster} data-out="fasterText">{view.fasterText}</p>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="cc-breakdown-title">
+    <h2 id="cc-breakdown-title" class="h3">Your payoff breakdown</h2>
+    <SvgChart
+      id="cc-chart"
+      title="Balance and interest paid each year"
+      legend={[
+        { label: 'Balance paid off', className: 'chart-s1' },
+        { label: 'Interest', className: 'chart-s2' },
+      ]}
+      svg={view.chartSvg}
+      htmlKey="chartSvg"
+    />
+    <AmortizationTable
+      summary="Payment schedule"
+      views={[
+        { id: 'yearly', label: 'By year', headers: ['Year', 'Balance paid', 'Interest', 'Balance left'], rowsHtml: view.yearlyRows },
+        { id: 'monthly', label: 'By month', headers: ['#', 'Month', 'Payment', 'Balance paid', 'Interest', 'Balance left'], rowsHtml: view.monthlyRows },
+      ]}
+    />
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <ul>
+        <li>Each month, interest = balance × {uk ? 'annual rate' : 'APR'} ÷ 12. The rest of your payment reduces the balance, and the last payment is only what's left.</li>
+        <li><strong>Fixed payment:</strong> months to pay off = −ln(1 − balance × r ÷ payment) ÷ ln(1 + r), rounded up, where r is the monthly rate. The payment must be more than the first month's interest.</li>
+        <li><strong>Target date:</strong> payment = balance × r ÷ (1 − (1 + r)<sup>−n</sup>), where n is the number of months. At 0% it's the balance ÷ n.</li>
+        <li>Card issuers usually charge interest daily, and new spending, fees or rate changes will change the result. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildCardPayoffView, readCardPayoffInput, type CardPayoffParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="card-payoff"]')) {
+    const params = embeddedParams<CardPayoffParams>(root);
+    const schedule = root.querySelector<HTMLDetailsElement>('[data-schedule]');
+    const monthlyBody = root.querySelector<HTMLElement>('[data-rows="monthly"]');
+    const yearlyBody = root.querySelector<HTMLElement>('[data-rows="yearly"]');
+    bindCalculator(root, (read) => {
+      const computed = buildCardPayoffView(readCardPayoffInput(read), params);
+      if (computed.view) {
+        if (yearlyBody) yearlyBody.innerHTML = computed.view.yearlyRows;
+        if (monthlyBody && schedule?.open) monthlyBody.innerHTML = computed.view.monthlyRows;
+        if (monthlyBody && !schedule?.open) monthlyBody.dataset.pending = computed.view.monthlyRows;
+      }
+      return computed;
+    });
+    schedule?.addEventListener('toggle', () => {
+      if (schedule.open && monthlyBody?.dataset.pending) {
+        monthlyBody.innerHTML = monthlyBody.dataset.pending;
+        delete monthlyBody.dataset.pending;
+      }
+    });
+  }
+</script>

@@ -56,6 +56,7 @@ export const us: CountryConfig = {
   },
   defaults: {
     loan: { amount: 20_000, aprPercent: 7.5, termYears: 5 },
+    creditCard: { balance: 5_000, aprPercent: 21.99, monthlyPayment: 200, targetMonths: 24 },
   },
   us: {
     federalTax: {

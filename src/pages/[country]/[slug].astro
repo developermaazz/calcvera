@@ -1,6 +1,7 @@
 ---
 import { getEntry, render } from 'astro:content';
 import CarAffordabilityCalculator from '../../calculators/carAffordability/CarAffordabilityCalculator.astro';
+import CreditCardPayoffCalculator from '../../calculators/creditCardPayoff/CreditCardPayoffCalculator.astro';
 import DebtConsolidationCalculator from '../../calculators/debtConsolidation/DebtConsolidationCalculator.astro';
 import DtiCalculator from '../../calculators/dti/DtiCalculator.astro';
 import FhsaCalculator from '../../calculators/fhsa/FhsaCalculator.astro';
@@ -22,6 +23,7 @@ export function getStaticPaths() {
 /** Engine → calculator UI. Add one line per new engine when its calculator is built. */
 const ENGINE_UI: Partial<Record<EngineName, typeof LoanCalculator>> = {
   loan: LoanCalculator,
+  creditCardPayoff: CreditCardPayoffCalculator,
   dti: DtiCalculator,
   carAffordability: CarAffordabilityCalculator,
   debtConsolidation: DebtConsolidationCalculator,

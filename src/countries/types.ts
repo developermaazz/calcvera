@@ -18,6 +18,13 @@ export interface IncomeTaxConfig {
   bands: TaxBand[];
 }
 
+export interface CreditCardDefaults {
+  balance: number;
+  aprPercent: number;
+  monthlyPayment: number;
+  targetMonths: number;
+}
+
 export interface LoanDefaults {
   amount: number;
   aprPercent: number;
@@ -211,6 +218,7 @@ export interface CountryConfig {
   incomeTax: IncomeTaxConfig;
   defaults: {
     loan?: LoanDefaults;
+    creditCard?: CreditCardDefaults;
   };
 
   // Country-specific figures, present only on the country that needs them.
