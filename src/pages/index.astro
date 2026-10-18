@@ -6,6 +6,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 const title = `${SITE.name}: Finance Calculators for Your Country`;
 
+// Same guess as CountryBanner: remembered choice → browser timezone → browser language. Used only to put the
+// visitor's country first; every visitor (and Google) still gets the same page and links.
+const detectData = LAUNCHED_COUNTRIES.map((c) => ({ code: c.code, tz: c.detect.timezones, lang: c.detect.languages }));
+
 const jsonLd = [
   {
     '@type': 'WebSite',
@@ -25,6 +29,34 @@ const jsonLd = [
 ---
 
 <BaseLayout title={title} description={SITE.description} jsonLd={jsonLd}>
+  <script is:inline define:vars={{ countries: detectData }}>
+    // Runs before the sections below are drawn, so reordering them causes no layout shift.
+    var code = null;
+    try {
+      code = localStorage.getItem('cv-country');
+    } catch (e) {}
+    if (!countries.some(function (c) { return c.code === code; })) {
+      code = null;
+      var tz = '';
+      try {
+        tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+      } catch (e) {}
+      var langs = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language]).map(function (l) {
+        return String(l).toLowerCase();
+      });
+      countries.forEach(function (c) {
+        if (code) return;
+        if (tz ? c.tz.indexOf(tz) >= 0 : c.lang.some(function (l) { return langs.indexOf(l.toLowerCase()) >= 0; })) code = c.code;
+      });
+    }
+    if (code) {
+      var s = document.documentElement.style;
+      s.setProperty('--first-' + code, '-1');
+      s.setProperty('--mine-' + code, 'var(--color-green)');
+      s.setProperty('--badge-' + code, 'inline-block');
+      document.documentElement.dataset.visitorCountry = code;
+    }
+  </script>
   <div class="page-wide">
     <section class="hero">
       <h1>{SITE.tagline}</h1>
@@ -41,8 +73,16 @@ const jsonLd = [
           ALL_COUNTRIES.map((c) =>
             c.launched ? (
               <li>
-                <a class="country-card" href={`/${c.code}/`} hreflang={c.hreflang} data-set-country={c.code}>
-                  <strong>{c.name}</strong>
+                <a
+                  class="country-card"
+                  href={`/${c.code}/`}
+                  hreflang={c.hreflang}
+                  data-set-country={c.code}
+                  style={`--card-border: var(--mine-${c.code}, var(--color-line))`}
+                >
+                  <strong>
+                    {c.name} <em class="your-country" style={`display: var(--badge-${c.code}, none)`}>Your country</em>
+                  </strong>
                   <span>
                     {c.currency} · {calculatorsFor(c.code).length} {calculatorsFor(c.code).length === 1 ? 'calculator' : 'calculators'}
                   </span>
@@ -61,12 +101,21 @@ const jsonLd = [
       </ul>
     </section>
 
+    <div class="home-popular" data-home-popular>
     {
       LAUNCHED_COUNTRIES.map((c) => {
-        const popular = calculatorsFor(c.code).filter((calc) => calc.popular);
+        const all = calculatorsFor(c.code);
+        const marked = all.filter((calc) => calc.popular);
+        // Countries with no calculator marked popular yet (CA, AU) list all of theirs.
+        const popular = marked.length > 0 ? marked : all;
         return (
           popular.length > 0 && (
-            <section class="hub-section" aria-labelledby={`popular-${c.code}`}>
+            <section
+              class="hub-section"
+              aria-labelledby={`popular-${c.code}`}
+              data-country-section={c.code}
+              style={`order: var(--first-${c.code}, 0)`}
+            >
               <h2 id={`popular-${c.code}`}>Popular {c.adjective} calculators</h2>
               <ul class="card-list">
                 {popular.map((calc) => (
@@ -85,6 +134,16 @@ const jsonLd = [
         );
       })
     }
+    </div>
+    <script is:inline>
+      // Match the reading and tab order to what's on screen (the visitor's country is already shown first).
+      (function () {
+        var code = document.documentElement.dataset.visitorCountry;
+        var wrap = document.querySelector('[data-home-popular]');
+        var first = code && wrap && wrap.querySelector('[data-country-section="' + code + '"]');
+        if (first) wrap.prepend(first);
+      })();
+    </script>
 
     <section class="trust" aria-labelledby="why">
       <h2 id="why">Why Calcvera</h2>
