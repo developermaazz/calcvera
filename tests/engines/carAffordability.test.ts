@@ -3,6 +3,10 @@ import { calculateCarAffordability, validateCarAffordabilityInput, type CarAffor
 import { maxPrincipalForPayment, monthlyPayment } from '../../src/engines/loan';
 
 /*
+ * OUTSIDE CHECK (calculator.net auto loan calculator, run forward from our answer, 18 Oct 2026), all exact:
+ *   1. $29,010.37 car → $500.00/month, $25,250.99 loan, $1,440.62 tax, $4,749.00 interest
+ *   2. 72 months: $32,855.87 car → $500.00/month, $29,327.22 loan   3. 0% APR: $36,000 car → $500.00, $30,000 loan
+ *
  * Expected values from an independent script (scratch reference: discounted-payment sum, then solving
  * price × 1.06 − 0.06 × trade-in = cash available).
  * External cross-check: a $500/month payment at 7% over 60 months supports about $25,251 of loan

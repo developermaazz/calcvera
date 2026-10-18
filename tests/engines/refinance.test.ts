@@ -2,12 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { calculateRefinance, validateRefinanceInput, type RefinanceInput } from '../../src/engines/refinance';
 
 /*
+ * OUTSIDE CHECK (calculator.net loan calculator, 18 Oct 2026), all exact:
+ *   1. $455.66 / $3,871.80   2. $426.04 / $2,449.89   3. Fees in loan ($18,300): $433.14 / $2,490.73
+ *
  * Expected values from an independent script (standard amortisation, month-by-month interest for break-even).
- * External cross-checks to run (calculator.net auto loan refinance or Bankrate's auto refinance calculator):
+ * External cross-checks (calculator.net auto loan refinance or Bankrate's auto refinance calculator):
  *   1. $18,000 at 9.9% with 48 months left → $455.66/month, $3,871.80 interest
  *   2. Refinanced to 6.4% over 48 months → $426.04/month, $2,449.89 interest
  *   3. With $300 fees paid up front → total saving $1,121.91
- * Record the check date here.
  */
 
 const base: RefinanceInput = {

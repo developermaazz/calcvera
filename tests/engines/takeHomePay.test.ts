@@ -4,12 +4,17 @@ import { uk } from '../../src/countries/uk';
 import { calculateTakeHomePay, validateTakeHomePayInput, type TakeHomePayInput, type TakeHomePayParams } from '../../src/engines/takeHomePay';
 
 /*
+ * OUTSIDE CHECK (listentotaxman.com, 2026/27, 18 Oct 2026):
+ *   £35,000: NI £1,794.40 (exact), tax £4,484.20 (ours £4,486). £60,000: NI £3,210.60 (exact), tax £11,428.40
+ *   (ours £11,432). The tax gap is payroll using a £12,579 tax-free amount (1257L code) against the £12,570
+ *   Personal Allowance; ours is the legal yearly tax. Scotland £35,000: £4,501.07 (exact).
+ *   Plan 2 at £35,000: £505.35 (exact). Postgraduate at £35,000: £840 (exact).
+ *
  * Hand checks with 2026/27 figures (GOV.UK income tax rates, Scottish income tax, HMRC employer rates):
  *   £35,000, rest of UK: tax 20% × 22,430 = £4,486; NI 8% × 22,430 = £1,794.40 → take-home £28,719.60
  *   £60,000: tax 7,540 + 40% × 9,730 = £11,432; NI 3,016 + 2% × 9,730 = £3,210.60
  *   £35,000 Scotland: 19% × 3,967 + 20% × 12,989 + 21% × 5,474 = £4,501.07
- * External cross-checks to run (GOV.UK "Estimate your Income Tax" or a payroll calculator such as
- * listentotaxman / thesalarycalculator): the three cases above. Record the check date here.
+ * External cross-checks (GOV.UK "Estimate your Income Tax" or a payroll calculator such as
  */
 
 const t = requireFigure(uk.uk, 'uk').takeHomePay;

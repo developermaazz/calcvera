@@ -1,7 +1,8 @@
 /**
  * 401(k) employer match (US): this year's contributions and match within IRS limits, and a projection to
  * retirement. Match = match rate × your contribution up to the match cap (% of pay). Limits are held at
- * today's values in the projection; contributions are added at the end of each year after growth.
+ * today's values in the projection. Contributions go in monthly, like payroll deductions, and the balance
+ * grows at the monthly equivalent of the yearly return.
  * Pure: limits are passed in.
  */
 import { checkMoney, checkPercent, checkRange, type FieldError } from './validation';
@@ -109,7 +110,7 @@ export function matchForYear(
 }
 
 function project(input: RetirementMatchInput, l: RetirementLimits, contributionPercent: number) {
-  const r = input.returnPercent / 100;
+  const monthlyRate = Math.pow(1 + input.returnPercent / 100, 1 / 12) - 1;
   const g = input.salaryGrowthPercent / 100;
   let balance = input.currentBalance;
   let salary = input.salary;
@@ -120,7 +121,7 @@ function project(input: RetirementMatchInput, l: RetirementLimits, contributionP
   for (let year = 1; year <= years; year++) {
     const age = input.age + year - 1;
     const y = matchForYear(salary, contributionPercent, input.matchRatePercent, input.matchCapPercent, age, l);
-    balance = balance * (1 + r) + y.employee + y.match;
+    for (let m = 0; m < 12; m++) balance = balance * (1 + monthlyRate) + (y.employee + y.match) / 12;
     totalEmployee += y.employee;
     totalMatch += y.match;
     rows.push({ year, age, employee: y.employee, match: y.match, balance });

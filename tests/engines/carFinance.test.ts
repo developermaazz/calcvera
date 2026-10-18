@@ -2,8 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { balloonPayment, calculateCarFinance, validateCarFinanceInput, type CarFinanceInput } from '../../src/engines/carFinance';
 
 /*
+ * OUTSIDE CHECK (calculator.net, 18 Oct 2026), all exact:
+ *   1. Finance calculator, PV £22,000, FV £9,000, 48 months, 9.9%: PMT £403.34, interest £6,360.30 (plus £10 fee)
+ *   2. Hire purchase (loan calculator): £556.92/month, £4,732.20 interest
+ *
  * Expected values from an independent script (annuity with a final balloon payment, r = APR / 12).
- * External cross-checks to run (a UK PCP calculator such as MoneySavingExpert's or a lender's quote):
+ * External cross-checks (a UK PCP calculator such as MoneySavingExpert's or a lender's quote):
  *   1. £25,000 car, £3,000 deposit, 48 months, 9.9% APR, £9,000 final payment → £403.34/month, £31,370.30 total
  *   2. Same as hire purchase (no final payment) → £556.92/month, £29,732.20 total
  *   3. 0% APR: £20,000 car, £2,000 deposit, 36 months, £6,000 final → £333.33/month

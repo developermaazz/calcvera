@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { calculateLoan, monthlyPayment, summariseByYear, validateLoanInput } from '../../src/engines/loan';
 
 /*
+ * OUTSIDE CHECK (calculator.net loan calculator, 18 Oct 2026): all three cases match exactly:
+ *   $304.22 / $951.90, $400.76 / $4,045.54, £230.49 / £531.85.
+ *
  * Expected values come from the standard amortisation formula M = P·r / (1 − (1 + r)^−n), r = APR / 12,
  * and were cross-checked with an independent month-by-month script.
  *

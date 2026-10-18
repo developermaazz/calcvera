@@ -10,6 +10,10 @@ import {
 } from '../../src/engines/selfEmploymentTax';
 
 /*
+ * OUTSIDE CHECK (18 Oct 2026): checked line by line against IRS Schedule SE (lines 4a–13) and the Rev. Proc.
+ *   2025-32 table formula ($1,240 plus 12% of the excess over $12,400 → $3,559.47). calculator.net's tax
+ *   calculator was tried but skips the 92.35% step and the deductible half, so it isn't a valid reference.
+ *
  * Expected values from an independent script following Schedule SE lines 4a–13, Form 8959 Part II and
  * the 2026 Rev. Proc. 2025-32 tables (scratch reference). Hand check for $60,000:
  *   net earnings 60,000 × 92.35% = 55,410; SE tax = 15.3% × 55,410 = 8,477.73

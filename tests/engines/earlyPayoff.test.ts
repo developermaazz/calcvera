@@ -3,12 +3,15 @@ import { calculateEarlyPayoff, validateEarlyPayoffInput, type EarlyPayoffInput }
 import { fixedPaymentSchedule } from '../../src/engines/loan';
 
 /*
+ * OUTSIDE CHECK (calculator.net credit card calculator, fixed payment, 18 Oct 2026):
+ *   1. 42 months, $2,617.95   2. 31 months, $1,923.97   3. $10,000 at $350: 34 months, $1,740.77
+ *   Months match exactly; interest within 42 cents (monthly cent rounding there).
+ *
  * Expected values from an independent month-by-month script (monthly rate = APR / 12, extra to principal).
- * External cross-checks to run (calculator.net loan payoff calculator, or Bankrate's early payoff calculator):
+ * External cross-checks (calculator.net loan payoff calculator, or Bankrate's early payoff calculator):
  *   1. $12,000 left at 11.5% paying $350 → 42 months, $2,618.25 interest
  *   2. Same loan with $100 extra a month → 31 months, $1,924.08 interest
  *   3. Same loan with a $2,000 lump sum now → 34 months, $1,741.19 interest
- * Record the check date here.
  */
 
 const base: EarlyPayoffInput = {

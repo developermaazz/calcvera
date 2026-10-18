@@ -6,6 +6,10 @@ import { caIncomeTax, type CaTaxParams } from '../../src/engines/caIncomeTax';
 import { calculateFhsa, validateFhsaInput, type FhsaInput, type FhsaParams } from '../../src/engines/fhsa';
 
 /*
+ * OUTSIDE CHECK (18 Oct 2026): calculator.net investment calculator, $8,000 a year at the start of each
+ *   year, 5 years, 5% → $46,415.30 (exact). TaxTips.ca 2026 combined marginal rates: Ontario $80,000 = 29.65%
+ *   (our refund rate exactly); Quebec $80,000 = 36.12% (ours 36.12%).
+ *
  * Hand-checked values (2026 CRA brackets and T4127 basic personal amounts):
  *   Ontario, $80,000: federal 14% × 58,523 + 20.5% × 21,477 − 14% × 16,452 = 10,292.73
  *                     Ontario 5.05% × 53,891 + 9.15% × 26,109 − 5.05% × 12,989 = 4,454.52

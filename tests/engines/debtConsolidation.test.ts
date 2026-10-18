@@ -3,6 +3,13 @@ import { calculateDebtConsolidation, validateDebtConsolidationInput, type DebtCo
 import { simulatePayoff } from '../../src/engines/debtPayoff';
 
 /*
+ * OUTSIDE CHECK (calculator.net, 18 Oct 2026):
+ *   Each debt on its own (credit card calculator): 46 months $3,011.67; 49 months $2,344.28; 39 months
+ *   $1,599.91 → $6,955.86 total vs our $6,956.53 (cent rounding). New loan (loan calculator): $594.31, $2,974.07 exact.
+ *   calculator.net's debt consolidation calculator differs by design: it rolls freed payments into the
+ *   remaining debts and treats the fee as cash up front. Ours keeps each payment on its own debt and
+ *   takes the fee from the loan, as the page explains.
+ *
  * Expected values from an independent month-by-month script (scratch reference).
  * External cross-check: the new loan alone ($18,421.05, 9.99%, 36 months) gives $594.31/month and
  * $2,974.07 interest in any standard loan calculator.

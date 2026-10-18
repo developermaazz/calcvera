@@ -7,12 +7,16 @@ import {
 } from '../../src/engines/debtPayoff';
 
 /*
+ * OUTSIDE CHECK (calculator.net credit card calculator, 18 Oct 2026):
+ *   1. 34 months, $1,748.34 interest   2. $259.37/month, $1,224.79 (exact)   3. 27 months, £915.81
+ *   Months and target payments match. Fixed-payment interest there is 14–35 cents lower because it rounds
+ *   each month's interest to the cent; we keep full precision (CLAUDE.md section 7).
+ *
  * Expected values from an independent month-by-month script (monthly rate = APR / 12, no new spending).
- * External cross-checks to run (calculator.net credit card payoff calculator or Bankrate):
+ * External cross-checks (calculator.net credit card payoff calculator or Bankrate):
  *   1. $5,000, 21.99% APR, $200/month → 34 months, $1,748.69 interest
  *   2. $5,000, 21.99% APR, pay off in 24 months → $259.37/month, $1,224.79 interest
  *   3. £3,000, 24.9% APR, £150/month → 27 months, £915.95 interest
- * Card issuers charge interest daily, so real statements can differ slightly. Record the check date here.
  */
 
 const base: CardPayoffInput = { balance: 5_000, aprPercent: 21.99, mode: 'payment', monthlyPayment: 200, targetMonths: 24 };

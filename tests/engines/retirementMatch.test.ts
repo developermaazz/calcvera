@@ -4,6 +4,11 @@ import { us } from '../../src/countries/us';
 import { calculateRetirementMatch, matchForYear, validateRetirementMatchInput, type RetirementLimits, type RetirementMatchInput } from '../../src/engines/retirementMatch';
 
 /*
+ * OUTSIDE CHECK (calculator.net 401(k) calculator, 18 Oct 2026):
+ *   4%: $755,973 at 65 (ours $754,043); 6%: $1,057,836 (ours $1,054,942). Contributions match to the dollar
+ *   ($162,726 incl. starting balance / $71,363; $234,089 / $107,045). Balances within 0.3%: contribution timing
+ *   within the month differs slightly. We switched from year-end to monthly contributions after this check.
+ *
  * 2026 IRS limits (Notice 2025-67): $24,500 deferral, $8,000 catch-up (50+), $11,250 (ages 60–63),
  * $72,000 annual additions, $360,000 compensation.
  * Hand checks: $75,000 salary, 4% contribution, 50% match up to 6% → you $3,000, employer $1,500,
@@ -63,10 +68,10 @@ describe('calculateRetirementMatch', () => {
     const r = calculateRetirementMatch(base, limits);
     expect(r.years).toBe(30);
     expect(r.missedMatch).toBe(750);
-    expect(r.balance).toBeCloseTo(735_556.77, 1);
+    expect(r.balance).toBeCloseTo(754_042.75, 1);
     expect(r.totalEmployee).toBeCloseTo(142_726.25, 1);
     expect(r.totalMatch).toBeCloseTo(71_363.12, 1);
-    expect(r.balanceAtFullMatch).toBeCloseTo(1_027_212.6, 0);
+    expect(r.balanceAtFullMatch).toBeCloseTo(1_054_941.57, 0);
   });
 
   it('0% return: balance is the sum of contributions', () => {

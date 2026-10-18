@@ -5,6 +5,11 @@ import { auIncomeTax, lowIncomeTaxOffset, medicareLevy, type AuTaxParams } from 
 import { calculateNovatedLease, validateNovatedLeaseInput, type NovatedLeaseInput, type NovatedLeaseParams } from '../../src/engines/novatedLease';
 
 /*
+ * OUTSIDE CHECK (18 Oct 2026): lease payment via calculator.net finance calculator (PV $50,000, FV $23,440,
+ *   36 months, 8%) = $988.56 (exact). Tax at $90,000 = $17,520, matching the ATO 2026–27 table formula
+ *   ($4,020 plus 30c for each $1 over $45,000). talent.com's AU calculator still uses 2023–24 rates, so it
+ *   wasn't used.
+ *
  * Hand checks (2026–27 ATO rates):
  *   $90,000: 15% × 26,800 + 30% × 45,000 = 17,520 tax, no LITO, Medicare levy 2% = 1,800 → 19,320
  *   $40,000: 15% × 21,800 = 3,270 − LITO 575 = 2,695 + levy 800 → 3,495

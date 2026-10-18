@@ -4,6 +4,10 @@ import { uk } from '../../src/countries/uk';
 import { calculateStudentLoan, studentLoanRate, validateStudentLoanInput, type StudentLoanInput, type StudentLoanParams } from '../../src/engines/studentLoan';
 
 /*
+ * OUTSIDE CHECK (listentotaxman.com, 18 Oct 2026): yearly repayments at £35,000 match exactly
+ *   (Plan 2 £505.35, Postgraduate £840). No outside calculator takes the projection inputs by URL, so the
+ *   multi-year projection is checked against the independent script only.
+ *
  * Figures: GOV.UK repaying your student loan (thresholds, rates, write-off periods), checked 18 Oct 2026.
  * Hand checks: Plan 2 at £35,000 repays 9% × (35,000 − 29,385) ÷ 12 = £42.11 a month;
  *   Plan 2 interest at £35,000 = 4.1% + 1.9% × 5,615 ÷ 23,500 = 4.554%.

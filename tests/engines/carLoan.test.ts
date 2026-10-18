@@ -2,14 +2,17 @@ import { describe, expect, it } from 'vitest';
 import { calculateCarLoan, carSalesTax, validateCarLoanInput, type CarLoanInput } from '../../src/engines/carLoan';
 
 /*
+ * OUTSIDE CHECK (calculator.net auto loan calculator, 18 Oct 2026), all exact:
+ *   1. $19,180 financed, $1,080 tax, $402.82/month, $4,988.94 interest, $28,668.94 total cost
+ *   2. 72 months: $350.51/month, $6,056.62 interest   3. Owing $7,000: $24,680 financed, $518.33/month
+ *
  * Expected values from an independent script (amount financed, then the standard amortisation formula,
  * checked against a month-by-month simulation).
- * External cross-checks to run (calculator.net auto loan calculator or Bankrate's auto loan calculator):
+ * External cross-checks (calculator.net auto loan calculator or Bankrate's auto loan calculator):
  *   1. $22,000 car, $2,000 down, $4,000 trade-in owing $1,500, 6% tax after trade-in, $600 fees,
  *      9.5% APR, 60 months → $19,180 financed, $402.82/month, $4,988.94 interest
  *   2. Same car taxed on the full price → $19,420 financed, $407.86/month
  *   3. Same as 1 over 72 months → $350.51/month, $6,056.62 interest
- * Record the check date here.
  */
 
 const base: CarLoanInput = {

@@ -98,7 +98,7 @@ const P = params;
       <ul>
         <li><strong>Employer match</strong> = match rate × your contribution, on contributions up to the match cap. With a 50% match up to 6%, contributing 6% of pay earns 3% of pay from your employer.</li>
         <li><strong>{P.taxYear} limits</strong>: you can defer up to {f.moneyWhole(P.deferralLimit)}, plus a {f.moneyWhole(P.catchUp)} catch-up from age 50 ({f.moneyWhole(P.catchUpAge60to63)} at ages 60 to 63). Total yearly additions are capped at {f.moneyWhole(P.annualAdditionsLimit)}, and only the first {f.moneyWhole(P.compensationLimit)} of pay counts.</li>
-        <li><strong>Projection</strong>: each year the balance grows by your expected return, then that year's contributions are added. Pay rises each year; the limits stay at today's values.</li>
+        <li><strong>Projection</strong>: contributions go in monthly, like payroll deductions, and the balance grows at the monthly equivalent of your expected yearly return. Pay rises each year; the limits stay at today's values.</li>
         <li>Plans differ: some match each paycheck rather than yearly, and some have vesting rules. Check your plan's summary description.</li>
       </ul>
     </div>

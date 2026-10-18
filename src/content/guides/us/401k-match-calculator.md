@@ -50,17 +50,17 @@ At 4%, you're leaving **$750 of match** on the table every year. Raising your co
 
 Over time, the gap grows. If you're 35 with $20,000 already saved, get 3% raises each year and earn 7% a year until 65:
 
-- Contributing **4%**, your 401(k) could reach about **$735,557**.
-- Contributing **6%**, it could reach about **$1,027,213**.
+- Contributing **4%**, your 401(k) could reach about **$754,043**.
+- Contributing **6%**, it could reach about **$1,054,942**.
 
-That difference of about $291,656 comes from your extra 2% of pay, the extra employer match and 30 years of growth on both.
+That difference of about $300,899 comes from your extra 2% of pay, the extra employer match and 30 years of growth on both.
 
 ## How it's calculated
 
 1. **Your contribution** = contribution % × pay, capped at the 2026 limit of $24,500, plus a catch-up of $8,000 from age 50 ($11,250 at ages 60 to 63). Only the first $360,000 of pay counts.
 2. **Employer match** = match rate × the part of your contribution up to the match cap. With a 50% match up to 6%, contributing 4% earns 2% of pay; contributing 8% still earns 3%.
 3. **Total additions** from you and your employer, not counting catch-up, can't exceed $72,000.
-4. **Projection:** each year, your balance grows by the expected return, then that year's contributions are added. Your pay rises by the raise you entered, and the limits stay at today's values.
+4. **Projection:** contributions go in monthly, like payroll deductions, and your balance grows at the monthly equivalent of your expected yearly return. Your pay rises by the raise you entered, and the limits stay at today's values.
 
 Plans differ. Some match each paycheck rather than over the year, so hitting the limit early can reduce your match unless the plan makes a "true-up" payment. Check your plan's rules.
 
