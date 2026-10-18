@@ -1,0 +1,91 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import CheckboxField from '../../components/CheckboxField.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import type { PropertyTaxInput } from '../../engines/propertyTax';
+import { createFormatters } from '../../lib/format';
+import { BUYER_TYPES, buildStampDutyView, type StampDutyParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.stampDuty;
+if (!defaults) throw new Error(`Missing defaults.stampDuty in the ${country.code} country config`);
+const s = requireFigure(country.uk, 'UK figures').stampDuty;
+const params: StampDutyParams = {
+  locale: country.locale,
+  currency: country.currency,
+  standardBands: requireFigure(s.standardBands, 'stampDuty.standardBands'),
+  firstTimeBuyerBands: requireFigure(s.firstTimeBuyerBands, 'stampDuty.firstTimeBuyerBands'),
+  firstTimeBuyerMaxPrice: requireFigure(s.firstTimeBuyerMaxPrice, 'stampDuty.firstTimeBuyerMaxPrice'),
+  additionalPropertySurcharge: requireFigure(s.additionalPropertySurcharge, 'stampDuty.additionalPropertySurcharge'),
+  additionalPropertyMinPrice: requireFigure(s.additionalPropertyMinPrice, 'stampDuty.additionalPropertyMinPrice'),
+  nonResidentSurcharge: requireFigure(s.nonResidentSurcharge, 'stampDuty.nonResidentSurcharge'),
+  nonResidentMinPrice: requireFigure(s.nonResidentMinPrice, 'stampDuty.nonResidentMinPrice'),
+};
+const d: PropertyTaxInput = { price: defaults.price, buyerType: 'standard', nonResident: false };
+const { view } = buildStampDutyView(d, params);
+if (!view) throw new Error('Stamp duty defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const P = params;
+---
+
+<div class="calc-block" data-calc="stamp-duty" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="sd" label="Stamp duty calculator">
+    <Fragment slot="inputs">
+      <Field id="sd-price" field="price" label="Property price" value={f.number(d.price)} prefix={country.currencySymbol} money hint="For homes in England and Northern Ireland." />
+      <SelectField id="sd-type" field="buyerType" label="Which describes you?" value={d.buyerType} options={BUYER_TYPES} />
+      <CheckboxField id="sd-nr" field="nonResident" label="I'm not a UK resident" checked={d.nonResident} hint="If any buyer isn't UK resident for SDLT purposes." />
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Stamp Duty to pay</p>
+        <p class="result-figure" data-out="tax">{view.tax}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Effective rate</dt><dd data-out="effectiveRate">{view.effectiveRate}</dd></div>
+        <div data-show="hasSaving" hidden={!view.hasSaving}><dt>First-time buyer saving</dt><dd class="positive" data-out="saving">{view.saving}</dd></div>
+      </dl>
+      <ul class="notes" data-show="hasNotes" hidden={!view.hasNotes} data-html="notesHtml" set:html={view.notesHtml} />
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="sd-breakdown-title">
+    <h2 id="sd-breakdown-title" class="h3">How your Stamp Duty is worked out</h2>
+    <div class="table-scroll table-plain">
+      <table class="data-table">
+        <thead><tr><th scope="col">Price band</th><th scope="col">Rate</th><th scope="col">Amount in band</th><th scope="col">Tax</th></tr></thead>
+        <tbody data-html="rowsHtml" set:html={view.rowsHtml} />
+      </table>
+    </div>
+    <p class="muted">Scotland has Land and Buildings Transaction Tax and Wales has Land Transaction Tax, with different rates. This calculator covers England and Northern Ireland.</p>
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <ul>
+        <li>Each rate applies only to the part of the price in its band: 0% up to {f.moneyWhole(P.standardBands[0]!.to ?? 0)}, then {P.standardBands.slice(1).map((b) => `${f.percent(b.rate * 100)}${b.to ? ` to ${f.moneyWhole(b.to)}` : ' above'}`).join(', ')}.</li>
+        <li><strong>First-time buyers</strong> pay 0% up to {f.moneyWhole(P.firstTimeBuyerBands[0]!.to ?? 0)} and 5% up to {f.moneyWhole(P.firstTimeBuyerMaxPrice)}. Above {f.moneyWhole(P.firstTimeBuyerMaxPrice)}, no relief applies.</li>
+        <li><strong>Additional properties</strong>: {f.percent(P.additionalPropertySurcharge * 100)} is added to every band (not under {f.moneyWhole(P.additionalPropertyMinPrice)}). <strong>Non-UK residents</strong>: a further {f.percent(P.nonResidentSurcharge * 100)} on every band.</li>
+        <li>For residential property bought as one home. Not included: shared ownership, mixed-use or non-residential property, and other reliefs.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildStampDutyView, readStampDutyInput, type StampDutyParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="stamp-duty"]')) {
+    const params = embeddedParams<StampDutyParams>(root);
+    bindCalculator(root, (read) => buildStampDutyView(readStampDutyInput(read), params));
+  }
+</script>

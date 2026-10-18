@@ -25,6 +25,10 @@ export interface CreditCardDefaults {
   targetMonths: number;
 }
 
+export interface StampDutyDefaults {
+  price: number;
+}
+
 export interface TakeHomePayDefaults {
   grossSalary: number;
   pensionPercent: number;
@@ -143,6 +147,21 @@ export interface UkTakeHomePayConfig {
   studentLoans: Record<'plan1' | 'plan2' | 'plan4' | 'plan5' | 'postgraduate', Pending<UkStudentLoanPlan>>;
   /** Basic-rate relief added by the provider under relief at source. */
   reliefAtSourceRate: Pending<number>;
+}
+
+export interface UkStampDutyConfig {
+  /** Residential bands for a single property, by price. */
+  standardBands: Pending<TaxBand[]>;
+  firstTimeBuyerBands: Pending<TaxBand[]>;
+  /** No first-time buyer relief above this price. */
+  firstTimeBuyerMaxPrice: Pending<number>;
+  /** Added to every band when buying an additional property. */
+  additionalPropertySurcharge: Pending<number>;
+  /** Higher rates don't apply below this price. */
+  additionalPropertyMinPrice: Pending<number>;
+  /** Added to every band for non-UK resident buyers. */
+  nonResidentSurcharge: Pending<number>;
+  nonResidentMinPrice: Pending<number>;
 }
 
 export interface UkInheritanceTaxConfig {
@@ -270,6 +289,7 @@ export interface CountryConfig {
     personalLoanPayoff?: PersonalLoanPayoffDefaults;
     usedCarLoan?: UsedCarLoanDefaults;
     takeHomePay?: TakeHomePayDefaults;
+    stampDuty?: StampDutyDefaults;
   };
 
   // Country-specific figures, present only on the country that needs them.
@@ -285,6 +305,7 @@ export interface CountryConfig {
   uk?: {
     redundancy: UkRedundancyConfig;
     takeHomePay: UkTakeHomePayConfig;
+    stampDuty: UkStampDutyConfig;
     inheritanceTax: UkInheritanceTaxConfig;
   };
   ca?: {

@@ -6,6 +6,7 @@ export type EngineName =
   | 'personalLoanPayoff'
   | 'usedCarLoan'
   | 'takeHomePay'
+  | 'stampDuty'
   | 'dti'
   | 'carAffordability'
   | 'debtConsolidation'
@@ -108,6 +109,19 @@ export const CALCULATORS: CalculatorEntry[] = [
     name: 'Take-Home Pay Calculator',
     blurb: 'Your monthly pay after Income Tax, National Insurance, student loan and pension, for England, Wales, NI or Scotland.',
     related: ['redundancy-pay-calculator', 'student-loan-repayment-calculator', 'pension-tax-relief-calculator', 'credit-card-payoff-calculator', 'loan-calculator'],
+    popular: true,
+  },
+
+  {
+    // Launch set #8. Uses the propertyTax engine (SDLT, England and Northern Ireland).
+    slug: 'stamp-duty-calculator',
+    engine: 'stampDuty',
+    usesTaxYear: true,
+    category: 'property',
+    countries: ['uk'],
+    name: 'Stamp Duty Calculator',
+    blurb: 'Stamp Duty Land Tax on a home in England or Northern Ireland, for first-time buyers, movers and additional properties.',
+    related: ['take-home-pay-calculator', 'inheritance-tax-calculator', 'mortgage-overpayment-calculator', 'loan-calculator'],
     popular: true,
   },
 

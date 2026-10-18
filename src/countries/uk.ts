@@ -31,6 +31,7 @@ export const uk: CountryConfig = {
     loan: { amount: 10_000, aprPercent: 6.9, termYears: 5 },
     creditCard: { balance: 3_000, aprPercent: 24.9, monthlyPayment: 150, targetMonths: 24 },
     takeHomePay: { grossSalary: 35_000, pensionPercent: 5 },
+    stampDuty: { price: 295_000 },
   },
   uk: {
     redundancy: {
@@ -84,6 +85,30 @@ export const uk: CountryConfig = {
       },
       // VERIFY: https://www.gov.uk/tax-on-your-private-pension/pension-tax-relief (provider claims relief at the basic 20% rate). Checked 18 Oct 2026.
       reliefAtSourceRate: 0.2,
+    },
+    stampDuty: {
+      // VERIFY: https://www.gov.uk/stamp-duty-land-tax/residential-property-rates (England and Northern Ireland). Checked 18 Oct 2026.
+      standardBands: [
+        { from: 0, to: 125_000, rate: 0 },
+        { from: 125_000, to: 250_000, rate: 0.02 },
+        { from: 250_000, to: 925_000, rate: 0.05 },
+        { from: 925_000, to: 1_500_000, rate: 0.1 },
+        { from: 1_500_000, to: null, rate: 0.12 },
+      ],
+      // VERIFY: same page (no SDLT up to £300,000, 5% to £500,000; no relief above £500,000). Checked 18 Oct 2026.
+      firstTimeBuyerBands: [
+        { from: 0, to: 300_000, rate: 0 },
+        { from: 300_000, to: 500_000, rate: 0.05 },
+      ],
+      firstTimeBuyerMaxPrice: 500_000,
+      // VERIFY: https://www.gov.uk/guidance/stamp-duty-land-tax-buying-an-additional-residential-property
+      // (5% on top of each band; not on purchases under £40,000). Checked 18 Oct 2026.
+      additionalPropertySurcharge: 0.05,
+      additionalPropertyMinPrice: 40_000,
+      // VERIFY: https://www.gov.uk/guidance/rates-of-stamp-duty-land-tax-for-non-uk-residents
+      // (2 percentage points on top of all residential rates, purchases of £40,000 or more). Checked 18 Oct 2026.
+      nonResidentSurcharge: 0.02,
+      nonResidentMinPrice: 40_000,
     },
     inheritanceTax: {
       // VERIFY: https://www.gov.uk/inheritance-tax (£325,000). Fixed to 5 April 2031:
