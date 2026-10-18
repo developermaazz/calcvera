@@ -1096,3 +1096,20 @@ a.country-card:hover {
     transition: none !important;
   }
 }
+
+.tax-year-note {
+  display: inline-block;
+  margin: 0 0 var(--space-1);
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--color-accent-bg);
+  color: var(--color-ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.data-table .total-row th,
+.data-table .total-row td {
+  font-weight: 700;
+  color: var(--color-navy);
+}

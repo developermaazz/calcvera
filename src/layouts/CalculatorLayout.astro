@@ -91,6 +91,7 @@ const jsonLd = [
     <Breadcrumbs items={breadcrumbs} />
     <h1>{guide.h1}</h1>
     <p class="lead">{guide.intro}</p>
+    {calc.usesTaxYear && <p class="tax-year-note">Updated for the {country.taxYear} tax year.</p>}
     <slot />
   </div>
 

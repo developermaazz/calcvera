@@ -1,0 +1,136 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import CheckboxField from '../../components/CheckboxField.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import { SPLIT_ASPECT } from '../../lib/charts';
+import { createFormatters } from '../../lib/format';
+import { PENSION_METHODS, STUDENT_LOAN_PLANS, buildTakeHomeView, takeHomeDefaults, type TakeHomePayPageParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.takeHomePay;
+if (!defaults) throw new Error(`Missing defaults.takeHomePay in the ${country.code} country config`);
+const t = requireFigure(country.uk, 'UK figures').takeHomePay;
+const ni = t.nationalInsurance;
+const sl = t.studentLoans;
+const params: TakeHomePayPageParams = {
+  locale: country.locale,
+  currency: country.currency,
+  taxYear: country.taxYear,
+  personalAllowance: country.incomeTax.allowance,
+  taperStart: requireFigure(t.personalAllowanceTaperStart, 'takeHomePay.personalAllowanceTaperStart'),
+  taperRate: requireFigure(t.personalAllowanceTaperRate, 'takeHomePay.personalAllowanceTaperRate'),
+  bands: { rUK: country.incomeTax.bands, scotland: requireFigure(t.scotlandBands, 'takeHomePay.scotlandBands') },
+  ni: {
+    primaryThreshold: requireFigure(ni.primaryThreshold, 'nationalInsurance.primaryThreshold'),
+    upperEarningsLimit: requireFigure(ni.upperEarningsLimit, 'nationalInsurance.upperEarningsLimit'),
+    mainRate: requireFigure(ni.mainRate, 'nationalInsurance.mainRate'),
+    upperRate: requireFigure(ni.upperRate, 'nationalInsurance.upperRate'),
+  },
+  studentLoans: {
+    plan1: requireFigure(sl.plan1, 'studentLoans.plan1'),
+    plan2: requireFigure(sl.plan2, 'studentLoans.plan2'),
+    plan4: requireFigure(sl.plan4, 'studentLoans.plan4'),
+    plan5: requireFigure(sl.plan5, 'studentLoans.plan5'),
+    postgraduate: requireFigure(sl.postgraduate, 'studentLoans.postgraduate'),
+  },
+  reliefAtSourceRate: requireFigure(t.reliefAtSourceRate, 'takeHomePay.reliefAtSourceRate'),
+};
+const d = takeHomeDefaults(defaults);
+const { view } = buildTakeHomeView(d, params);
+if (!view) throw new Error('Take-home pay defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const P = params;
+---
+
+<div class="calc-block" data-calc="take-home" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="thp" label="Take-home pay calculator">
+    <Fragment slot="inputs">
+      <Field id="thp-salary" field="grossSalary" label="Yearly salary before tax" value={f.number(d.grossSalary)} prefix={country.currencySymbol} money hint="Include bonuses and overtime you expect over the year." />
+      <SelectField
+        id="thp-region"
+        field="region"
+        label="Where you live"
+        value={d.region}
+        options={[
+          { value: 'rUK', label: 'England, Wales or Northern Ireland' },
+          { value: 'scotland', label: 'Scotland' },
+        ]}
+        hint="Scottish taxpayers pay Scottish Income Tax rates."
+      />
+      <Field id="thp-pension" field="pensionPercent" label="Your pension contribution" value={String(d.pensionPercent)} suffix="% of salary" />
+      <SelectField id="thp-method" field="pensionMethod" label="How your pension is paid" value={d.pensionMethod} options={PENSION_METHODS} hint="Your payslip or pension scheme tells you which one you have." />
+      <SelectField id="thp-plan" field="undergraduatePlan" label="Student loan" value={d.undergraduatePlan} options={STUDENT_LOAN_PLANS} />
+      <CheckboxField id="thp-pg" field="postgraduateLoan" label="I also have a Postgraduate Loan" checked={d.postgraduateLoan} />
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Take-home pay each month</p>
+        <p class="result-figure" data-out="monthly">{view.monthly}</p>
+        <p class="result-sub"><span data-out="yearly">{view.yearly}</span> a year · <span data-out="weekly">{view.weekly}</span> a week</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Income Tax</dt><dd data-out="incomeTax">{view.incomeTax}</dd></div>
+        <div><dt>National Insurance</dt><dd data-out="ni">{view.ni}</dd></div>
+        <div data-show="hasStudentLoan" hidden={!view.hasStudentLoan}><dt>Student loan</dt><dd data-out="studentLoan">{view.studentLoan}</dd></div>
+        <div data-show="hasPension" hidden={!view.hasPension}><dt>Pension from your pay</dt><dd data-out="pension">{view.pension}</dd></div>
+      </dl>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="thp-breakdown-title">
+    <h2 id="thp-breakdown-title" class="h3">Where your pay goes</h2>
+    <SvgChart
+      id="thp-chart"
+      title="Your yearly salary"
+      legend={[
+        { label: 'Take-home pay', className: 'chart-s1' },
+        { label: 'Income Tax', className: 'chart-s2' },
+        { label: 'National Insurance', className: 'chart-s3' },
+        { label: 'Student loan', className: 'chart-s4' },
+        { label: 'Pension', className: 'chart-rest' },
+      ]}
+      svg={view.chartSvg}
+      aspect={SPLIT_ASPECT}
+      htmlKey="chartSvg"
+    />
+    <div class="table-scroll table-plain">
+      <table class="data-table">
+        <thead><tr><th scope="col"></th><th scope="col">Year</th><th scope="col">Month</th><th scope="col">Week</th></tr></thead>
+        <tbody data-html="tableHtml" set:html={view.tableHtml} />
+      </table>
+    </div>
+    <ul class="notes" data-show="hasNotes" hidden={!view.hasNotes} data-html="notesHtml" set:html={view.notesHtml} />
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <ul>
+        <li><strong>Income Tax</strong>: your Personal Allowance of {f.moneyWhole(P.personalAllowance)} is tax-free. It falls by £1 for every £2 of income over {f.moneyWhole(P.taperStart)}. The rest is taxed at the {P.taxYear} rates for the rest of the UK or Scotland.</li>
+        <li><strong>National Insurance</strong>: {f.percent(P.ni.mainRate * 100)} on earnings between {f.moneyWhole(P.ni.primaryThreshold)} and {f.moneyWhole(P.ni.upperEarningsLimit)}, and {f.percent(P.ni.upperRate * 100)} above that.</li>
+        <li><strong>Student loans</strong>: 9% of income over your plan's threshold (Plan 1 {f.moneyWhole(P.studentLoans.plan1.threshold)}, Plan 2 {f.moneyWhole(P.studentLoans.plan2.threshold)}, Plan 4 {f.moneyWhole(P.studentLoans.plan4.threshold)}, Plan 5 {f.moneyWhole(P.studentLoans.plan5.threshold)}), plus 6% over {f.moneyWhole(P.studentLoans.postgraduate.threshold)} for a Postgraduate Loan.</li>
+        <li><strong>Pension</strong>: salary sacrifice comes off before tax and National Insurance; net pay comes off before tax only; relief at source comes from your take-home pay, and your provider adds {f.percent(P.reliefAtSourceRate * 100)} tax relief.</li>
+        <li>Worked out on yearly figures with the standard tax code. Payroll works per pay period, so your payslip may differ by a few pounds.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildTakeHomeView, readTakeHomeInput, type TakeHomePayPageParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="take-home"]')) {
+    const params = embeddedParams<TakeHomePayPageParams>(root);
+    bindCalculator(root, (read) => buildTakeHomeView(readTakeHomeInput(read), params));
+  }
+</script>

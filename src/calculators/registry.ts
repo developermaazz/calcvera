@@ -5,6 +5,7 @@ export type EngineName =
   | 'creditCardPayoff'
   | 'personalLoanPayoff'
   | 'usedCarLoan'
+  | 'takeHomePay'
   | 'dti'
   | 'carAffordability'
   | 'debtConsolidation'
@@ -41,6 +42,8 @@ export interface CalculatorEntry {
   related: string[];
   /** Shown in "Popular calculators" on the homepage. */
   popular?: boolean;
+  /** Uses tax figures: the page shows "Updated for the [tax year] tax year" (CLAUDE.md section 8). */
+  usesTaxYear?: boolean;
   /** Planned but not built: no page, not linked, not in the sitemap. Remove when the definition of done is met. */
   draft?: boolean;
 }
@@ -95,6 +98,19 @@ export const CALCULATORS: CalculatorEntry[] = [
     related: ['loan-calculator', 'debt-consolidation-calculator', 'credit-card-payoff-calculator', 'debt-to-income-ratio-calculator'],
   },
 
+  {
+    // Launch set #7.
+    slug: 'take-home-pay-calculator',
+    engine: 'takeHomePay',
+    usesTaxYear: true,
+    category: 'tax',
+    countries: ['uk'],
+    name: 'Take-Home Pay Calculator',
+    blurb: 'Your monthly pay after Income Tax, National Insurance, student loan and pension, for England, Wales, NI or Scotland.',
+    related: ['redundancy-pay-calculator', 'student-loan-repayment-calculator', 'pension-tax-relief-calculator', 'credit-card-payoff-calculator', 'loan-calculator'],
+    popular: true,
+  },
+
   // ---------- Batch 2 (CLAUDE.md section 12) ----------
   {
     slug: 'debt-to-income-ratio-calculator',
@@ -128,6 +144,7 @@ export const CALCULATORS: CalculatorEntry[] = [
   {
     slug: 'redundancy-pay-calculator',
     engine: 'redundancyPay',
+    usesTaxYear: true,
     category: 'tax',
     countries: ['uk'],
     name: 'Redundancy Pay Calculator',
@@ -137,6 +154,7 @@ export const CALCULATORS: CalculatorEntry[] = [
   {
     slug: 'inheritance-tax-calculator',
     engine: 'inheritanceTax',
+    usesTaxYear: true,
     category: 'tax',
     countries: ['uk'],
     name: 'Inheritance Tax Calculator',
@@ -146,6 +164,7 @@ export const CALCULATORS: CalculatorEntry[] = [
   {
     slug: 'quarterly-estimated-tax-calculator',
     engine: 'selfEmploymentTax',
+    usesTaxYear: true,
     category: 'tax',
     countries: ['us'],
     name: 'Quarterly Estimated Tax Calculator',
@@ -155,6 +174,7 @@ export const CALCULATORS: CalculatorEntry[] = [
   {
     slug: 'fhsa-calculator',
     engine: 'fhsa',
+    usesTaxYear: true,
     category: 'savings',
     countries: ['ca'],
     name: 'FHSA Calculator',
@@ -164,6 +184,7 @@ export const CALCULATORS: CalculatorEntry[] = [
   {
     slug: 'novated-lease-calculator',
     engine: 'novatedLease',
+    usesTaxYear: true,
     category: 'tax',
     countries: ['au'],
     name: 'Novated Lease Calculator',

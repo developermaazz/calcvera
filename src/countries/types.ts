@@ -25,6 +25,11 @@ export interface CreditCardDefaults {
   targetMonths: number;
 }
 
+export interface TakeHomePayDefaults {
+  grossSalary: number;
+  pensionPercent: number;
+}
+
 export interface UsedCarLoanDefaults {
   price: number;
   downPayment: number;
@@ -113,6 +118,31 @@ export interface UkRedundancyConfig {
   ageBands: Pending<{ fromAge: number; weeksPerYear: number }[]>;
   /** Statutory redundancy pay up to this amount is not taxable. */
   taxFreeLimit: Pending<number>;
+}
+
+export interface UkStudentLoanPlan {
+  /** Yearly repayment threshold. */
+  threshold: number;
+  /** Share of income over the threshold, as a decimal. */
+  rate: number;
+}
+
+export interface UkTakeHomePayConfig {
+  /** Adjusted net income where the Personal Allowance starts to fall. */
+  personalAllowanceTaperStart: Pending<number>;
+  /** Allowance lost per £1 over the taper start (0.5 = £1 for every £2). */
+  personalAllowanceTaperRate: Pending<number>;
+  /** Scottish bands, as taxable income above the Personal Allowance. */
+  scotlandBands: Pending<TaxBand[]>;
+  nationalInsurance: {
+    primaryThreshold: Pending<number>;
+    upperEarningsLimit: Pending<number>;
+    mainRate: Pending<number>;
+    upperRate: Pending<number>;
+  };
+  studentLoans: Record<'plan1' | 'plan2' | 'plan4' | 'plan5' | 'postgraduate', Pending<UkStudentLoanPlan>>;
+  /** Basic-rate relief added by the provider under relief at source. */
+  reliefAtSourceRate: Pending<number>;
 }
 
 export interface UkInheritanceTaxConfig {
@@ -239,6 +269,7 @@ export interface CountryConfig {
     creditCard?: CreditCardDefaults;
     personalLoanPayoff?: PersonalLoanPayoffDefaults;
     usedCarLoan?: UsedCarLoanDefaults;
+    takeHomePay?: TakeHomePayDefaults;
   };
 
   // Country-specific figures, present only on the country that needs them.
@@ -253,6 +284,7 @@ export interface CountryConfig {
   };
   uk?: {
     redundancy: UkRedundancyConfig;
+    takeHomePay: UkTakeHomePayConfig;
     inheritanceTax: UkInheritanceTaxConfig;
   };
   ca?: {

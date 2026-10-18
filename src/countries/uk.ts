@@ -30,6 +30,7 @@ export const uk: CountryConfig = {
   defaults: {
     loan: { amount: 10_000, aprPercent: 6.9, termYears: 5 },
     creditCard: { balance: 3_000, aprPercent: 24.9, monthlyPayment: 150, targetMonths: 24 },
+    takeHomePay: { grossSalary: 35_000, pensionPercent: 5 },
   },
   uk: {
     redundancy: {
@@ -53,6 +54,36 @@ export const uk: CountryConfig = {
       ],
       // VERIFY: https://www.gov.uk/redundancy-your-rights/tax-and-national-insurance ("under £30,000 is not taxable"). Checked 16 Oct 2026.
       taxFreeLimit: 30_000,
+    },
+    takeHomePay: {
+      // VERIFY: https://www.gov.uk/income-tax-rates (Personal Allowance falls by £1 for every £2 over £100,000, 2026/27). Checked 16 Oct 2026.
+      personalAllowanceTaperStart: 100_000,
+      personalAllowanceTaperRate: 0.5,
+      // VERIFY: https://www.gov.uk/scottish-income-tax (2026/27). Starter £12,571–£16,537 19%, basic to £29,526 20%,
+      // intermediate to £43,662 21%, higher to £75,000 42%, advanced to £125,140 45%, top 48%. Expressed here as
+      // taxable income above the £12,570 allowance. Checked 18 Oct 2026.
+      scotlandBands: [
+        { from: 0, to: 3_967, rate: 0.19 },
+        { from: 3_967, to: 16_956, rate: 0.2 },
+        { from: 16_956, to: 31_092, rate: 0.21 },
+        { from: 31_092, to: 62_430, rate: 0.42 },
+        { from: 62_430, to: 125_140, rate: 0.45 },
+        { from: 125_140, to: null, rate: 0.48 },
+      ],
+      // VERIFY: https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2026-to-2027 (primary threshold £12,570,
+      // UEL £50,270 a year) and https://www.gov.uk/national-insurance-rates-letters (category A: 8%, 2%). Checked 18 Oct 2026.
+      nationalInsurance: { primaryThreshold: 12_570, upperEarningsLimit: 50_270, mainRate: 0.08, upperRate: 0.02 },
+      // VERIFY: https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2026-to-2027 (2026/27 thresholds; 9%, postgraduate 6%)
+      // and https://www.gov.uk/repaying-your-student-loan/what-you-pay. Checked 18 Oct 2026.
+      studentLoans: {
+        plan1: { threshold: 26_900, rate: 0.09 },
+        plan2: { threshold: 29_385, rate: 0.09 },
+        plan4: { threshold: 33_795, rate: 0.09 },
+        plan5: { threshold: 25_000, rate: 0.09 },
+        postgraduate: { threshold: 21_000, rate: 0.06 },
+      },
+      // VERIFY: https://www.gov.uk/tax-on-your-private-pension/pension-tax-relief (provider claims relief at the basic 20% rate). Checked 18 Oct 2026.
+      reliefAtSourceRate: 0.2,
     },
     inheritanceTax: {
       // VERIFY: https://www.gov.uk/inheritance-tax (£325,000). Fixed to 5 April 2031:

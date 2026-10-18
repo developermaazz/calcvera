@@ -11,6 +11,7 @@ import NovatedLeaseCalculator from '../../calculators/novatedLease/NovatedLeaseC
 import PersonalLoanPayoffCalculator from '../../calculators/personalLoanPayoff/PersonalLoanPayoffCalculator.astro';
 import QuarterlyTaxCalculator from '../../calculators/quarterlyTax/QuarterlyTaxCalculator.astro';
 import RedundancyPayCalculator from '../../calculators/redundancyPay/RedundancyPayCalculator.astro';
+import TakeHomePayCalculator from '../../calculators/takeHomePay/TakeHomePayCalculator.astro';
 import UsedCarLoanCalculator from '../../calculators/usedCarLoan/UsedCarLoanCalculator.astro';
 import { CALCULATORS, getCalculator, liveCountries, type EngineName } from '../../calculators/registry';
 import { getCountry } from '../../countries';
@@ -28,6 +29,7 @@ const ENGINE_UI: Partial<Record<EngineName, typeof LoanCalculator>> = {
   creditCardPayoff: CreditCardPayoffCalculator,
   personalLoanPayoff: PersonalLoanPayoffCalculator,
   usedCarLoan: UsedCarLoanCalculator,
+  takeHomePay: TakeHomePayCalculator,
   dti: DtiCalculator,
   carAffordability: CarAffordabilityCalculator,
   debtConsolidation: DebtConsolidationCalculator,
