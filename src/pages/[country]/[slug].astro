@@ -8,6 +8,7 @@ import FhsaCalculator from '../../calculators/fhsa/FhsaCalculator.astro';
 import InheritanceTaxCalculator from '../../calculators/inheritanceTax/InheritanceTaxCalculator.astro';
 import LoanCalculator from '../../calculators/loan/LoanCalculator.astro';
 import NovatedLeaseCalculator from '../../calculators/novatedLease/NovatedLeaseCalculator.astro';
+import PersonalLoanPayoffCalculator from '../../calculators/personalLoanPayoff/PersonalLoanPayoffCalculator.astro';
 import QuarterlyTaxCalculator from '../../calculators/quarterlyTax/QuarterlyTaxCalculator.astro';
 import RedundancyPayCalculator from '../../calculators/redundancyPay/RedundancyPayCalculator.astro';
 import { CALCULATORS, getCalculator, liveCountries, type EngineName } from '../../calculators/registry';
@@ -24,6 +25,7 @@ export function getStaticPaths() {
 const ENGINE_UI: Partial<Record<EngineName, typeof LoanCalculator>> = {
   loan: LoanCalculator,
   creditCardPayoff: CreditCardPayoffCalculator,
+  personalLoanPayoff: PersonalLoanPayoffCalculator,
   dti: DtiCalculator,
   carAffordability: CarAffordabilityCalculator,
   debtConsolidation: DebtConsolidationCalculator,

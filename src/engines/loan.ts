@@ -123,6 +123,25 @@ export function maxPrincipalForPayment(payment: number, aprPercent: number, term
   return (payment * -Math.expm1(-termMonths * Math.log1p(r))) / r;
 }
 
+/**
+ * Schedule for paying a balance at a fixed monthly payment until it's gone; the last payment is only
+ * what's left. Callers must check the payment is above the first month's interest. Stops at maxMonths.
+ */
+export function fixedPaymentSchedule(balance: number, aprPercent: number, payment: number, maxMonths = 1200): LoanScheduleRow[] {
+  const r = aprPercent / 100 / 12;
+  const schedule: LoanScheduleRow[] = [];
+  let remaining = balance;
+  for (let month = 1; remaining > 1e-9 && month <= maxMonths; month++) {
+    const interest = remaining * r;
+    const paid = Math.min(payment, remaining + interest);
+    const principal = paid - interest;
+    remaining = Math.max(0, remaining - principal);
+    if (remaining < 1e-7) remaining = 0;
+    schedule.push({ month, payment: paid, interest, principal, extra: 0, balance: remaining });
+  }
+  return schedule;
+}
+
 /** Builds the full schedule. Throws a RangeError if the input is invalid; call validateLoanInput first. */
 export function calculateLoan(input: LoanInput): LoanResult {
   const errors = validateLoanInput(input);

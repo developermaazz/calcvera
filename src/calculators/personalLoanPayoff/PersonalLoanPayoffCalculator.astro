@@ -1,0 +1,118 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import AmortizationTable from '../../components/AmortizationTable.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import type { CountryConfig } from '../../countries';
+import { createFormatters } from '../../lib/format';
+import { buildPersonalLoanPayoffView, payoffDefaults, type PersonalLoanPayoffParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.personalLoanPayoff;
+if (!defaults) throw new Error(`Missing defaults.personalLoanPayoff in the ${country.code} country config`);
+const params: PersonalLoanPayoffParams = { locale: country.locale, currency: country.currency };
+const d = payoffDefaults(defaults);
+const { view } = buildPersonalLoanPayoffView(d, params);
+if (!view) throw new Error('Personal loan payoff defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+---
+
+<div class="calc-block" data-calc="loan-payoff" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="lp" label="Personal loan payoff calculator">
+    <Fragment slot="inputs">
+      <Field id="lp-balance" field="balance" label="Loan balance left" value={f.number(d.balance)} prefix={sym} money hint="The payoff amount on your latest statement or lender app." />
+      <Field id="lp-apr" field="aprPercent" label="Interest rate (APR)" value={String(d.aprPercent)} suffix="%" />
+      <Field id="lp-payment" field="monthlyPayment" label="Current monthly payment" value={f.number(d.monthlyPayment)} prefix={sym} money />
+      <Field id="lp-extra" field="extraMonthly" label="Extra payment each month" value={f.number(d.extraMonthly)} prefix={sym} money optional />
+      <Field id="lp-lump" field="lumpSum" label="One-time extra payment now" value={f.number(d.lumpSum)} prefix={sym} money optional />
+      <Field id="lp-penalty" field="prepaymentPenalty" label="Prepayment penalty" value={f.number(d.prepaymentPenalty)} prefix={sym} money optional hint="Only if your loan agreement charges one for paying early." />
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label" data-out="headlineLabel">{view.headlineLabel}</p>
+        <p class="result-figure" data-out="headline">{view.headline}</p>
+      </div>
+      <table class="compare-table">
+        <thead><tr><th scope="col"></th><th scope="col">Now</th><th scope="col">Paying extra</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Monthly payment</th><td data-out="currentPayment">{view.currentPayment}</td><td data-out="newPayment">{view.newPayment}</td></tr>
+          <tr><th scope="row">Time left</th><td data-out="currentTime">{view.currentTime}</td><td data-out="newTime">{view.newTime}</td></tr>
+          <tr><th scope="row">Paid off by</th><td data-out="currentDate">{view.currentDate}</td><td data-out="newDate">{view.newDate}</td></tr>
+          <tr><th scope="row">Interest</th><td data-out="currentInterest">{view.currentInterest}</td><td data-out="newInterest">{view.newInterest}</td></tr>
+        </tbody>
+      </table>
+      <dl class="result-list" data-show="hasPenalty" hidden={!view.hasPenalty}>
+        <div><dt>Prepayment penalty</dt><dd data-out="penalty">{view.penalty}</dd></div>
+      </dl>
+      <p class="result-warn" data-show="costsMore" hidden={!view.costsMore}>The penalty is more than the interest you'd save.</p>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="lp-breakdown-title">
+    <h2 id="lp-breakdown-title" class="h3">What's left to pay</h2>
+    <SvgChart
+      id="lp-chart"
+      title="Total still to pay from today"
+      legend={[
+        { label: 'Balance', className: 'chart-s1' },
+        { label: 'Interest', className: 'chart-s2' },
+        { label: 'Prepayment penalty', className: 'chart-s3' },
+      ]}
+      svg={view.chartSvg}
+      htmlKey="chartSvg"
+    />
+    <AmortizationTable
+      summary="Payment schedule when paying extra"
+      views={[
+        { id: 'yearly', label: 'By year', headers: ['Year', 'Principal', 'Interest', 'Balance left'], rowsHtml: view.yearlyRows },
+        { id: 'monthly', label: 'By month', headers: ['#', 'Month', 'Payment', 'Principal', 'Interest', 'Balance left'], rowsHtml: view.monthlyRows },
+      ]}
+    />
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <ul>
+        <li>Each month, interest = balance × APR ÷ 12. The rest of the payment, including any extra, reduces the balance. The last payment is only what's left.</li>
+        <li><strong>Now:</strong> your current payment until the balance reaches zero. <strong>Paying extra:</strong> the balance minus any one-time payment, repaid at your payment plus the monthly extra.</li>
+        <li><strong>You save</strong> = interest now − interest paying extra − any prepayment penalty.</li>
+        <li>Assumes extra money goes straight to principal and the rate stays the same. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildPersonalLoanPayoffView, readEarlyPayoffInput, type PersonalLoanPayoffParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="loan-payoff"]')) {
+    const params = embeddedParams<PersonalLoanPayoffParams>(root);
+    const schedule = root.querySelector<HTMLDetailsElement>('[data-schedule]');
+    const monthlyBody = root.querySelector<HTMLElement>('[data-rows="monthly"]');
+    const yearlyBody = root.querySelector<HTMLElement>('[data-rows="yearly"]');
+    bindCalculator(root, (read) => {
+      const computed = buildPersonalLoanPayoffView(readEarlyPayoffInput(read), params);
+      if (computed.view) {
+        if (yearlyBody) yearlyBody.innerHTML = computed.view.yearlyRows;
+        if (monthlyBody && schedule?.open) monthlyBody.innerHTML = computed.view.monthlyRows;
+        if (monthlyBody && !schedule?.open) monthlyBody.dataset.pending = computed.view.monthlyRows;
+      }
+      return computed;
+    });
+    schedule?.addEventListener('toggle', () => {
+      if (schedule.open && monthlyBody?.dataset.pending) {
+        monthlyBody.innerHTML = monthlyBody.dataset.pending;
+        delete monthlyBody.dataset.pending;
+      }
+    });
+  }
+</script>

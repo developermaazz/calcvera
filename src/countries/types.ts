@@ -25,6 +25,13 @@ export interface CreditCardDefaults {
   targetMonths: number;
 }
 
+export interface PersonalLoanPayoffDefaults {
+  balance: number;
+  aprPercent: number;
+  monthlyPayment: number;
+  extraMonthly: number;
+}
+
 export interface LoanDefaults {
   amount: number;
   aprPercent: number;
@@ -219,6 +226,7 @@ export interface CountryConfig {
   defaults: {
     loan?: LoanDefaults;
     creditCard?: CreditCardDefaults;
+    personalLoanPayoff?: PersonalLoanPayoffDefaults;
   };
 
   // Country-specific figures, present only on the country that needs them.

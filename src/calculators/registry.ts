@@ -3,6 +3,7 @@ import { isLaunched, type CountryCode } from '../countries';
 export type EngineName =
   | 'loan'
   | 'creditCardPayoff'
+  | 'personalLoanPayoff'
   | 'dti'
   | 'carAffordability'
   | 'debtConsolidation'
@@ -69,6 +70,17 @@ export const CALCULATORS: CalculatorEntry[] = [
     blurb: 'How long it takes to clear a credit card, the interest you pay, or the payment needed to be debt-free by a date.',
     related: ['debt-consolidation-calculator', 'debt-to-income-ratio-calculator', 'debt-snowball-calculator', 'loan-calculator', 'personal-loan-payoff-calculator'],
     popular: true,
+  },
+
+  {
+    // Launch set #5. Uses the earlyPayoff engine (loan + extra payments).
+    slug: 'personal-loan-payoff-calculator',
+    engine: 'personalLoanPayoff',
+    category: 'loans',
+    countries: ['us'],
+    name: 'Personal Loan Payoff Calculator',
+    blurb: 'How much paying extra each month, or a one-time lump sum, saves on a personal loan you already have.',
+    related: ['loan-calculator', 'debt-consolidation-calculator', 'credit-card-payoff-calculator', 'debt-to-income-ratio-calculator'],
   },
 
   // ---------- Batch 2 (CLAUDE.md section 12) ----------

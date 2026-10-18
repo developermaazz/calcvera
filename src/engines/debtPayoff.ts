@@ -3,7 +3,7 @@
  * card by a fixed payment or a target number of months. Monthly rate = APR / 12; no new spending.
  * Pure: no formatting, no country lookups.
  */
-import { calculateLoan, type LoanScheduleRow } from './loan';
+import { calculateLoan, fixedPaymentSchedule, type LoanScheduleRow } from './loan';
 import { checkRange, type FieldError } from './validation';
 
 export interface DebtInput {
@@ -161,18 +161,8 @@ export function calculateCardPayoff(input: CardPayoffInput): CardPayoffResult {
     };
   }
 
-  const schedule: LoanScheduleRow[] = [];
-  let balance = input.balance;
-  let totalInterest = 0;
-  for (let month = 1; balance > 1e-9 && month <= MAX_PAYOFF_MONTHS; month++) {
-    const interest = balance * r;
-    const payment = Math.min(input.monthlyPayment, balance + interest);
-    const principal = payment - interest;
-    balance = Math.max(0, balance - principal);
-    if (balance < 1e-7) balance = 0;
-    totalInterest += interest;
-    schedule.push({ month, payment, interest, principal, extra: 0, balance });
-  }
+  const schedule = fixedPaymentSchedule(input.balance, input.aprPercent, input.monthlyPayment, MAX_PAYOFF_MONTHS);
+  const totalInterest = schedule.reduce((sum, row) => sum + row.interest, 0);
 
   return {
     monthlyPayment: input.monthlyPayment,
