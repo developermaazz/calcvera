@@ -1,5 +1,5 @@
 ---
-h1: Rent vs Buy Calculator
+h1: UK Rent vs Buy Calculator
 description: "Free UK rent vs buy calculator with Stamp Duty: compare your net worth if you buy a home or rent and invest, and see when buying pulls ahead."
 intro: Compare buying a home with renting a similar one and investing the difference, including Stamp Duty, to see which leaves you better off after the years you plan to stay and when buying pulls ahead.
 updated: 2026-10-20

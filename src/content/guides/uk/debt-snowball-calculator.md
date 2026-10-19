@@ -1,5 +1,5 @@
 ---
-h1: Debt Snowball Calculator
+h1: UK Debt Snowball Calculator
 description: "Free UK debt snowball calculator: list your debts to see your debt-free date, payoff order and interest saved, and compare it with the avalanche method."
 intro: List your debts and how much extra you can pay each month to see when you'll be debt-free, the order your debts are cleared, and how the snowball compares with the avalanche method.
 updated: 2026-10-19

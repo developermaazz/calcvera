@@ -1,5 +1,5 @@
 ---
-h1: Personal Loan Payoff Calculator
+h1: US Personal Loan Payoff Calculator
 description: Free US personal loan payoff calculator. See how much extra monthly payments or a lump sum save in interest, and your new payoff date.
 intro: Enter your loan balance, rate and payment to see how much sooner you'd be debt-free, and how much interest you'd save, by paying extra each month or making a one-time payment.
 updated: 2026-10-18

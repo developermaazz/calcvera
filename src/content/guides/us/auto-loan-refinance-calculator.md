@@ -1,5 +1,5 @@
 ---
-h1: Auto Loan Refinance Calculator
+h1: US Auto Loan Refinance Calculator
 description: Free auto loan refinance calculator for US drivers. See your new car payment, total savings after fees, and the month refinancing breaks even.
 intro: Enter your current car loan and a refinance offer to see your new monthly payment, whether you'd save money overall after fees, and when the fees pay for themselves.
 updated: 2026-10-18

@@ -1,5 +1,5 @@
 ---
-h1: Compound Interest Calculator
+h1: UK Compound Interest Calculator
 description: "Free UK compound interest calculator: see how a lump sum and monthly deposits grow with daily, monthly or annual compounding, year by year."
 intro: Enter a starting amount, a monthly deposit, the interest rate and how long you'll save to see your future balance, how much of it is interest, and how it grows each year.
 updated: 2026-10-20

@@ -1,5 +1,5 @@
 ---
-h1: Credit Card Payoff Calculator
+h1: US Credit Card Payoff Calculator
 description: Free US credit card payoff calculator. See how long it takes to pay off your card and the interest you'll pay, or the payment needed by a date.
 intro: Enter your card balance and APR to see how long a monthly payment takes to clear it and how much interest you'll pay, or the payment you need to be debt-free by a set date.
 updated: 2026-10-18

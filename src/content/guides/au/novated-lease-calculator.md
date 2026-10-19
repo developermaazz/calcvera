@@ -1,5 +1,5 @@
 ---
-h1: Novated Lease Calculator
+h1: Australian Novated Lease Calculator
 description: Free Australian novated lease calculator for 2026–27. Pre-tax and post-tax deductions, take-home pay change and true cost against buying outright.
 intro: Enter your salary and the car's price to see your pre-tax and post-tax deductions, how much less you'd take home and whether a novated lease beats buying outright.
 updated: 2026-10-16

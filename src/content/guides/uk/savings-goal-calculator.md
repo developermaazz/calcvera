@@ -1,5 +1,5 @@
 ---
-h1: Savings Goal Calculator
+h1: UK Savings Goal Calculator
 description: "Free UK savings goal calculator: find how much to save each month to reach a goal by a date, or how long your monthly savings will take."
 intro: Enter your savings goal, what you've saved so far and your account's AER to see how much to save each month to get there by a date, or how long your monthly savings will take.
 updated: 2026-10-20

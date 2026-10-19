@@ -9,7 +9,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { createFormatters } from '../lib/format';
 import { CATEGORY_TINTS, ENGINE_ICONS } from '../lib/icons';
 
-const title = `${SITE.name}: Finance Calculators for Your Country`;
+const title = `${SITE.name}: Free Loan, Tax & Savings Calculators by Country`;
 
 // Same guess as CountryBanner: remembered choice → browser timezone → browser language. Used only to put the
 // visitor's country first; every visitor (and Google) still gets the same page and links.
@@ -47,6 +47,8 @@ const jsonLd = [
     name: SITE.name,
     url: SITE.url + '/',
     email: SITE.email,
+    logo: `${SITE.url}/icon-512.png`,
+    founder: { '@type': 'Person', name: SITE.owner },
   },
 ];
 ---

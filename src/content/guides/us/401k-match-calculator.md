@@ -1,5 +1,5 @@
 ---
-h1: 401(k) Match Calculator
+h1: US 401(k) Match Calculator
 description: Free 401(k) match calculator for 2026. See how much your employer adds, the match you might be missing, and how your 401(k) could grow by retirement.
 intro: Enter your salary, contribution and your employer's match formula to see how much your employer adds this year, whether you're leaving any match unclaimed, and what your 401(k) could grow to.
 updated: 2026-10-18

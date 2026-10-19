@@ -1,5 +1,5 @@
 ---
-h1: Used Car Loan Calculator (With Trade-In & Tax)
+h1: US Used Car Loan Calculator (With Trade-In & Tax)
 description: Free used car loan calculator for US buyers. Monthly payment, total interest and total cost, with trade-in, sales tax and fees included.
 intro: Enter the car's price, your down payment, trade-in, sales tax and loan terms to see your monthly payment, how much you'll borrow and what the car really costs with interest.
 updated: 2026-10-18

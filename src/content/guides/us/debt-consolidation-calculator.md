@@ -1,5 +1,5 @@
 ---
-h1: Debt Consolidation Calculator
+h1: US Debt Consolidation Calculator
 description: Free US debt consolidation calculator. Compare paying off up to 10 debts as they are with one consolidation loan, including fees and break-even.
 intro: Enter your current debts and a consolidation loan offer to see whether one loan would save money, how your monthly payment would change and when the fee pays for itself.
 updated: 2026-10-16

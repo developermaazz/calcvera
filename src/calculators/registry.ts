@@ -45,6 +45,8 @@ export interface CalculatorEntry {
   countries: CountryCode[];
   /** Base name used in titles, e.g. "Loan Calculator". */
   name: string;
+  /** What the page gives you, after the name in the <title>: "Monthly Payment & Interest". See calculatorTitle(). */
+  titleHook: string;
   /** One line for hub and homepage cards. */
   blurb: string;
   /** Related slugs; only those that exist for the same country are linked. */
@@ -68,6 +70,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     category: 'loans',
     countries: ['us', 'uk'],
     name: 'Loan Calculator',
+    titleHook: 'Monthly Payment & Interest',
     blurb: 'Monthly payment, total interest and payoff date for any fixed-rate loan, with extra payments.',
     related: ['personal-loan-payoff-calculator', 'used-car-loan-calculator', 'credit-card-payoff-calculator', 'debt-snowball-calculator', 'car-finance-calculator'],
     popular: true,
@@ -80,6 +83,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     category: 'loans',
     countries: ['us'],
     name: 'Used Car Loan Calculator',
+    titleHook: 'Payment With Trade-In & Tax',
     blurb: 'Monthly payment and total cost for a used car loan, with trade-in, sales tax and fees included.',
     related: ['car-affordability-calculator', 'auto-loan-refinance-calculator', 'loan-calculator', 'debt-to-income-ratio-calculator'],
     popular: true,
@@ -91,6 +95,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     category: 'debt',
     countries: ['us', 'uk'],
     name: 'Credit Card Payoff Calculator',
+    titleHook: 'Payoff Date & Interest',
     blurb: 'How long it takes to clear a credit card, the interest you pay, or the payment needed to be debt-free by a date.',
     related: ['debt-consolidation-calculator', 'debt-to-income-ratio-calculator', 'debt-snowball-calculator', 'loan-calculator', 'personal-loan-payoff-calculator'],
     popular: true,
@@ -103,6 +108,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     category: 'debt',
     countries: ['us', 'uk'],
     name: 'Debt Snowball Calculator',
+    titleHook: 'Payoff Date & Order',
     blurb: 'Your debt-free date with the snowball or avalanche method, the payoff order, and the interest you save.',
     related: ['credit-card-payoff-calculator', 'debt-consolidation-calculator', 'debt-to-income-ratio-calculator', 'personal-loan-payoff-calculator', 'loan-calculator'],
   },
@@ -114,6 +120,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     category: 'savings',
     countries: ['us', 'uk'],
     name: 'Compound Interest Calculator',
+    titleHook: 'Growth Year by Year',
     blurb: 'How a lump sum and regular monthly deposits grow with compound interest, year by year.',
     related: ['savings-goal-calculator', '401k-match-calculator', 'take-home-pay-calculator', 'debt-snowball-calculator', 'credit-card-payoff-calculator'],
     popular: true,
@@ -126,6 +133,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     category: 'savings',
     countries: ['us', 'uk'],
     name: 'Savings Goal Calculator',
+    titleHook: 'Monthly Savings Needed',
     blurb: 'How much to save each month to reach a goal by a date, or how long your monthly savings take to get there.',
     related: ['compound-interest-calculator', 'rent-vs-buy-calculator', 'take-home-pay-calculator', '401k-match-calculator', 'debt-snowball-calculator', 'credit-card-payoff-calculator'],
   },
@@ -137,6 +145,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     category: 'property',
     countries: ['us', 'uk'],
     name: 'Rent vs Buy Calculator',
+    titleHook: 'Which Leaves You Better Off',
     blurb: 'Whether buying or renting leaves you better off, the year buying pulls ahead, and every cost of owning.',
     related: ['stamp-duty-calculator', 'savings-goal-calculator', 'compound-interest-calculator', 'debt-to-income-ratio-calculator', 'loan-calculator'],
   },
@@ -148,6 +157,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     category: 'loans',
     countries: ['us'],
     name: 'Personal Loan Payoff Calculator',
+    titleHook: 'Extra Payment Savings',
     blurb: 'How much paying extra each month, or a one-time lump sum, saves on a personal loan you already have.',
     related: ['loan-calculator', 'debt-snowball-calculator', 'debt-consolidation-calculator', 'credit-card-payoff-calculator', 'debt-to-income-ratio-calculator'],
   },
@@ -160,6 +170,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     category: 'tax',
     countries: ['uk'],
     name: 'Take-Home Pay Calculator',
+    titleHook: 'Salary After Tax',
     blurb: 'Your monthly pay after Income Tax, National Insurance, student loan and pension, for England, Wales, NI or Scotland.',
     related: ['redundancy-pay-calculator', 'student-loan-repayment-calculator', 'pension-tax-relief-calculator', 'savings-goal-calculator', 'credit-card-payoff-calculator', 'loan-calculator'],
     popular: true,
@@ -173,6 +184,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     category: 'property',
     countries: ['uk'],
     name: 'Stamp Duty Calculator',
+    titleHook: 'SDLT for Any Buyer',
     blurb: 'Stamp Duty Land Tax on a home in England or Northern Ireland, for first-time buyers, movers and additional properties.',
     related: ['rent-vs-buy-calculator', 'take-home-pay-calculator', 'inheritance-tax-calculator', 'mortgage-overpayment-calculator', 'loan-calculator'],
     popular: true,
@@ -185,6 +197,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     category: 'loans',
     countries: ['us'],
     name: 'Auto Loan Refinance Calculator',
+    titleHook: 'Savings & Break-Even',
     blurb: 'Whether refinancing your car loan saves money, your new payment, and when the fees pay for themselves.',
     related: ['used-car-loan-calculator', 'car-affordability-calculator', 'loan-calculator', 'debt-consolidation-calculator'],
   },
@@ -196,6 +209,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     category: 'retirement',
     countries: ['us'],
     name: '401(k) Match Calculator',
+    titleHook: 'Employer Match & Growth',
     blurb: 'How much your employer adds to your 401(k), the match you might be missing, and what it could grow to.',
     related: ['compound-interest-calculator', 'roth-ira-calculator', 'savings-goal-calculator', 'quarterly-estimated-tax-calculator', 'debt-to-income-ratio-calculator', 'paycheck-calculator'],
     popular: true,
@@ -208,6 +222,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     category: 'debt',
     countries: ['uk'],
     name: 'Student Loan Repayment Calculator',
+    titleHook: 'All Plans',
     blurb: 'Your monthly student loan repayment, how long it takes, and how much may be written off, for every plan.',
     related: ['take-home-pay-calculator', 'credit-card-payoff-calculator', 'loan-calculator', 'redundancy-pay-calculator'],
   },
@@ -218,6 +233,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     category: 'loans',
     countries: ['uk'],
     name: 'Car Finance Calculator',
+    titleHook: 'PCP & HP Payments',
     blurb: 'Monthly PCP or hire purchase payments, the final payment, and the total you pay for the car.',
     related: ['loan-calculator', 'take-home-pay-calculator', 'credit-card-payoff-calculator'],
   },
@@ -229,6 +245,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     category: 'debt',
     countries: ['us'],
     name: 'Debt-to-Income Ratio Calculator',
+    titleHook: 'Front & Back-End DTI',
     blurb: 'Front-end and back-end DTI, what lenders look for, and how much debt to cut to reach a target ratio.',
     related: ['debt-consolidation-calculator', 'debt-snowball-calculator', 'credit-card-payoff-calculator', 'car-affordability-calculator', 'loan-calculator'],
   },
@@ -239,6 +256,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     category: 'loans',
     countries: ['us'],
     name: 'Car Affordability Calculator',
+    titleHook: 'How Much Car Can I Afford',
     blurb: 'The most car you can afford from a monthly budget, with trade-in, sales tax and fees included.',
     related: ['used-car-loan-calculator', 'auto-loan-refinance-calculator', 'loan-calculator', 'debt-to-income-ratio-calculator'],
   },
@@ -249,6 +267,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     category: 'debt',
     countries: ['us'],
     name: 'Debt Consolidation Calculator',
+    titleHook: 'Savings & Break-Even',
     blurb: 'Compare paying off up to 10 debts as they are with one consolidation loan, including fees and break-even.',
     related: ['credit-card-payoff-calculator', 'debt-snowball-calculator', 'personal-loan-payoff-calculator', 'debt-to-income-ratio-calculator'],
   },
@@ -259,6 +278,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     category: 'tax',
     countries: ['uk'],
     name: 'Redundancy Pay Calculator',
+    titleHook: 'Statutory Pay',
     blurb: 'Statutory redundancy pay from your age, service and weekly pay, for Great Britain or Northern Ireland.',
     related: ['take-home-pay-calculator', 'pension-tax-relief-calculator', 'credit-card-payoff-calculator', 'loan-calculator'],
   },
@@ -269,6 +289,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     category: 'tax',
     countries: ['uk'],
     name: 'Inheritance Tax Calculator',
+    titleHook: 'Tax on an Estate',
     blurb: 'Nil-rate bands, residence allowance after taper, and the tax due on an estate, including the charity rate.',
     related: ['stamp-duty-calculator', 'pension-tax-relief-calculator', 'isa-savings-calculator'],
   },
@@ -279,6 +300,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     category: 'tax',
     countries: ['us'],
     name: 'Quarterly Estimated Tax Calculator',
+    titleHook: 'Due Dates',
     blurb: 'Self-employment tax, federal income tax and your four quarterly payments with due dates.',
     related: ['paycheck-calculator', 'roth-ira-calculator', '401k-match-calculator', 'debt-to-income-ratio-calculator'],
   },
@@ -289,6 +311,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     category: 'savings',
     countries: ['ca'],
     name: 'FHSA Calculator',
+    titleHook: 'Balance & Tax Refunds',
     blurb: 'Project your First Home Savings Account balance, contributions and tax refunds, with limit warnings.',
     related: ['rrsp-vs-tfsa-calculator', 'mortgage-payment-calculator', 'land-transfer-tax-calculator', 'income-tax-calculator'],
   },
@@ -299,6 +322,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     category: 'tax',
     countries: ['au'],
     name: 'Novated Lease Calculator',
+    titleHook: 'EV Savings',
     blurb: 'Pre-tax and post-tax deductions, take-home pay change and the true cost against buying outright.',
     related: ['take-home-pay-calculator', 'home-loan-repayment-calculator', 'super-calculator'],
   },
@@ -329,4 +353,20 @@ export function relatedFor(calc: CalculatorEntry, country: CountryCode): Calcula
 
 export function calculatorPath(country: CountryCode, slug: string): string {
   return `/${country}/${slug}/`;
+}
+
+/** Google shows about 60 characters of a title (CLAUDE.md section 10). */
+export const MAX_TITLE_LENGTH = 60;
+
+/**
+ * <title> for a calculator page, most useful first: "UK Take-Home Pay Calculator 2026/27: Salary After Tax".
+ * Adds " | {brand}" when it still fits; drops the hook (then the brand) if the title would be too long.
+ */
+export function calculatorTitle(calc: CalculatorEntry, adjective: string, taxYear: string, brand: string): string {
+  const base = `${adjective} ${calc.name}${calc.usesTaxYear ? ` ${taxYear}` : ''}`;
+  const full = `${base}: ${calc.titleHook}`;
+  for (const candidate of [`${full} | ${brand}`, full, `${base} | ${brand}`, base]) {
+    if (candidate.length <= MAX_TITLE_LENGTH) return candidate;
+  }
+  return base;
 }

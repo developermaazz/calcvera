@@ -1,5 +1,5 @@
 ---
-h1: Savings Goal Calculator
+h1: US Savings Goal Calculator
 description: "Free US savings goal calculator: find how much to save each month to reach a goal by a date, or how long your monthly savings will take."
 intro: Enter your savings goal, what you've saved so far and your account's APY to see how much to save each month to get there by a date, or how long your monthly savings will take.
 updated: 2026-10-20

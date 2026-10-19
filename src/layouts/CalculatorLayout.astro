@@ -10,7 +10,7 @@ import FAQ from '../components/FAQ.astro';
 import Flag from '../components/Flag.astro';
 import Icon from '../components/Icon.astro';
 import RelatedCalculators from '../components/RelatedCalculators.astro';
-import { calculatorPath, liveCountries, relatedFor, type CalculatorEntry } from '../calculators/registry';
+import { calculatorPath, calculatorTitle, liveCountries, relatedFor, type CalculatorEntry } from '../calculators/registry';
 import { SITE } from '../config/site';
 import type { CountryCode, CountryConfig } from '../countries';
 import BaseLayout from './BaseLayout.astro';
@@ -34,8 +34,7 @@ interface Props {
 
 const { country, calc, guide, toc = [] } = Astro.props;
 
-const fullTitle = `${calc.name} (${country.shortName}) | ${SITE.name}`;
-const title = fullTitle.length <= 60 ? fullTitle : `${calc.name} (${country.shortName})`;
+const title = calculatorTitle(calc, country.adjective, country.taxYear, SITE.name);
 
 const alternates: Partial<Record<CountryCode, string>> = Object.fromEntries(
   liveCountries(calc).map((code) => [code, calculatorPath(code, calc.slug)]),
@@ -67,7 +66,8 @@ const jsonLd = [
     dateModified: guide.updated.toISOString().slice(0, 10),
     isAccessibleForFree: true,
     offers: { '@type': 'Offer', price: '0', priceCurrency: country.currency },
-    publisher: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+    author: { '@type': 'Person', name: SITE.owner, url: `${SITE.url}/about/` },
+    publisher: { '@type': 'Organization', name: SITE.name, url: SITE.url, logo: `${SITE.url}/icon-512.png` },
   },
   {
     '@type': 'FAQPage',
@@ -100,6 +100,7 @@ const jsonLd = [
         <li class="chip"><Flag code={country.code} size={16} />{country.name} · {country.currency}</li>
         {calc.usesTaxYear && <li class="tax-year-note">Updated for the {country.taxYear} tax year.</li>}
         <li class="chip"><Icon name="calendar" size={15} />Last updated {updatedLabel}</li>
+        <li><a class="chip" href="/about/" rel="author">By {SITE.owner}</a></li>
         <li><a class="chip chip-accent" href="/methodology/"><Icon name="checkCircle" size={15} />Tested</a></li>
       </ul>
     </div>
@@ -116,7 +117,10 @@ const jsonLd = [
     <FAQ faqs={guide.faqs} />
     <RelatedCalculators country={country} calculators={relatedFor(calc, country.code)} />
     <footer class="guide-meta">
-      <p>Last updated <time datetime={guide.updated.toISOString().slice(0, 10)}>{updatedLabel}</time>.</p>
+      <p>
+        Written by <a href="/about/" rel="author">{SITE.owner}</a> and checked against official sources. Last updated
+        <time datetime={guide.updated.toISOString().slice(0, 10)}>{updatedLabel}</time>.
+      </p>
       {
         guide.sources.length > 0 && (
           <>

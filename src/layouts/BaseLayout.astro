@@ -16,7 +16,7 @@ interface Props {
   country?: CountryConfig;
   /** Paths of equivalent pages per country, including this one. Drives hreflang, switcher and banner. */
   alternates?: Partial<Record<CountryCode, string>>;
-  /** Path for hreflang x-default. Defaults to the US alternate, else the homepage. */
+  /** Path for hreflang x-default. Defaults to the US alternate, else the page itself if it exists in one country only, else the homepage. */
   xDefault?: string;
   /** JSON-LD objects; combined into one @graph. */
   jsonLd?: Record<string, unknown>[];
@@ -34,7 +34,9 @@ const hreflangLinks = Object.entries(alternates)
   .filter((entry): entry is [CountryCode, string] => typeof entry[1] === 'string')
   .map(([code, path]) => ({ hreflang: COUNTRIES[code]?.hreflang ?? code, href: abs(path) }));
 if (hreflangLinks.length > 0) {
-  hreflangLinks.push({ hreflang: 'x-default', href: abs(xDefault ?? alternates.us ?? '/') });
+  const paths = Object.values(alternates).filter((p): p is string => typeof p === 'string');
+  const fallback = alternates.us ?? (paths.length === 1 ? paths[0] : '/');
+  hreflangLinks.push({ hreflang: 'x-default', href: abs(xDefault ?? fallback ?? '/') });
 }
 
 // Escape "<" so content can never close the script tag early.

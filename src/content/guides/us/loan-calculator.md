@@ -1,5 +1,5 @@
 ---
-h1: Loan Calculator
+h1: US Loan Calculator
 description: Free US loan calculator. See your monthly payment, total interest and payoff date for any fixed-rate loan, and how extra payments save money.
 intro: Enter a loan amount, APR and term to see your monthly payment, the total interest you'll pay and the month you'll be debt-free.
 updated: 2026-10-15

@@ -24,7 +24,8 @@ const alternates: Partial<Record<CountryCode, string>> = Object.fromEntries(
   LAUNCHED_COUNTRIES.map((c) => [c.code, `/${c.code}/`]),
 );
 
-const title = `${country.adjective} Finance Calculators | ${SITE.name}`;
+const longTitle = `Free ${country.adjective} Finance Calculators: Loans, Debt & Tax`;
+const title = longTitle.length + SITE.name.length + 3 <= 60 ? `${longTitle} | ${SITE.name}` : longTitle;
 const description = `Free ${country.adjective} calculators for loans, debt, tax, savings and retirement, built on ${country.adjective} rules and figures.`;
 const pageUrl = new URL(`/${country.code}/`, SITE.url).href;
 

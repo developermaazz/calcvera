@@ -1,5 +1,5 @@
 ---
-h1: Quarterly Estimated Tax Calculator
+h1: US Quarterly Estimated Tax Calculator
 description: Free 2026 quarterly estimated tax calculator for the self-employed. Self-employment tax, federal income tax and your four payment dates.
 intro: Enter your self-employment income and filing status to estimate your 2026 self-employment tax, federal income tax and the four quarterly payments, with due dates.
 updated: 2026-10-16

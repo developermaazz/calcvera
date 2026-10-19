@@ -1,5 +1,5 @@
 ---
-h1: FHSA Calculator
+h1: Canadian FHSA Calculator
 description: Free Canadian FHSA calculator for 2026. Project your First Home Savings Account balance, contributions and tax refunds, with limit warnings.
 intro: Enter your planned contributions, timeline and province to project your First Home Savings Account balance and the tax refunds your contributions could earn.
 updated: 2026-10-16

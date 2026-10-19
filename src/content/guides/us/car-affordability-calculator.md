@@ -1,5 +1,5 @@
 ---
-h1: Car Affordability Calculator
+h1: US Car Affordability Calculator
 description: Free US car affordability calculator. Find the most car you can afford from a monthly payment, with trade-in, sales tax and fees included.
 intro: Start with the monthly payment you're comfortable with, and see the highest car price it covers once your down payment, trade-in, sales tax and fees are included.
 updated: 2026-10-16

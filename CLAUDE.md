@@ -123,14 +123,15 @@ public/                     robots.txt, ads.txt, _headers, fonts/, brand/ (logo 
 
 ## 10. SEO standards (every calculator page)
 
-- **Title:** `{Calculator Name} ({Country}) | Calcvera`, under 60 characters. Drop "| Calcvera" if over.
-- **H1:** the calculator name with the main search phrase, e.g. "UK Take-Home Pay Calculator".
+- **Title:** built by `calculatorTitle()` in registry.ts: `{Country adjective} {Calculator Name} {tax year if usesTaxYear}: {titleHook} | Calcvera`, at most 60 characters. Drops "| Calcvera", then the hook, if too long. Every registry entry needs a `titleHook` (what the page gives you, e.g. "Salary After Tax"). `tests/seo.test.ts` enforces length, uniqueness and the country prefix.
+- **H1:** the guide's `h1`, starting with the country adjective (US, UK, Canadian, Australian), e.g. "UK Take-Home Pay Calculator". Enforced by `tests/seo.test.ts`.
 - **Meta description:** under 155 characters, says what it calculates and for whom.
 - **Canonical:** self-referencing absolute URL.
-- **hreflang:** link equivalent pages across countries (`en-us`, `en-gb`, `en-ca`, `en-au`, `en-in`, `en-pk`) plus `x-default` pointing to the US version (or the homepage if no US version exists).
+- **hreflang:** link equivalent pages across countries (`en-us`, `en-gb`, `en-ca`, `en-au`, `en-in`, `en-pk`) plus `x-default`: the US version; or the page itself if it exists in one country only; or the homepage. Country hubs use the homepage.
 - **JSON-LD:** WebApplication (applicationCategory FinanceApplication, offers price 0) + FAQPage + BreadcrumbList.
 - **Internal links:** 3–5 related calculators from the registry, plus a breadcrumb to the country hub.
-- **Sitemap:** generated automatically; every new page is included.
+- **Sitemap:** generated automatically; every new page is included, with `lastmod` from the guide's `updated` date (hubs and the homepage take their newest guide date). Bump `updated` whenever a guide or its figures change.
+- **Author:** calculator pages show "By M. Maaz Ali" (links to /about/) and carry `author` in the WebApplication JSON-LD.
 - **Never auto-redirect by location.** CountryBanner only suggests.
 
 ## 11. Guide content standards

@@ -1,5 +1,5 @@
 ---
-h1: Debt-to-Income Ratio Calculator
+h1: US Debt-to-Income Ratio Calculator
 description: Free US DTI calculator. Work out your front-end and back-end debt-to-income ratios and how much debt to cut to meet a lender's limit.
 intro: Enter your gross monthly income and monthly debt payments to see your debt-to-income ratio, what lenders look for and how far you are from your target.
 updated: 2026-10-16
