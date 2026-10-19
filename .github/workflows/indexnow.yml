@@ -1,0 +1,32 @@
+# After each push to main, waits for Cloudflare to deploy, then tells IndexNow (Bing and others) about
+# pages that are new or changed: those whose guide "updated" date (sitemap lastmod) is in the last 2 days.
+name: IndexNow
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'What to submit: "changed" (last 2 days) or "all"'
+        default: changed
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Wait for the Cloudflare deploy
+        run: |
+          # Cloudflare builds and deploys main in about 1 to 3 minutes; the sitemap it serves is what we read.
+          sleep 240
+      - name: Submit to IndexNow
+        run: |
+          if [ "${{ github.event.inputs.mode }}" = "all" ]; then
+            node scripts/indexnow.mjs
+          else
+            node scripts/indexnow.mjs --days=2
+          fi
