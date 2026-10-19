@@ -1,7 +1,18 @@
 ---
+/**
+ * Sticky, translucent header: logo, calculator search (⌘K / Ctrl+K or "/"), country switcher and theme toggle.
+ * On phones the switcher and toggle move into a menu sheet. Search filters the site's own calculator list in
+ * the browser; nothing is sent anywhere.
+ */
+import { CATEGORY_LABELS, calculatorPath, calculatorsFor } from '../calculators/registry';
 import { SITE } from '../config/site';
-import type { CountryCode } from '../countries';
+import { LAUNCHED_COUNTRIES, type CountryCode } from '../countries';
+import { ENGINE_ICONS } from '../lib/icons';
 import CountrySwitcher from './CountrySwitcher.astro';
+import Flag from './Flag.astro';
+import Icon from './Icon.astro';
+import LogoMark from './LogoMark.astro';
+import ThemeToggle from './ThemeToggle.astro';
 
 interface Props {
   country?: CountryCode;
@@ -9,18 +20,102 @@ interface Props {
 }
 
 const { country, alternates } = Astro.props;
+
+// The visitor's country first in search results, then the rest.
+const searchCountries = [...LAUNCHED_COUNTRIES].sort((a, b) => Number(b.code === country) - Number(a.code === country));
+const searchItems = searchCountries.flatMap((c) =>
+  calculatorsFor(c.code).map((calc) => ({
+    href: calculatorPath(c.code, calc.slug),
+    code: c.code,
+    title: `${c.adjective} ${calc.name}`,
+    meta: `${c.name} · ${CATEGORY_LABELS[calc.category]}`,
+    icon: ENGINE_ICONS[calc.engine],
+    keywords: `${c.adjective} ${calc.name} ${c.name} ${c.code} ${CATEGORY_LABELS[calc.category]} ${calc.blurb}`.toLowerCase(),
+  })),
+);
 ---
 
-<header class="site-header">
+<header class="site-header" data-header>
   <div class="header-inner">
     <a class="logo" href="/">
-      <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
-        <rect width="32" height="32" rx="7" fill="#1F8A5B"></rect>
-        <path d="M9 17l5 5 9-11" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"
-        ></path>
-      </svg>
-      <span>{SITE.name}</span>
+      <LogoMark size={30} />
+      <span class="wordmark">{SITE.name}</span>
     </a>
-    <CountrySwitcher current={country} alternates={alternates} />
+    <div class="header-actions">
+      <button type="button" class="search-trigger" data-search-open aria-haspopup="dialog" aria-controls="site-search" aria-label="Search calculators">
+        <Icon name="search" size={18} />
+        <span class="search-trigger-label">Search calculators</span>
+        <kbd class="search-kbd" aria-hidden="true">/</kbd>
+      </button>
+      <CountrySwitcher class="header-only" current={country} alternates={alternates} />
+      <ThemeToggle id="header" class="header-only" />
+      <button type="button" class="icon-btn menu-btn" data-menu-open aria-haspopup="dialog" aria-controls="site-menu">
+        <Icon name="menu" size={22} />
+        <span class="visually-hidden">Menu</span>
+      </button>
+    </div>
   </div>
 </header>
+
+<dialog class="search-dialog" id="site-search" aria-label="Search calculators" data-search>
+  <div class="search-box">
+    <Icon name="search" size={20} />
+    <input
+      type="search"
+      placeholder="Search calculators"
+      aria-label="Search calculators"
+      aria-controls="search-results"
+      autocomplete="off"
+      spellcheck="false"
+      data-search-input
+    />
+    <button type="button" class="icon-btn" data-dialog-close>
+      <Icon name="close" size={20} />
+      <span class="visually-hidden">Close search</span>
+    </button>
+  </div>
+  <ul class="search-results" id="search-results" data-search-results>
+    {
+      searchItems.map((item) => (
+        <li data-keywords={item.keywords}>
+          <a href={item.href} data-set-country={item.code}>
+            <span class="icon-tile icon-tile-sm">
+              <Icon name={item.icon} size={18} />
+            </span>
+            <span class="search-text">
+              <strong>{item.title}</strong>
+              <span>{item.meta}</span>
+            </span>
+            <Flag code={item.code} size={18} />
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+  <p class="search-empty" data-search-empty hidden>No calculators match that search yet.</p>
+  <p class="search-foot" aria-hidden="true"><kbd>Esc</kbd> to close · <kbd>↑</kbd><kbd>↓</kbd> to move · <kbd>Enter</kbd> to open</p>
+</dialog>
+
+<dialog class="menu-sheet" id="site-menu" aria-label="Menu" data-menu>
+  <div class="menu-head">
+    <span class="logo">
+      <LogoMark size={26} />
+      <span class="wordmark">{SITE.name}</span>
+    </span>
+    <button type="button" class="icon-btn" data-dialog-close>
+      <Icon name="close" size={22} />
+      <span class="visually-hidden">Close menu</span>
+    </button>
+  </div>
+  <p class="menu-label">Country</p>
+  <CountrySwitcher current={country} alternates={alternates} label="Choose your country (menu)" />
+  <p class="menu-label">Theme</p>
+  <ThemeToggle id="menu" />
+  <nav class="menu-links" aria-label="Site">
+    <a href="/">Home</a>
+    <a href="/methodology/">How we build our calculators</a>
+    <a href="/about/">About</a>
+    <a href="/contact/">Contact</a>
+  </nav>
+</dialog>
+

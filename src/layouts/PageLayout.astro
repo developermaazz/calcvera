@@ -9,15 +9,23 @@ interface Props {
   /** "Last updated" date shown under the heading, e.g. for legal pages. */
   updated?: string;
   noindex?: boolean;
+  /** Show the page's numbered H2 steps as a vertical timeline (methodology). */
+  timeline?: boolean;
 }
 
-const { title, description, updated, noindex } = Astro.props;
+const { title, description, updated, noindex, timeline } = Astro.props;
 ---
 
 <BaseLayout title={`${title} | ${SITE.name}`} description={description} noindex={noindex}>
-  <article class="page prose">
-    <h1>{title}</h1>
-    {updated && <p class="muted">Last updated {updated}</p>}
-    <slot />
+  <article class="prose-page">
+    <header class="page-head grid-motif">
+      <div class="page">
+        <h1>{title}</h1>
+        {updated && <p class="muted">Last updated {updated}</p>}
+      </div>
+    </header>
+    <div class:list={['page prose', { 'is-timeline': timeline }]}>
+      <slot />
+    </div>
   </article>
 </BaseLayout>

@@ -1,5 +1,8 @@
 ---
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Flag from '../../components/Flag.astro';
+import Icon from '../../components/Icon.astro';
+import { CATEGORY_ICONS, CATEGORY_TINTS, ENGINE_ICONS } from '../../lib/icons';
 import { CATEGORY_LABELS, calculatorPath, calculatorsFor, type Category } from '../../calculators/registry';
 import { SITE } from '../../config/site';
 import { LAUNCHED_COUNTRIES, getCountry, type CountryCode } from '../../countries';
@@ -44,28 +47,70 @@ const jsonLd = [
 ---
 
 <BaseLayout title={title} description={description} country={country} alternates={alternates} xDefault="/" jsonLd={jsonLd}>
+  <div class="page-head grid-motif">
+    <div class="page-wide">
+      <Breadcrumbs
+        items={[
+          { name: 'Home', href: '/' },
+          { name: `${country.adjective} calculators`, href: `/${country.code}/` },
+        ]}
+      />
+      <div class="hub-title">
+        <Flag code={country.code} size={42} />
+        <h1>{country.adjective} finance calculators</h1>
+      </div>
+      <p class="lead">
+        Calculators built on {country.name} rules, in {country.currency}. Tax figures are for the {country.taxYear} tax year.
+      </p>
+      <ul class="chips">
+        <li class="chip">{country.currency}</li>
+        <li class="chip chip-accent"><Icon name="calendar" size={15} />{country.taxYear} tax year</li>
+        <li class="chip">{calculators.length} {calculators.length === 1 ? 'calculator' : 'calculators'}</li>
+      </ul>
+    </div>
+  </div>
+
   <div class="page-wide">
-    <Breadcrumbs
-      items={[
-        { name: 'Home', href: '/' },
-        { name: `${country.adjective} calculators`, href: `/${country.code}/` },
-      ]}
-    />
-    <h1>{country.adjective} finance calculators</h1>
-    <p class="lead">
-      Calculators built on {country.name} rules, in {country.currency}. Tax figures are for the {country.taxYear} tax year.
-    </p>
+    {
+      byCategory.size > 1 && (
+        <nav class="cat-nav" aria-label="Categories">
+          <ul>
+            {[...byCategory.entries()].map(([category, calcs]) => (
+              <li>
+                <a class="chip" href={`#cat-${category}`}>
+                  {CATEGORY_LABELS[category]} <span class="count">{calcs.length}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )
+    }
 
     {
       [...byCategory.entries()].map(([category, calcs]) => (
         <section class="hub-section" aria-labelledby={`cat-${category}`}>
-          <h2 id={`cat-${category}`}>{CATEGORY_LABELS[category]}</h2>
+          <div class="cat-head">
+            <span class:list={['icon-tile', `tint-${CATEGORY_TINTS[category]}`]}>
+              <Icon name={CATEGORY_ICONS[category]} size={22} />
+            </span>
+            <h2 id={`cat-${category}`}>{CATEGORY_LABELS[category]}</h2>
+            <span class="count">{calcs.length}</span>
+          </div>
           <ul class="card-list">
             {calcs.map((calc) => (
               <li>
                 <a class="link-card" href={calculatorPath(country.code, calc.slug)}>
+                  <span class="card-top">
+                    <span class:list={['icon-tile', 'icon-tile-sm', `tint-${CATEGORY_TINTS[category]}`]}>
+                      <Icon name={ENGINE_ICONS[calc.engine]} size={18} />
+                    </span>
+                  </span>
                   <strong>{calc.name}</strong>
-                  <span>{calc.blurb}</span>
+                  <span class="card-desc">{calc.blurb}</span>
+                  <span class="card-arrow" aria-hidden="true">
+                    <Icon name="arrowRight" size={18} />
+                  </span>
                 </a>
               </li>
             ))}
@@ -74,6 +119,9 @@ const jsonLd = [
       ))
     }
 
-    <p class="muted">More {country.adjective} calculators are on the way. Each one ships only after its maths is tested.</p>
+    <div class="roadmap-note">
+      <Icon name="lightbulb" size={20} />
+      <p>More {country.adjective} calculators are on the way. Each one ships only after its maths is tested.</p>
+    </div>
   </div>
 </BaseLayout>

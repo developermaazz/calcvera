@@ -58,12 +58,13 @@ const guide = await getEntry('guides', `${country.code}/${calc.slug}`);
 if (!guide) {
   throw new Error(`Missing guide: src/content/guides/${country.code}/${calc.slug}.md (every calculator page needs one)`);
 }
-const { Content } = await render(guide);
+const { Content, headings } = await render(guide);
+const toc = headings.filter((h) => h.depth === 2).map((h) => ({ slug: h.slug, text: h.text }));
 const Calculator = ENGINE_UI[calc.engine];
 if (!Calculator) throw new Error(`No UI registered for engine "${calc.engine}" (${calc.slug})`);
 ---
 
-<CalculatorLayout country={country} calc={calc} guide={guide.data}>
+<CalculatorLayout country={country} calc={calc} guide={guide.data} toc={toc}>
   <Calculator country={country} />
   <Fragment slot="guide">
     <Content />

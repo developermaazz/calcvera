@@ -1,0 +1,56 @@
+/*
+ * Self-hosted variable fonts (Latin subset, WOFF2, SIL Open Font License: public/fonts/OFL-*.txt).
+ * Each web font has a metric-matched local fallback, so text doesn't move when the web font arrives.
+ * Overrides were measured with fontTools against Arial / Georgia / Consolas (scripts noted in the brief log).
+ */
+
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter-var-latin.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('/fonts/fraunces-var-latin.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/jetbrains-mono-var-latin.woff2') format('woff2');
+  font-weight: 400 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter Fallback';
+  src: local('Arial'), local('ArialMT'), local('Helvetica');
+  size-adjust: 108.11%;
+  ascent-override: 89.61%;
+  descent-override: 22.31%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'Fraunces Fallback';
+  src: local('Georgia'), local('Times New Roman');
+  size-adjust: 104.75%;
+  ascent-override: 93.36%;
+  descent-override: 24.34%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono Fallback';
+  src: local('Consolas'), local('Menlo'), local('Courier New');
+  size-adjust: 109.13%;
+  ascent-override: 93.47%;
+  descent-override: 27.49%;
+  line-gap-override: 0%;
+}

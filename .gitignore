@@ -6,3 +6,6 @@ dist/
 .env.*
 .DS_Store
 npm-debug.log*
+
+# Brand script font cache
+scripts/brand/.cache/

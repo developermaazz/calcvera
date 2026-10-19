@@ -4,7 +4,7 @@ Country-specific finance calculators at [calc-vera.com](https://calc-vera.com). 
 
 ## Run it locally
 
-Needs Node.js LTS (20+) and Git.
+Needs Node.js LTS (22.22+) and Git.
 
 ```bash
 npm install          # once
@@ -14,6 +14,15 @@ npm run check        # type check
 npm run build        # static site in dist/
 npm run preview      # serve dist/ locally
 npm run check:verify # unverified facts report
+```
+
+## Brand assets (logo, favicons, share image)
+
+Design rules: [docs/redesign-brief.md](docs/redesign-brief.md). To rebuild the brand files after changing the mark or its text:
+
+```bash
+python scripts/brand/make-brand-svgs.py   # logo SVGs, icon.svg, share-image source (needs: pip install fonttools)
+node scripts/brand/build-icons.mjs        # favicon.ico, apple-touch-icon, icon-192/512, maskable, og-default.png
 ```
 
 ## Put it on GitHub

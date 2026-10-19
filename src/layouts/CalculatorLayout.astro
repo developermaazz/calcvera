@@ -7,6 +7,8 @@ import AdSlot from '../components/AdSlot.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import Disclaimer from '../components/Disclaimer.astro';
 import FAQ from '../components/FAQ.astro';
+import Flag from '../components/Flag.astro';
+import Icon from '../components/Icon.astro';
 import RelatedCalculators from '../components/RelatedCalculators.astro';
 import { calculatorPath, liveCountries, relatedFor, type CalculatorEntry } from '../calculators/registry';
 import { SITE } from '../config/site';
@@ -26,9 +28,11 @@ interface Props {
   country: CountryConfig;
   calc: CalculatorEntry;
   guide: GuideMeta;
+  /** The guide's H2s, for the "On this page" list. */
+  toc?: { slug: string; text: string }[];
 }
 
-const { country, calc, guide } = Astro.props;
+const { country, calc, guide, toc = [] } = Astro.props;
 
 const fullTitle = `${calc.name} (${country.shortName}) | ${SITE.name}`;
 const title = fullTitle.length <= 60 ? fullTitle : `${calc.name} (${country.shortName})`;
@@ -87,16 +91,27 @@ const jsonLd = [
 ---
 
 <BaseLayout title={title} description={guide.description} country={country} alternates={alternates} jsonLd={jsonLd}>
+  <div class="calc-head grid-motif">
+    <div class="page-wide">
+      <Breadcrumbs items={breadcrumbs} />
+      <h1>{guide.h1}</h1>
+      <p class="lead">{guide.intro}</p>
+      <ul class="meta-chips">
+        <li class="chip"><Flag code={country.code} size={16} />{country.name} · {country.currency}</li>
+        {calc.usesTaxYear && <li class="tax-year-note">Updated for the {country.taxYear} tax year.</li>}
+        <li class="chip"><Icon name="calendar" size={15} />Last updated {updatedLabel}</li>
+        <li><a class="chip chip-accent" href="/methodology/"><Icon name="checkCircle" size={15} />Tested</a></li>
+      </ul>
+    </div>
+  </div>
   <div class="page-wide">
-    <Breadcrumbs items={breadcrumbs} />
-    <h1>{guide.h1}</h1>
-    <p class="lead">{guide.intro}</p>
-    {calc.usesTaxYear && <p class="tax-year-note">Updated for the {country.taxYear} tax year.</p>}
     <slot />
   </div>
 
-  <article class="page guide">
-    <slot name="guide" />
+  <div class="guide-layout">
+  <article class="guide">
+    <div class="guide-body"><slot name="guide" /></div>
+    <div class="guide-end" hidden></div>
     <AdSlot name="guide" />
     <FAQ faqs={guide.faqs} />
     <RelatedCalculators country={country} calculators={relatedFor(calc, country.code)} />
@@ -121,4 +136,22 @@ const jsonLd = [
     </footer>
     <Disclaimer />
   </article>
+  {
+    toc.length > 1 && (
+      <nav class="toc" aria-labelledby="toc-title">
+        <p class="toc-title" id="toc-title">On this page</p>
+        <ol>
+          {toc.map((h) => (
+            <li>
+              <a href={`#${h.slug}`}>{h.text}</a>
+            </li>
+          ))}
+          <li><a href="#faq-title">Frequently asked questions</a></li>
+          <li><a href="#related-title">Related calculators</a></li>
+        </ol>
+      </nav>
+    )
+  }
+  </div>
 </BaseLayout>
+

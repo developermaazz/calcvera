@@ -1,0 +1,57 @@
+---
+/**
+ * Small, simplified SVG flags (emoji flags don't render on Windows). Decorative: the country name or code
+ * is always next to the flag. Corners are rounded by CSS (.flag).
+ */
+import type { CountryCode } from '../countries';
+
+interface Props {
+  code: CountryCode;
+  size?: number;
+}
+
+const { code, size = 20 } = Astro.props;
+const height = Math.round((size * 2) / 3);
+
+const star = (cx: number, cy: number, r: number, points = 5) => {
+  const pts: string[] = [];
+  for (let i = 0; i < points * 2; i++) {
+    const rad = i % 2 === 0 ? r : r * 0.45;
+    const a = (Math.PI * i) / points - Math.PI / 2;
+    pts.push(`${(cx + rad * Math.cos(a)).toFixed(2)},${(cy + rad * Math.sin(a)).toFixed(2)}`);
+  }
+  return `<polygon points="${pts.join(' ')}" fill="#fff"/>`;
+};
+
+const unionJack = (w: number, h: number) =>
+  `<rect width="${w}" height="${h}" fill="#012169"/>` +
+  `<path d="M0 0L${w} ${h}M${w} 0L0 ${h}" stroke="#fff" stroke-width="${h * 0.2}"/>` +
+  `<path d="M0 0L${w} ${h}M${w} 0L0 ${h}" stroke="#C8102E" stroke-width="${h * 0.07}"/>` +
+  `<path d="M${w / 2} 0V${h}M0 ${h / 2}H${w}" stroke="#fff" stroke-width="${h * 0.33}"/>` +
+  `<path d="M${w / 2} 0V${h}M0 ${h / 2}H${w}" stroke="#C8102E" stroke-width="${h * 0.2}"/>`;
+
+const FLAGS: Record<CountryCode, string> = {
+  us:
+    '<rect width="24" height="16" fill="#B22234"/>' +
+    [1, 3, 5].map((i) => `<rect y="${((16 / 7) * i).toFixed(3)}" width="24" height="${(16 / 7).toFixed(3)}" fill="#fff"/>`).join('') +
+    '<rect width="10.5" height="8.6" fill="#3C3B6E"/>' +
+    [2.2, 5.2, 8.2].flatMap((x) => [2.3, 5.9].map((y) => `<circle cx="${x}" cy="${y}" r=".75" fill="#fff"/>`)).join(''),
+  uk: unionJack(24, 16),
+  ca:
+    '<rect width="24" height="16" fill="#fff"/><rect width="6" height="16" fill="#D80621"/><rect x="18" width="6" height="16" fill="#D80621"/>' +
+    '<path fill="#D80621" d="M12 2.6l1 2 1.4-.6-.5 2.7 1.6-1.4.4 1.2 1.7-.3-.6 1.8.8.4-2.7 2.2.3 1h-3v1.9h-.8v-1.9h-3l.3-1-2.7-2.2.8-.4-.6-1.8 1.7.3.4-1.2 1.6 1.4-.5-2.7 1.4.6z"/>',
+  au:
+    '<rect width="24" height="16" fill="#012169"/>' +
+    `<svg width="12" height="8" viewBox="0 0 24 16">${unionJack(24, 16)}</svg>` +
+    star(6, 12, 1.9, 7) +
+    star(18, 3.2, 1) +
+    star(15.2, 7.4, 1) +
+    star(20.6, 6.6, 1) +
+    star(18, 13, 1.1) +
+    star(19.4, 9.4, 0.6),
+  in: '<rect width="24" height="16" fill="#fff"/><rect width="24" height="5.33" fill="#FF9933"/><rect y="10.67" width="24" height="5.33" fill="#138808"/><circle cx="12" cy="8" r="2" fill="none" stroke="#000080" stroke-width=".6"/>',
+  pk: '<rect width="24" height="16" fill="#01411C"/><rect width="6" height="16" fill="#fff"/><circle cx="15" cy="8" r="4" fill="#fff"/><circle cx="16.3" cy="7" r="3.6" fill="#01411C"/>',
+};
+---
+
+<svg class="flag" viewBox="0 0 24 16" width={size} height={height} aria-hidden="true" focusable="false" set:html={FLAGS[code]} />

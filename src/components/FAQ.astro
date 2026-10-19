@@ -1,5 +1,5 @@
 ---
-/** Visible FAQ. The same questions feed the FAQPage JSON-LD in CalculatorLayout. */
+/** Visible FAQ as accordions (the answers stay in the HTML). The same questions feed the FAQPage JSON-LD. */
 interface Props {
   faqs: { q: string; a: string }[];
 }
@@ -9,12 +9,16 @@ const { faqs } = Astro.props;
 
 <section class="faq" aria-labelledby="faq-title">
   <h2 id="faq-title">Frequently asked questions</h2>
-  {
-    faqs.map((item) => (
-      <div class="faq-item">
-        <h3>{item.q}</h3>
-        <p>{item.a}</p>
-      </div>
-    ))
-  }
+  <div class="faq-list">
+    {
+      faqs.map((item, i) => (
+        <details class="faq-item" open={i === 0}>
+          <summary>
+            <h3>{item.q}</h3>
+          </summary>
+          <p>{item.a}</p>
+        </details>
+      ))
+    }
+  </div>
 </section>

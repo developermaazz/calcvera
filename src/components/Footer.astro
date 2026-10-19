@@ -1,12 +1,33 @@
 ---
 import { SITE } from '../config/site';
 import { LAUNCHED_COUNTRIES } from '../countries';
+import Flag from './Flag.astro';
+import LogoMark from './LogoMark.astro';
 
 const year = new Date().getFullYear();
 ---
 
 <footer class="site-footer">
   <div class="footer-inner">
+    <div class="footer-brand">
+      <a class="logo" href="/">
+        <LogoMark size={28} />
+        <span class="wordmark">{SITE.name}</span>
+      </a>
+      <p class="footer-mission">{SITE.tagline}</p>
+      <ul class="footer-countries">
+        {
+          LAUNCHED_COUNTRIES.map((c) => (
+            <li>
+              <a href={`/${c.code}/`} hreflang={c.hreflang}>
+                <Flag code={c.code} size={18} />
+                {c.code.toUpperCase()}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
     <nav aria-label="Calculators by country">
       <h2 class="footer-heading">Calculators</h2>
       <ul>

@@ -1,0 +1,266 @@
+/*
+ * Calcvera design tokens: the single source for colour, type, space, radius, depth and motion.
+ * Spec: docs/redesign-brief.md. Contrast ratios are listed next to every text pair (WCAG AA = 4.5, large/UI = 3).
+ *
+ * Layers
+ *   1. Primitives (--navy-*, --jade-*, --amber-*, --paper …): raw palette, the same in both themes.
+ *   2. Semantic tokens (--bg, --surface, --ink …): what components use. Defined for light, then dark.
+ *
+ * Theme selection
+ *   Light is the default. Dark applies when the OS prefers dark (unless the page says data-theme="light"),
+ *   or when an element says data-theme="dark". The theme toggle sets data-theme on <html>; any element can
+ *   also set it to force a theme for its subtree (used by /brand-preview to show both side by side).
+ *   The dark block appears twice (media query + attribute): keep the two copies identical.
+ */
+
+:root {
+  /* ---- 1. Primitives ---------------------------------------------------------------------------- */
+
+  /* Navy: brand anchor is 900 (#0F2A4A, the theme-color). */
+  --navy-50: #f4f5f7;
+  --navy-100: #e7eaed;
+  --navy-200: #cfd4db;
+  --navy-300: #a9b2be;
+  --navy-400: #7d8c9d;
+  --navy-500: #576a80;
+  --navy-600: #354c67;
+  --navy-700: #27466b;
+  --navy-800: #1a3759;
+  --navy-900: #0f2a4a;
+  --navy-950: #0a1626;
+
+  /* Jade: the one accent. 500 for fills and icons; 700 for jade text on light backgrounds. */
+  --jade-50: #e9f8f2;
+  --jade-100: #ccefe1;
+  --jade-300: #6ee7c0;
+  --jade-400: #3dd9a0;
+  --jade-500: #12b886;
+  --jade-600: #0e9a70;
+  --jade-700: #087a58; /* on #FFFFFF 5.39, on paper 4.97, on sunken 4.71, on jade-50 4.87 */
+  --jade-800: #08664a;
+
+  /* Amber: interest and cost, mainly in charts. 700 for amber text on light backgrounds. */
+  --amber-100: #fbecd3;
+  --amber-400: #f0b45a;
+  --amber-500: #e8a33d;
+  --amber-700: #a15c07; /* on #FFFFFF 5.19 */
+
+  --paper: #f7f7f4;
+  --white: #ffffff;
+  --red-600: #c53030; /* on #FFFFFF 5.47 */
+  --red-300: #ff8a8a; /* on dark card 7.23 */
+
+  /* ---- Type ------------------------------------------------------------------------------------- */
+  --font-display: 'Fraunces', 'Fraunces Fallback', Georgia, 'Times New Roman', serif;
+  --font-ui: 'Inter', 'Inter Fallback', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'JetBrains Mono Fallback', ui-monospace, Consolas, 'Courier New', monospace;
+
+  /* Fluid scale: min at 360px, max at 1440px. */
+  --text-xs: 0.8125rem; /* 13px: chips, captions */
+  --text-sm: 0.9375rem; /* 15px: helper text, table cells */
+  --text-base: 1.0625rem; /* 17px: body */
+  --text-lg: clamp(1.125rem, 1.08rem + 0.22vw, 1.25rem);
+  --text-h3: clamp(1.1875rem, 1.12rem + 0.3vw, 1.375rem);
+  --text-h2: clamp(1.5rem, 1.33rem + 0.74vw, 2rem);
+  --text-h1: clamp(1.875rem, 1.54rem + 1.48vw, 2.875rem);
+  --text-display: clamp(2.25rem, 1.67rem + 2.59vw, 4rem);
+  --text-result: clamp(2.5rem, 2.08rem + 1.85vw, 3.75rem);
+
+  --leading-tight: 1.15;
+  --leading-snug: 1.35;
+  --leading-body: 1.65;
+  --measure: 68ch;
+  --tracking-display: -0.02em;
+  --tracking-wordmark: -0.025em;
+
+  /* ---- Space (8px grid), radius, layout ---------------------------------------------------------- */
+  --space-0-5: 4px;
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 40px;
+  --space-6: 48px;
+  --space-8: 64px;
+  --space-12: 96px;
+
+  --radius-sm: 6px;
+  --radius-input: 10px;
+  --radius-card: 16px;
+  --radius-pill: 999px;
+
+  --content-width: 760px;
+  --calc-width: 1120px;
+  --page-width: 1200px;
+  --gutter: 16px;
+  --header-height: 64px;
+  --field-height: 48px;
+  --tap: 44px;
+
+  /* ---- Motion ----------------------------------------------------------------------------------- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 150ms;
+  --duration: 200ms;
+  --duration-slow: 250ms;
+  --count-duration: 350ms;
+}
+
+/* ---- 2. Semantic tokens: light ------------------------------------------------------------------ */
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: var(--paper);
+  --surface: var(--white);
+  --surface-sunken: #f1f1ed; /* table stripes, input wells */
+  --surface-raised: var(--white);
+  --line: #e4e6ea; /* hairlines */
+  --line-strong: #cdd2d9; /* input borders: 1.5:1 decorative; inputs also carry a label */
+  --grid-line: rgb(15 42 74 / 0.06);
+
+  --ink: #0e1b2c; /* on paper 16.15 */
+  --ink-muted: #5b6676; /* on paper 5.42, on white 5.83 */
+  --heading: var(--navy-900); /* on paper 13.9 */
+  --brand: var(--navy-900);
+  --on-brand: var(--white); /* on navy 14.48 */
+
+  --accent: var(--jade-500); /* fills, icons on navy (5.67) */
+  --accent-ink: var(--jade-700); /* jade text on light */
+  --accent-soft: var(--jade-50);
+  --accent-line: var(--jade-100);
+  --principal: var(--navy-900);
+  --cost: var(--amber-500);
+  --cost-ink: var(--amber-700);
+  --cost-soft: var(--amber-100);
+  --error: var(--red-600);
+  --warn-ink: #9a6213; /* on white 5.08 (old #B7791F was 3.4) */
+
+  /* Results card: deep navy in light mode. */
+  --result-bg: var(--navy-900);
+  --result-ink: var(--white); /* 14.48 */
+  --result-muted: #a9bcd3; /* 7.46 */
+  --result-accent: var(--jade-400); /* 8.19 */
+  --result-cost: var(--amber-400);
+  --result-line: rgb(255 255 255 / 0.12);
+
+  --focus: var(--jade-600);
+  --selection-bg: var(--jade-100);
+  --selection-ink: var(--navy-900);
+
+  --header-bg: rgb(247 247 244 / 0.82);
+
+  --shadow-sm: 0 1px 2px rgb(14 27 44 / 0.05);
+  --shadow-md: 0 1px 2px rgb(14 27 44 / 0.04), 0 4px 12px -2px rgb(14 27 44 / 0.06);
+  --shadow-lg: 0 1px 2px rgb(14 27 44 / 0.04), 0 8px 24px -6px rgb(14 27 44 / 0.08), 0 24px 48px -12px rgb(14 27 44 / 0.1);
+  --glow: radial-gradient(60% 60% at 70% 30%, rgb(18 184 134 / 0.1), transparent 70%),
+    radial-gradient(50% 60% at 20% 20%, rgb(15 42 74 / 0.08), transparent 70%);
+}
+
+/* ---- Semantic tokens: dark (copy 1 of 2: follows the OS unless the page forces light) ------------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --bg: var(--navy-950);
+    --surface: #0f2036;
+    --surface-sunken: #0c1a2d;
+    --surface-raised: #15294a;
+    --line: #1f3452;
+    --line-strong: #2d4566;
+    --grid-line: rgb(169 188 211 / 0.07);
+
+    --ink: #e8eef5; /* on bg 15.56 */
+    --ink-muted: #9aa9bc; /* on bg 7.59, on surface 6.85 */
+    --heading: #f2f6fa;
+    --brand: var(--navy-900);
+    --on-brand: var(--white);
+
+    --accent: var(--jade-400); /* 9.09 on surface */
+    --accent-ink: var(--jade-400);
+    --accent-soft: rgb(61 217 160 / 0.1);
+    --accent-line: rgb(61 217 160 / 0.25);
+    --principal: #7fa3d1;
+    --cost: var(--amber-400);
+    --cost-ink: var(--amber-400); /* 8.89 */
+    --cost-soft: rgb(240 180 90 / 0.12);
+    --error: var(--red-300);
+    --warn-ink: #e8b45c; /* 8.68 */
+
+    --result-bg: var(--surface-raised);
+    --result-ink: #f2f6fa;
+    --result-muted: #a9bcd3;
+    --result-accent: var(--jade-400);
+    --result-cost: var(--amber-400);
+    --result-line: rgb(61 217 160 / 0.35);
+
+    --focus: var(--jade-400);
+    --selection-bg: rgb(61 217 160 / 0.3);
+    --selection-ink: #f2f6fa;
+
+    --header-bg: rgb(10 22 38 / 0.78);
+
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3);
+    --shadow-md: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 12px -2px rgb(0 0 0 / 0.35);
+    --shadow-lg: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -6px rgb(0 0 0 / 0.4), 0 24px 48px -12px rgb(0 0 0 / 0.45);
+    --glow: radial-gradient(60% 60% at 70% 30%, rgb(61 217 160 / 0.1), transparent 70%),
+      radial-gradient(50% 60% at 20% 20%, rgb(127 163 209 / 0.1), transparent 70%);
+  }
+}
+
+/* ---- Semantic tokens: dark (copy 2 of 2: forced by data-theme="dark") ---------------------------- */
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: var(--navy-950);
+  --surface: #0f2036;
+  --surface-sunken: #0c1a2d;
+  --surface-raised: #15294a;
+  --line: #1f3452;
+  --line-strong: #2d4566;
+  --grid-line: rgb(169 188 211 / 0.07);
+
+  --ink: #e8eef5;
+  --ink-muted: #9aa9bc;
+  --heading: #f2f6fa;
+  --brand: var(--navy-900);
+  --on-brand: var(--white);
+
+  --accent: var(--jade-400);
+  --accent-ink: var(--jade-400);
+  --accent-soft: rgb(61 217 160 / 0.1);
+  --accent-line: rgb(61 217 160 / 0.25);
+  --principal: #7fa3d1;
+  --cost: var(--amber-400);
+  --cost-ink: var(--amber-400);
+  --cost-soft: rgb(240 180 90 / 0.12);
+  --error: var(--red-300);
+  --warn-ink: #e8b45c;
+
+  --result-bg: var(--surface-raised);
+  --result-ink: #f2f6fa;
+  --result-muted: #a9bcd3;
+  --result-accent: var(--jade-400);
+  --result-cost: var(--amber-400);
+  --result-line: rgb(61 217 160 / 0.35);
+
+  --focus: var(--jade-400);
+  --selection-bg: rgb(61 217 160 / 0.3);
+  --selection-ink: #f2f6fa;
+
+  --header-bg: rgb(10 22 38 / 0.78);
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-md: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 12px -2px rgb(0 0 0 / 0.35);
+  --shadow-lg: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -6px rgb(0 0 0 / 0.4), 0 24px 48px -12px rgb(0 0 0 / 0.45);
+  --glow: radial-gradient(60% 60% at 70% 30%, rgb(61 217 160 / 0.1), transparent 70%),
+    radial-gradient(50% 60% at 20% 20%, rgb(127 163 209 / 0.1), transparent 70%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration: 0ms;
+    --duration-slow: 0ms;
+    --count-duration: 0ms;
+  }
+}

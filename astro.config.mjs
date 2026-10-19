@@ -6,7 +6,8 @@ export default defineConfig({
   site: 'https://calc-vera.com',
   output: 'static',
   trailingSlash: 'always',
-  build: { format: 'directory' },
+  // Inline the stylesheet: saves a render-blocking request on first paint (CLAUDE.md section 14: LCP < 2s).
+  build: { format: 'directory', inlineStylesheets: 'always' },
   integrations: [
     sitemap({
       filter: (page) => !page.includes('/404'),

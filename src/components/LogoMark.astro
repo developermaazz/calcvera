@@ -1,0 +1,19 @@
+---
+/**
+ * The Calcvera mark (concept A, "true equals"): an equals sign whose lower bar turns into a check mark.
+ * Top bar uses currentColor; the check uses the accent. Standalone files: public/brand/ (built by
+ * scripts/brand/make-brand-svgs.py).
+ */
+interface Props {
+  size?: number;
+}
+
+const { size = 28 } = Astro.props;
+---
+
+<svg class="logo-mark" viewBox="0 0 32 32" width={size} height={size} aria-hidden="true" focusable="false">
+  <g fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M5 12h11" stroke="currentColor"></path>
+    <path d="M5 20h9.5l4.5 4.5 8.5-17" stroke="var(--logo-accent, #12B886)"></path>
+  </g>
+</svg>

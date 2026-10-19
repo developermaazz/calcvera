@@ -35,6 +35,7 @@ Read this file first in every session. It is the single source of truth for this
 | Hosting | GitHub repo → Cloudflare (Workers static assets) |
 | Analytics | Google Analytics 4 + Google Search Console |
 | Package manager | npm, Node.js LTS |
+| Brand assets | Dev-only: sharp + png-to-ico (`scripts/brand/build-icons.mjs`); Python fontTools for outlined logo text (`scripts/brand/make-brand-svgs.py`) |
 
 New dependencies need a one-line reason and the owner's approval. Prefer zero runtime dependencies.
 
@@ -60,18 +61,26 @@ src/
   calculators/<engine>/     engine UI (LoanCalculator.astro) + view.ts (result → display strings/markup)
   components/               CalculatorShell, ResultSummary, SvgChart, AmortizationTable, AdSlot,
                             CountryBanner, CountrySwitcher, Breadcrumbs, FAQ, RelatedCalculators,
-                            Field, SelectField, CheckboxField (form fields with data-field/data-msg/data-when)
+                            Field, SelectField, CheckboxField (form fields with data-field/data-msg/data-when),
+                            Header (search, menu), Footer, ThemeToggle, LogoMark, Icon, Flag
   layouts/                  BaseLayout.astro, CalculatorLayout.astro, PageLayout.astro
   lib/                      format.ts (Intl), charts.ts (SVG builders), storage.ts (localStorage),
-                            calcUi.ts (shared live-update wiring for calculators: model.ts builds the view)
+                            calcUi.ts (shared live-update wiring for calculators: model.ts builds the view),
+                            icons.ts (line-icon set + engine/category icon maps), countUp.ts (display-only)
+  scripts/site.ts           all site-wide browser behaviour in one module (header, search, theme, fade-ups,
+                            TOC, calculator display polish); loaded once from BaseLayout
+  middleware.ts             wraps each guide H2 section in <section class="guide-section" data-section>
   content.config.ts         guides collection schema
   content/guides/[country]/ one .md guide per calculator, file name = slug
   pages/                    index, [country]/index, [country]/[slug], about, contact, privacy,
                             terms, disclaimer, methodology, 404
-  styles/global.css         design tokens + base styles
+  styles/tokens.css         design tokens (light + dark); fonts.css (self-hosted fonts); global.css (components)
 tests/engines/              one test file per engine
 scripts/check-verify.mjs    VERIFY marker report
-public/                     robots.txt, ads.txt, favicon.svg, _headers, og-default.png
+scripts/brand/              make-brand-svgs.py + build-icons.mjs (logo, favicons, share image)
+docs/redesign-brief.md      the owner's UI/brand brief and decision log: read before any UI work
+public/                     robots.txt, ads.txt, _headers, fonts/, brand/ (logo files), icon.svg, favicon.ico,
+                            apple-touch-icon.png, icon-*.png, manifest.webmanifest, og-default.png
 ```
 
 ## 6. Architecture rules
@@ -81,7 +90,7 @@ public/                     robots.txt, ads.txt, favicon.svg, _headers, og-defau
 - **One registry:** a calculator page exists only if it is listed in `registry.ts` for that country and not marked `draft: true`. Pages are generated with `getStaticPaths` from the registry. Drafts get no page, no links and no sitemap entry; remove `draft` only when section 16 is met.
 - **Shared UI:** every calculator page uses CalculatorShell + ResultSummary + AdSlot + FAQ + RelatedCalculators. No one-off page layouts.
 - **No server, no cookies set by us, no user data sent anywhere.** All math runs in the browser.
-- **localStorage** only for the remembered country and dismissed banner, always wrapped in try/catch.
+- **localStorage** only for the remembered country, dismissed banner and theme choice, always wrapped in try/catch.
 
 ## 7. Calculator standards
 
@@ -171,23 +180,17 @@ public/                     robots.txt, ads.txt, favicon.svg, _headers, og-defau
 
 ## 13. Design standards
 
-```
---color-navy:   #0F2A4A   headings, header, primary text on light
---color-green:  #1F8A5B   primary buttons, positive figures, links on hover
---color-ink:    #1C2430   body text
---color-muted:  #5B6675   secondary text
---color-line:   #DDE3EA   borders, dividers
---color-bg:     #F7F9FB   page background
---color-card:   #FFFFFF   calculator and content cards
---color-warn:   #B7791F   validation messages
---color-error:  #C53030   errors only
-```
+Full spec: `docs/redesign-brief.md` ("a private bank's annual report crossed with a precision instrument"). Tokens live in `src/styles/tokens.css`; never hard-code colours in components.
 
-- Dark mode via `prefers-color-scheme`, same tokens redefined.
-- **Type:** system font stack (no web fonts). Body 17px / 1.6, H1 32px (28px mobile), H2 24px.
-- **Spacing:** 8px scale (8, 16, 24, 32, 48). Content width max 760px; calculator card max 960px.
-- **Layout:** mobile-first; at 900px+ inputs left, results right. Results visible without scrolling on mobile after the first input group.
-- **Contrast:** WCAG AA minimum. Tap targets at least 44px.
+- **Colour:** navy #0F2A4A anchor (50–950 scale), one jade accent (#12B886 fills, #087A58 text on light), amber #E8A33D for interest/cost, warm paper #F7F7F4 page, white cards, hairlines #E4E6EA, ink #0E1B2C, muted #5B6676. Dark mode from deep navy (#0A1626 page, #0F2036 cards), never black. Every text pair passes WCAG AA (ratios noted in tokens.css).
+- **Theme:** light/dark follow the OS; the header toggle (system/light/dark) sets `data-theme` on <html>, applied before paint by an inline head script.
+- **Type:** self-hosted variable WOFF2 (Latin): Fraunces (headings, wordmark), Inter (UI, body), JetBrains Mono (formulas), with metric-matched fallbacks so fonts never shift layout. All numbers use tabular figures. Fluid scale with clamp(); prose about 68ch, line height 1.65.
+- **Surfaces:** 8px grid, radius 16px cards / 10px inputs / pill chips, hairline borders plus soft layered shadows. Signature graph-paper grid motif (`.grid-motif`) behind page heads only.
+- **Results:** deep navy card (dark mode: raised surface with jade hairline), big primary figure, secondary figures in tiles. Charts: principal navy, interest amber, then jade, steel blue.
+- **Icons:** one line set in `src/lib/icons.ts` (1.5 stroke), each calculator has an engine icon, each category a tinted tile. SVG flags (no emoji).
+- **Logo:** concept A, an equals sign whose lower bar turns into a check mark. Files in `public/brand/`; rebuild icons with `scripts/brand/`.
+- **Motion:** 150–250ms ease-out, card lift on hover, one-time fade-up below the fold, count-up after user changes only. Everything respects prefers-reduced-motion.
+- **Layout:** mobile-first; inputs left and results right (sticky) from 1024px; slim result bar on phones. Tap targets at least 44px.
 
 ## 14. Performance budget (per page)
 

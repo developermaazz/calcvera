@@ -1,14 +1,37 @@
 ---
-import { calculatorPath, calculatorsFor } from '../calculators/registry';
+import Flag from '../components/Flag.astro';
+import Icon from '../components/Icon.astro';
+import { CATEGORY_LABELS, calculatorPath, calculatorsFor } from '../calculators/registry';
 import { SITE } from '../config/site';
-import { ALL_COUNTRIES, LAUNCHED_COUNTRIES } from '../countries';
+import { ALL_COUNTRIES, LAUNCHED_COUNTRIES, getCountry } from '../countries';
+import { calculateLoan } from '../engines/loan';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { createFormatters } from '../lib/format';
+import { CATEGORY_TINTS, ENGINE_ICONS } from '../lib/icons';
 
 const title = `${SITE.name}: Finance Calculators for Your Country`;
 
 // Same guess as CountryBanner: remembered choice → browser timezone → browser language. Used only to put the
 // visitor's country first; every visitor (and Google) still gets the same page and links.
 const detectData = LAUNCHED_COUNTRIES.map((c) => ({ code: c.code, tz: c.detect.timezones, lang: c.detect.languages }));
+
+// Hero example and "checked" list: real results from our own loan engine (the same cases are covered by the
+// engine tests and were matched against an outside calculator; see tests/engines/loan.test.ts).
+const usd = createFormatters('en-US', 'USD');
+const gbp = createFormatters('en-GB', 'GBP');
+const example = calculateLoan({ principal: 20_000, aprPercent: 7.5, termMonths: 60 });
+const principalShare = (20_000 / example.totalCost) * 100;
+const checks = [
+  { label: '$10,000 · 6% · 36 months', value: usd.money(calculateLoan({ principal: 10_000, aprPercent: 6, termMonths: 36 }).monthlyPayment) },
+  { label: '$20,000 · 7.5% · 60 months', value: usd.money(example.monthlyPayment) },
+  { label: '£5,000 · 9.9% · 24 months', value: gbp.money(calculateLoan({ principal: 5_000, aprPercent: 9.9, termMonths: 24 }).monthlyPayment) },
+];
+
+// The tagline with "your country's rules" highlighted (same text).
+const phrase = "your country's rules";
+const [taglineStart = '', taglineEnd = ''] = SITE.tagline.split(phrase);
+
+const us = getCountry('us');
 
 const jsonLd = [
   {
@@ -52,88 +75,143 @@ const jsonLd = [
     if (code) {
       var s = document.documentElement.style;
       s.setProperty('--first-' + code, '-1');
-      s.setProperty('--mine-' + code, 'var(--color-green)');
+      s.setProperty('--mine-' + code, 'var(--accent)');
       s.setProperty('--badge-' + code, 'inline-block');
       document.documentElement.dataset.visitorCountry = code;
     }
   </script>
-  <div class="page-wide">
-    <section class="hero">
-      <h1>{SITE.tagline}</h1>
-      <p class="lead">
-        Free, fast calculators for loans, debt, tax, savings and retirement. Each one uses your country's figures and
-        explains how the number was worked out.
-      </p>
-    </section>
 
-    <section aria-labelledby="pick-country">
-      <h2 id="pick-country">Choose your country</h2>
+  <section class="hero grid-motif glow">
+    <div class="container hero-grid">
+      <div>
+        <h1>{taglineStart}<span class="highlight">{phrase}</span>{taglineEnd}</h1>
+        <p class="lead">
+          Free, fast calculators for loans, debt, tax, savings and retirement. Each one uses your country's figures and
+          explains how the number was worked out.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#pick-country">Choose your country <Icon name="arrowRight" size={16} /></a>
+          <a class="btn btn-secondary" href="/methodology/">How we test</a>
+        </div>
+      </div>
+
+      <a class="hero-card" href={calculatorPath('us', 'loan-calculator')}>
+        <span class="hero-card-top">
+          <span>Example · {us.adjective} Loan Calculator</span>
+          <Flag code="us" size={20} />
+        </span>
+        <span class="hero-card-inputs" style="display:block">{usd.moneyWhole(20_000)} at 7.5% APR over 5 years</span>
+        <span class="hero-card-figure" style="display:block">{usd.money(example.monthlyPayment)}<small>a month</small></span>
+        <span class="hero-card-stats">
+          <span><span>Total interest</span><strong>{usd.money(example.totalInterest)}</strong></span>
+          <span><span>Total cost</span><strong>{usd.money(example.totalCost)}</strong></span>
+        </span>
+        <span class="mini-split" role="img" aria-label={`Principal ${Math.round(principalShare)}% of the total, interest ${Math.round(100 - principalShare)}%`}>
+          <span class="is-principal" style={`width:${principalShare.toFixed(1)}%`}></span>
+          <span class="is-cost"></span>
+        </span>
+        <span class="mini-legend" aria-hidden="true"><span>Principal</span><span>Interest</span></span>
+        <span class="hero-card-link">Open the loan calculator <Icon name="arrowRight" size={16} /></span>
+      </a>
+    </div>
+  </section>
+
+  <div class="container">
+    <ul class="pillars" aria-label="What makes Calcvera different">
+      <li><span class="icon-tile icon-tile-sm"><Icon name="globe" size={18} /></span>Your country's rules</li>
+      <li><span class="icon-tile icon-tile-sm tint-jade"><Icon name="checkCircle" size={18} /></span>Tested maths</li>
+      <li><span class="icon-tile icon-tile-sm"><Icon name="device" size={18} /></span>Runs on your device</li>
+      <li><span class="icon-tile icon-tile-sm tint-amber"><Icon name="sigma" size={18} /></span>Formulas shown</li>
+    </ul>
+
+    <section class="home-section" aria-labelledby="pick-country">
+      <div class="section-head">
+        <h2 id="pick-country">Choose your country</h2>
+      </div>
       <ul class="country-grid">
         {
-          ALL_COUNTRIES.map((c) =>
-            c.launched ? (
+          ALL_COUNTRIES.map((c) => {
+            const count = calculatorsFor(c.code).length;
+            return c.launched ? (
               <li>
                 <a
                   class="country-card"
                   href={`/${c.code}/`}
                   hreflang={c.hreflang}
                   data-set-country={c.code}
-                  style={`--card-border: var(--mine-${c.code}, var(--color-line))`}
+                  style={`--card-border: var(--mine-${c.code}, var(--line))`}
                 >
+                  <span class="card-top">
+                    <Flag code={c.code} size={36} />
+                    <span class="chip">{c.currency}</span>
+                  </span>
                   <strong>
                     {c.name} <em class="your-country" style={`display: var(--badge-${c.code}, none)`}>Your country</em>
                   </strong>
-                  <span>
-                    {c.currency} · {calculatorsFor(c.code).length} {calculatorsFor(c.code).length === 1 ? 'calculator' : 'calculators'}
+                  <span class="card-desc">{count} {count === 1 ? 'calculator · more coming' : 'calculators'}</span>
+                  <span class="card-arrow" aria-hidden="true">
+                    <Icon name="arrowRight" size={18} />
                   </span>
                 </a>
               </li>
             ) : (
               <li>
                 <div class="country-card is-soon">
+                  <span class="card-top">
+                    <Flag code={c.code} size={36} />
+                  </span>
                   <strong>{c.name}</strong>
-                  <span>Coming soon</span>
+                  <span class="card-desc">Coming soon</span>
                 </div>
               </li>
-            ),
-          )
+            );
+          })
         }
       </ul>
     </section>
 
     <div class="home-popular" data-home-popular>
-    {
-      LAUNCHED_COUNTRIES.map((c) => {
-        const all = calculatorsFor(c.code);
-        const marked = all.filter((calc) => calc.popular);
-        // Countries with no calculator marked popular yet (CA, AU) list all of theirs.
-        const popular = marked.length > 0 ? marked : all;
-        return (
-          popular.length > 0 && (
-            <section
-              class="hub-section"
-              aria-labelledby={`popular-${c.code}`}
-              data-country-section={c.code}
-              style={`order: var(--first-${c.code}, 0)`}
-            >
-              <h2 id={`popular-${c.code}`}>Popular {c.adjective} calculators</h2>
-              <ul class="card-list">
-                {popular.map((calc) => (
-                  <li>
-                    <a class="link-card" href={calculatorPath(c.code, calc.slug)} hreflang={c.hreflang}>
-                      <strong>
-                        {c.adjective} {calc.name}
-                      </strong>
-                      <span>{calc.blurb}</span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )
-        );
-      })
-    }
+      {
+        LAUNCHED_COUNTRIES.map((c) => {
+          const all = calculatorsFor(c.code);
+          const marked = all.filter((calc) => calc.popular);
+          // Countries with no calculator marked popular yet (CA, AU) list all of theirs.
+          const popular = marked.length > 0 ? marked : all;
+          return (
+            popular.length > 0 && (
+              <section
+                class="hub-section reveal"
+                aria-labelledby={`popular-${c.code}`}
+                data-country-section={c.code}
+                style={`order: var(--first-${c.code}, 0)`}
+              >
+                <h2 id={`popular-${c.code}`}>Popular {c.adjective} calculators</h2>
+                <ul class="card-list">
+                  {popular.map((calc) => (
+                    <li>
+                      <a class="link-card" href={calculatorPath(c.code, calc.slug)} hreflang={c.hreflang}>
+                        <span class="card-top">
+                          <span class:list={['icon-tile', `tint-${CATEGORY_TINTS[calc.category]}`]}>
+                            <Icon name={ENGINE_ICONS[calc.engine]} size={22} />
+                          </span>
+                          <span class="chip">{CATEGORY_LABELS[calc.category]}</span>
+                        </span>
+                        <strong>
+                          {c.adjective} {calc.name}
+                        </strong>
+                        <span class="card-desc">{calc.blurb}</span>
+                        <span class="card-arrow" aria-hidden="true">
+                          <Icon name="arrowRight" size={18} />
+                        </span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )
+          );
+        })
+      }
     </div>
     <script is:inline>
       // Match the reading and tab order to what's on screen (the visitor's country is already shown first).
@@ -145,15 +223,75 @@ const jsonLd = [
       })();
     </script>
 
-    <section class="trust" aria-labelledby="why">
-      <h2 id="why">Why Calcvera</h2>
+    <section class="home-section trust reveal" aria-labelledby="why">
+      <div class="section-head">
+        <h2 id="why">Why Calcvera</h2>
+      </div>
       <ul class="trust-list">
-        <li><strong>Your country's rules.</strong> Separate calculators for each country, with the tax year shown on every tax page.</li>
-        <li><strong>Tested maths.</strong> Every calculator is checked against known answers before it goes live.</li>
-        <li><strong>Nothing leaves your device.</strong> Calculations run in your browser. We don't ask for your details.</li>
-        <li><strong>Formulas shown.</strong> Each result explains how it was calculated. <a href="/methodology/">How we build our calculators</a>.</li>
+        <li class="bento bento-a">
+          <span class="icon-tile"><Icon name="globe" size={22} /></span>
+          <p><strong>Your country's rules.</strong> Separate calculators for each country, with the tax year shown on every tax page.</p>
+          <ul class="chips bento-visual" aria-label="Tax years we use">
+            {
+              LAUNCHED_COUNTRIES.map((c) => (
+                <li class="chip">
+                  <Flag code={c.code} size={16} />
+                  {c.code.toUpperCase()} {c.taxYear}
+                </li>
+              ))
+            }
+          </ul>
+        </li>
+        <li class="bento bento-b">
+          <span class="icon-tile tint-jade"><Icon name="checkCircle" size={22} /></span>
+          <p><strong>Tested maths.</strong> Every calculator is checked against known answers before it goes live.</p>
+          <ul class="checked-list bento-visual" aria-label="Examples checked against known answers">
+            {
+              checks.map((c) => (
+                <li>
+                  <Icon name="check" size={18} />
+                  <span>{c.label}</span>
+                  <strong>{c.value}</strong>
+                </li>
+              ))
+            }
+          </ul>
+        </li>
+        <li class="bento bento-c">
+          <span class="icon-tile"><Icon name="device" size={22} /></span>
+          <p><strong>Nothing leaves your device.</strong> Calculations run in your browser. We don't ask for your details.</p>
+          <svg class="device-art bento-visual" viewBox="0 0 240 120" aria-hidden="true" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="80" y="8" width="64" height="106" rx="12" stroke="currentColor" stroke-width="2"></rect>
+            <rect x="89" y="22" width="46" height="26" rx="5" fill="currentColor" opacity=".9"></rect>
+            <path d="M95 41h22" stroke="var(--accent)" stroke-width="3"></path>
+            <path d="M92 58h12M110 58h12M92 70h12M110 70h12M92 82h12M110 82h12" stroke="currentColor" stroke-width="2" opacity=".35"></path>
+            <path d="M128 58v24" stroke="var(--accent)" stroke-width="2"></path>
+            <path d="M104 104h16" stroke="currentColor" stroke-width="2" opacity=".5"></path>
+            <path d="M176 52a14 14 0 0 1 27-4 11 11 0 1 1 2 22h-27a10 10 0 0 1-2-18z" stroke="currentColor" stroke-width="2" opacity=".3"></path>
+            <path d="M150 62h14" stroke="currentColor" stroke-width="2" stroke-dasharray="3 4" opacity=".3"></path>
+            <path d="M178 40l32 36" stroke="var(--cost)" stroke-width="2.5"></path>
+            <circle cx="60" cy="40" r="12" fill="var(--accent)" opacity=".15"></circle>
+            <path d="M54 40l4 4 8-8" stroke="var(--accent)" stroke-width="2.5"></path>
+          </svg>
+        </li>
+        <li class="bento bento-d">
+          <span class="icon-tile tint-amber"><Icon name="sigma" size={22} /></span>
+          <p>
+            <strong>Formulas shown.</strong> Each result explains how it was calculated. <a href="/methodology/">How we build our calculators</a>.
+          </p>
+          <div class="bento-visual">
+            <p class="formula-snippet" aria-label="Monthly payment formula: M equals P times r divided by 1 minus 1 plus r to the power of minus n">
+              <span class="var-m">M</span> = P × <span class="var-r">r</span> ÷ (1 − (1 + <span class="var-r">r</span>)<sup>−n</sup>)
+            </p>
+            <ul class="chips" aria-hidden="true">
+              <li class="chip chip-accent">M · monthly payment</li>
+              <li class="chip">P · amount</li>
+              <li class="chip chip-cost">r · monthly rate</li>
+              <li class="chip">n · payments</li>
+            </ul>
+          </div>
+        </li>
       </ul>
     </section>
   </div>
 </BaseLayout>
-<!-- Country cards carry data-set-country; the CountrySwitcher script in the header remembers the choice. -->

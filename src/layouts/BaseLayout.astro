@@ -1,4 +1,6 @@
 ---
+import '../styles/fonts.css';
+import '../styles/tokens.css';
 import '../styles/global.css';
 import CountryBanner from '../components/CountryBanner.astro';
 import Footer from '../components/Footer.astro';
@@ -54,10 +56,22 @@ const builtMonth = `${now.getFullYear()}-${now.getMonth()}`;
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex" />}
     {hreflangLinks.map((link) => <link rel="alternate" hreflang={link.hreflang} href={link.href} />)}
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script is:inline>
+      // Saved theme (light/dark) applied before first paint, so there's no flash. "System" stores nothing.
+      try {
+        var theme = localStorage.getItem('cv-theme');
+        if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme;
+      } catch (e) {}
+    </script>
+    <link rel="preload" href="/fonts/inter-var-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <meta name="color-scheme" content="light dark" />
-    <meta name="theme-color" content="#0F2A4A" />
+    <meta name="theme-color" content="#F7F7F4" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0A1626" media="(prefers-color-scheme: dark)" />
 
     <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content={SITE.name} />
@@ -150,5 +164,8 @@ const builtMonth = `${now.getFullYear()}-${now.getMonth()}`;
     </main>
     <Footer />
     {country && <CountryBanner current={country.code} alternates={alternates} />}
+    <script>
+      import '../scripts/site';
+    </script>
   </body>
 </html>
