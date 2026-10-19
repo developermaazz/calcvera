@@ -3210,3 +3210,44 @@ a:hover .card-arrow .icon {
     -webkit-overflow-scrolling: touch;
   }
 }
+
+/* Line charts (lineChart in src/lib/charts.ts). */
+.chart-line {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.chart-stroke-1 {
+  stroke: var(--principal);
+}
+
+.chart-stroke-2 {
+  stroke: var(--cost);
+}
+
+.chart-stroke-3 {
+  stroke: var(--accent);
+}
+
+.chart-stroke-4 {
+  stroke: var(--chart-4, #6f8bae);
+}
+
+.chart-dot {
+  stroke: var(--surface);
+  stroke-width: 1.5;
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.chart-point:hover .chart-dot,
+.chart-point:last-of-type .chart-dot {
+  opacity: 1;
+}
+
+/* Lines draw in once instead of growing like bars. */
+.chart-box:not([data-drawn]) .chart-point circle {
+  animation: none;
+}

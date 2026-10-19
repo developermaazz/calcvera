@@ -25,6 +25,28 @@ export interface CreditCardDefaults {
   targetMonths: number;
 }
 
+export interface RentVsBuyDefaults {
+  homePrice: number;
+  depositPercent: number;
+  mortgageRatePercent: number;
+  termYears: number;
+  /** US: closing costs as a % of the price. */
+  closingCostsPercent?: number;
+  /** UK: legal, survey and mortgage fees (stamp duty is worked out separately). */
+  otherBuyingCosts?: number;
+  /** US only. */
+  propertyTaxPercent?: number;
+  insurancePerYear: number;
+  maintenancePercent: number;
+  feesPerMonth: number;
+  sellingCostsPercent: number;
+  homeGrowthPercent: number;
+  monthlyRent: number;
+  rentGrowthPercent: number;
+  investReturnPercent: number;
+  years: number;
+}
+
 export interface CompoundInterestDefaults {
   initialDeposit: number;
   monthlyDeposit: number;
@@ -377,6 +399,7 @@ export interface CountryConfig {
     debtSnowball?: DebtSnowballDefaults;
     compoundInterest?: CompoundInterestDefaults;
     savingsGoal?: SavingsGoalDefaults;
+    rentVsBuy?: RentVsBuyDefaults;
   };
 
   // Country-specific figures, present only on the country that needs them.

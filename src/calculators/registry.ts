@@ -17,6 +17,7 @@ export type EngineName =
   | 'debtSnowball'
   | 'compoundInterest'
   | 'savingsGoal'
+  | 'rentVsBuy'
   | 'redundancyPay'
   | 'inheritanceTax'
   | 'selfEmploymentTax'
@@ -126,7 +127,18 @@ export const CALCULATORS: CalculatorEntry[] = [
     countries: ['us', 'uk'],
     name: 'Savings Goal Calculator',
     blurb: 'How much to save each month to reach a goal by a date, or how long your monthly savings take to get there.',
-    related: ['compound-interest-calculator', 'take-home-pay-calculator', '401k-match-calculator', 'debt-snowball-calculator', 'credit-card-payoff-calculator'],
+    related: ['compound-interest-calculator', 'rent-vs-buy-calculator', 'take-home-pay-calculator', '401k-match-calculator', 'debt-snowball-calculator', 'credit-card-payoff-calculator'],
+  },
+
+  {
+    // Phase 1 continued. Uses the rentVsBuy engine (net worth: home equity vs investing); UK adds stamp duty.
+    slug: 'rent-vs-buy-calculator',
+    engine: 'rentVsBuy',
+    category: 'property',
+    countries: ['us', 'uk'],
+    name: 'Rent vs Buy Calculator',
+    blurb: 'Whether buying or renting leaves you better off, the year buying pulls ahead, and every cost of owning.',
+    related: ['stamp-duty-calculator', 'savings-goal-calculator', 'compound-interest-calculator', 'debt-to-income-ratio-calculator', 'loan-calculator'],
   },
 
   {
@@ -162,7 +174,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     countries: ['uk'],
     name: 'Stamp Duty Calculator',
     blurb: 'Stamp Duty Land Tax on a home in England or Northern Ireland, for first-time buyers, movers and additional properties.',
-    related: ['take-home-pay-calculator', 'inheritance-tax-calculator', 'mortgage-overpayment-calculator', 'loan-calculator'],
+    related: ['rent-vs-buy-calculator', 'take-home-pay-calculator', 'inheritance-tax-calculator', 'mortgage-overpayment-calculator', 'loan-calculator'],
     popular: true,
   },
 

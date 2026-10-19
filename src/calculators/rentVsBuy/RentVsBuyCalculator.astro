@@ -1,0 +1,169 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import { RENT_VS_BUY_YEARS } from '../../engines/rentVsBuy';
+import { createFormatters } from '../../lib/format';
+import { buildRentVsBuyView, rentVsBuyDefaults, type RentVsBuyParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.rentVsBuy;
+if (!defaults) throw new Error(`Missing defaults.rentVsBuy in the ${country.code} country config`);
+const uk = country.code === 'uk';
+let params: RentVsBuyParams = { locale: country.locale, currency: country.currency, country: uk ? 'uk' : 'us' };
+if (uk) {
+  const s = requireFigure(country.uk, 'UK figures').stampDuty;
+  params = {
+    ...params,
+    stampDuty: {
+      standardBands: requireFigure(s.standardBands, 'stampDuty.standardBands'),
+      firstTimeBuyerBands: requireFigure(s.firstTimeBuyerBands, 'stampDuty.firstTimeBuyerBands'),
+      firstTimeBuyerMaxPrice: requireFigure(s.firstTimeBuyerMaxPrice, 'stampDuty.firstTimeBuyerMaxPrice'),
+      additionalPropertySurcharge: requireFigure(s.additionalPropertySurcharge, 'stampDuty.additionalPropertySurcharge'),
+      additionalPropertyMinPrice: requireFigure(s.additionalPropertyMinPrice, 'stampDuty.additionalPropertyMinPrice'),
+      nonResidentSurcharge: requireFigure(s.nonResidentSurcharge, 'stampDuty.nonResidentSurcharge'),
+      nonResidentMinPrice: requireFigure(s.nonResidentMinPrice, 'stampDuty.nonResidentMinPrice'),
+    },
+  };
+}
+const d = rentVsBuyDefaults(defaults);
+const { view } = buildRentVsBuyView(d, params);
+if (!view) throw new Error('Rent vs buy defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+---
+
+<div class="calc-block" data-calc="rent-vs-buy" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="rvb" label="Rent vs buy calculator">
+    <Fragment slot="inputs">
+      <fieldset class="field-group">
+        <legend>The home</legend>
+        <Field id="rvb-price" field="homePrice" label="Home price" value={f.number(d.homePrice)} prefix={sym} money />
+        <Field id="rvb-deposit" field="depositPercent" label={uk ? 'Deposit' : 'Down payment'} value={String(d.depositPercent)} suffix="% of price" />
+        <Field id="rvb-rate" field="mortgageRatePercent" label="Mortgage rate" value={String(d.mortgageRatePercent)} suffix="%" />
+        <Field id="rvb-term" field="termYears" label="Mortgage term" value={String(d.termYears)} suffix="years" inputmode="numeric" />
+      </fieldset>
+      <fieldset class="field-group">
+        <legend>Buying and owning costs</legend>
+        {
+          uk ? (
+            <>
+              <SelectField
+                id="rvb-buyer"
+                field="buyerType"
+                label="Stamp Duty"
+                value={d.buyerType}
+                options={[
+                  { value: 'firstTime', label: 'First-time buyer' },
+                  { value: 'standard', label: 'Moving home (standard rates)' },
+                ]}
+                hint="Worked out for England and Northern Ireland at current rates."
+              />
+              <Field id="rvb-other" field="otherBuyingCosts" label="Other buying costs" value={f.number(d.otherBuyingCosts)} prefix={sym} money hint="Solicitor, survey and mortgage fees." />
+              <Field id="rvb-ins" field="insurancePerYear" label="Buildings insurance" value={f.number(d.insurancePerYear)} prefix={sym} suffix="a year" money />
+              <Field id="rvb-maint" field="maintenancePercent" label="Maintenance and repairs" value={String(d.maintenancePercent)} suffix="% of value a year" />
+              <Field id="rvb-fees" field="feesPerMonth" label="Service charge and ground rent" value={f.number(d.feesPerMonth)} prefix={sym} suffix="a month" money optional />
+            </>
+          ) : (
+            <>
+              <Field id="rvb-closing" field="closingCostsPercent" label="Closing costs" value={String(d.closingCostsPercent)} suffix="% of price" />
+              <Field id="rvb-tax" field="propertyTaxPercent" label="Property tax" value={String(d.propertyTaxPercent)} suffix="% of value a year" hint="Your county's rate; your tax bill or assessor's website shows it." />
+              <Field id="rvb-ins" field="insurancePerYear" label="Home insurance" value={f.number(d.insurancePerYear)} prefix={sym} suffix="a year" money />
+              <Field id="rvb-maint" field="maintenancePercent" label="Maintenance and repairs" value={String(d.maintenancePercent)} suffix="% of value a year" />
+              <Field id="rvb-fees" field="feesPerMonth" label="HOA fees" value={f.number(d.feesPerMonth)} prefix={sym} suffix="a month" money optional />
+            </>
+          )
+        }
+      </fieldset>
+      <fieldset class="field-group">
+        <legend>Renting</legend>
+        <Field id="rvb-rent" field="monthlyRent" label="Rent for a similar home" value={f.number(d.monthlyRent)} prefix={sym} suffix="a month" money />
+        <Field id="rvb-rentg" field="rentGrowthPercent" label="Rent increase" value={String(d.rentGrowthPercent)} suffix="% a year" />
+      </fieldset>
+      <fieldset class="field-group">
+        <legend>The future</legend>
+        <Field id="rvb-years" field="years" label="How long you'd stay" value={String(d.years)} suffix="years" inputmode="numeric" />
+        <Field id="rvb-homeg" field="homeGrowthPercent" label="Home price growth" value={String(d.homeGrowthPercent)} suffix="% a year" />
+        <Field id="rvb-invest" field="investReturnPercent" label="Return on savings and investments" value={String(d.investReturnPercent)} suffix="% a year" hint="What the renter earns on the money a buyer would have put into the home." />
+        <Field id="rvb-sell" field="sellingCostsPercent" label="Selling costs" value={String(d.sellingCostsPercent)} suffix="% of sale price" hint={uk ? 'Estate agent and solicitor fees when you sell.' : 'Agent commission and other costs when you sell.'} />
+      </fieldset>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label" data-out="verdictLabel">{view.verdictLabel}</p>
+        <p class="result-figure" data-out="verdictAmount">{view.verdictAmount}</p>
+        <p class="result-sub" data-out="verdictSub">{view.verdictSub}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Buying pulls ahead</dt><dd data-out="breakEven">{view.breakEven}</dd></div>
+        <div><dt>Monthly mortgage</dt><dd data-out="monthlyMortgage">{view.monthlyMortgage}</dd></div>
+        <div><dt>Up-front cost to buy</dt><dd data-out="upfrontCash">{view.upfrontCash}</dd></div>
+      </dl>
+      <table class="compare-table">
+        <thead><tr><th scope="col">After you stay</th><th scope="col">Buy</th><th scope="col">Rent</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Net worth</th><td data-out="buyNetWorth">{view.buyNetWorth}</td><td data-out="rentNetWorth">{view.rentNetWorth}</td></tr>
+          <tr><th scope="row">Money paid out</th><td data-out="buyPaid">{view.buyPaid}</td><td data-out="rentPaid">{view.rentPaid}</td></tr>
+          <tr><th scope="row">Home value</th><td data-out="homeValue">{view.homeValue}</td><td>–</td></tr>
+          <tr><th scope="row">Mortgage left</th><td data-out="mortgageLeft">{view.mortgageLeft}</td><td>–</td></tr>
+        </tbody>
+      </table>
+      <p class="result-note" data-out="costsNote">{view.costsNote}</p>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="rvb-breakdown-title">
+    <h2 id="rvb-breakdown-title" class="h3">Buying vs renting over time</h2>
+    <SvgChart
+      id="rvb-chart"
+      title={`Net worth each year if you buy or rent (${RENT_VS_BUY_YEARS} years)`}
+      legend={[
+        { label: 'Buy', className: 'chart-s1' },
+        { label: 'Rent and invest', className: 'chart-s3' },
+      ]}
+      svg={view.chartSvg}
+      htmlKey="chartSvg"
+    />
+    <details class="schedule">
+      <summary>Year-by-year table</summary>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Year-by-year table">
+        <table class="data-table">
+          <thead><tr><th scope="col">Year</th><th scope="col">Home value</th><th scope="col">Mortgage left</th><th scope="col">Net worth if you buy</th><th scope="col">Net worth if you rent</th><th scope="col">Ahead</th></tr></thead>
+          <tbody data-html="yearRows" set:html={view.yearRows} />
+        </table>
+      </div>
+    </details>
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <ul>
+        <li><strong>Buy:</strong> you pay the {uk ? 'deposit, Stamp Duty and other buying costs' : 'down payment and closing costs'} up front, then each month the mortgage payment (rate ÷ 12, standard repayment){uk ? '' : ', property tax'}, insurance, maintenance and any {uk ? 'service charge' : 'HOA fees'}.</li>
+        <li><strong>Net worth if you buy</strong> = home value − selling costs − mortgage left + any money you invest in months when owning costs less than renting.</li>
+        <li><strong>Rent:</strong> you invest the money a buyer would have paid up front. In any month when owning costs more than rent, you invest the difference too. <strong>Net worth if you rent</strong> = those investments.</li>
+        <li>Home prices grow by the yearly rate each month; {uk ? 'maintenance is' : 'property tax and maintenance are'} a % of the home's value; insurance and fees rise with home prices; rent rises once a year.</li>
+        <li><strong>Buying pulls ahead</strong> in the first year from which buying stays ahead through year {RENT_VS_BUY_YEARS}.</li>
+        <li>No income tax, capital gains tax or tax relief is included. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildRentVsBuyView, readRentVsBuyInput, type RentVsBuyParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="rent-vs-buy"]')) {
+    const params = embeddedParams<RentVsBuyParams>(root);
+    bindCalculator(root, (read) => buildRentVsBuyView(readRentVsBuyInput(read), params));
+  }
+</script>

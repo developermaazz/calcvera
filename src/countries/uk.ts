@@ -30,6 +30,22 @@ export const uk: CountryConfig = {
   defaults: {
     loan: { amount: 10_000, aprPercent: 6.9, termYears: 5 },
     creditCard: { balance: 3_000, aprPercent: 24.9, monthlyPayment: 150, targetMonths: 24 },
+    rentVsBuy: {
+      homePrice: 300_000,
+      depositPercent: 15,
+      mortgageRatePercent: 4.5,
+      termYears: 25,
+      otherBuyingCosts: 2_500,
+      insurancePerYear: 350,
+      maintenancePercent: 1,
+      feesPerMonth: 0,
+      sellingCostsPercent: 2,
+      homeGrowthPercent: 3,
+      monthlyRent: 1_300,
+      rentGrowthPercent: 3,
+      investReturnPercent: 4,
+      years: 10,
+    },
     compoundInterest: { initialDeposit: 5_000, monthlyDeposit: 150, annualRatePercent: 4.5, years: 15 },
     savingsGoal: { goal: 15_000, currentSavings: 1_000, ratePercent: 4, years: 3, monthlyDeposit: 300 },
     debtSnowball: {

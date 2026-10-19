@@ -173,3 +173,73 @@ function roundedEnd(x: number, w: number, h: number, side: 'left' | 'right'): st
     ? `M${x + w},0H${x + r}Q${x},0 ${x},${r}V${h - r}Q${x},${h} ${x + r},${h}H${x + w}Z`
     : `M${x},0H${x + w - r}Q${x + w},0 ${x + w},${r}V${h - r}Q${x + w},${h} ${x + w - r},${h}H${x}Z`;
 }
+
+export interface LineSeries {
+  label: string;
+  /** Number 1–4: stroke colour class chart-stroke-N and dot class chart-sN. */
+  colour: 1 | 2 | 3 | 4;
+  values: number[];
+}
+
+export interface LineChartOptions {
+  /** One x label per point, e.g. "1", "2", … */
+  labels: string[];
+  series: LineSeries[];
+  formatAxis: (value: number) => string;
+  /** Tooltip text per point index (all series). */
+  tooltip: (index: number) => string;
+  ariaLabel: string;
+  xAxisLabel?: string;
+}
+
+/**
+ * Two or more lines over the same x axis (e.g. net worth if you buy vs rent). Handles negative values with a
+ * zero line. Each point has a native tooltip; the table below the chart carries the full figures.
+ */
+export function lineChart(opts: LineChartOptions): string {
+  const { labels, series, formatAxis, tooltip, ariaLabel, xAxisLabel } = opts;
+  const plotW = WIDTH - MARGIN.left - MARGIN.right;
+  const bottom = xAxisLabel ? 56 : 34;
+  const plotH = HEIGHT - MARGIN.top - bottom;
+  const all = series.flatMap((s) => s.values);
+  const hi = Math.max(0, ...all);
+  const lo = Math.min(0, ...all);
+  // Scale the larger side, then extend the other side by whole steps.
+  const up = niceScale(Math.max(hi, -lo));
+  const step = up.max / up.ticks;
+  const top = hi > 0 ? Math.ceil(hi / step - 1e-9) * step : 0;
+  const floor = lo < 0 ? -Math.ceil(-lo / step - 1e-9) * step : 0;
+  const span = Math.max(step, top - floor);
+  const y = (v: number) => MARGIN.top + ((top - v) / span) * plotH;
+  const count = Math.max(1, labels.length);
+  const x = (i: number) => MARGIN.left + (count === 1 ? plotW / 2 : (plotW * i) / (count - 1));
+
+  const parts: string[] = [];
+  for (let v = floor; v <= top + 1e-9; v += step) {
+    const gy = n(y(v));
+    parts.push(`<line class="${Math.abs(v) < 1e-9 ? 'chart-baseline' : 'chart-grid'}" x1="${MARGIN.left}" x2="${WIDTH - MARGIN.right}" y1="${gy}" y2="${gy}"/>`);
+    parts.push(`<text class="chart-axis" x="${MARGIN.left - 8}" y="${gy}" text-anchor="end" dominant-baseline="middle">${escapeHtml(formatAxis(v))}</text>`);
+  }
+  const labelEvery = Math.ceil(count / MAX_LABELS);
+  labels.forEach((label, i) => {
+    if (i % labelEvery === 0 || i === count - 1) {
+      parts.push(`<text class="chart-axis" x="${n(x(i))}" y="${MARGIN.top + plotH + 8}" text-anchor="middle" dominant-baseline="hanging">${escapeHtml(label)}</text>`);
+    }
+  });
+  for (const s of series) {
+    const d = s.values.map((v, i) => `${i === 0 ? 'M' : 'L'}${n(x(i))},${n(y(v))}`).join('');
+    parts.push(`<path class="chart-line chart-stroke-${s.colour}" d="${d}"/>`);
+  }
+  // Hover targets: one band per x position, with the dots for every series.
+  labels.forEach((_, i) => {
+    const band = plotW / count;
+    const dots = series.map((s) => `<circle class="chart-dot chart-s${s.colour}" cx="${n(x(i))}" cy="${n(y(s.values[i] ?? 0))}" r="3.5"/>`).join('');
+    parts.push(
+      `<g class="chart-bar chart-point"><title>${escapeHtml(tooltip(i))}</title><rect class="chart-hit" x="${n(x(i) - band / 2)}" y="${MARGIN.top}" width="${n(band)}" height="${plotH}"/>${dots}</g>`,
+    );
+  });
+  if (xAxisLabel) {
+    parts.push(`<text class="chart-axis" x="${MARGIN.left + plotW / 2}" y="${HEIGHT - 4}" text-anchor="middle">${escapeHtml(xAxisLabel)}</text>`);
+  }
+  return `<svg class="chart-svg" viewBox="0 0 ${WIDTH} ${HEIGHT}" role="img" aria-label="${escapeHtml(ariaLabel)}" preserveAspectRatio="xMidYMid meet">${parts.join('')}</svg>`;
+}
