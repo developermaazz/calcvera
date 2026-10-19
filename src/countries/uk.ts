@@ -30,6 +30,15 @@ export const uk: CountryConfig = {
   defaults: {
     loan: { amount: 10_000, aprPercent: 6.9, termYears: 5 },
     creditCard: { balance: 3_000, aprPercent: 24.9, monthlyPayment: 150, targetMonths: 24 },
+    debtSnowball: {
+      debts: [
+        { name: 'Buy now pay later', balance: 300, aprPercent: 0, minimumPayment: 50 },
+        { name: 'Store card', balance: 900, aprPercent: 29.9, minimumPayment: 30 },
+        { name: 'Credit card', balance: 3_200, aprPercent: 24.9, minimumPayment: 96 },
+        { name: 'Car finance', balance: 6_500, aprPercent: 9.9, minimumPayment: 210 },
+      ],
+      extraMonthly: 150,
+    },
     takeHomePay: { grossSalary: 35_000, pensionPercent: 5 },
     stampDuty: { price: 295_000 },
     studentLoan: { balance: 45_000, salary: 35_000, salaryGrowthPercent: 3 },

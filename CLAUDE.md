@@ -159,7 +159,7 @@ public/                     robots.txt, ads.txt, _headers, fonts/, brand/ (logo 
 | 9 | UK | student-loan-repayment-calculator | studentLoan |
 | 10 | UK | car-finance-calculator | loan + balloon (PCP) |
 
-**Next (Phase 1 continued):** US/UK debt-snowball-calculator, compound-interest-calculator, savings-goal-calculator, rent-vs-buy-calculator; US roth-ira-calculator, heloc-payment-calculator, paycheck-calculator; UK isa-savings-calculator, pension-tax-relief-calculator, mortgage-overpayment-calculator.
+**Next (Phase 1 continued):** US/UK debt-snowball-calculator (built 19 Oct 2026, engine debtSnowball), compound-interest-calculator, savings-goal-calculator, rent-vs-buy-calculator; US roth-ira-calculator, heloc-payment-calculator, paycheck-calculator; UK isa-savings-calculator, pension-tax-relief-calculator, mortgage-overpayment-calculator.
 
 **Batch 2 (built 16 Oct 2026; live in the registry):**
 

@@ -1,0 +1,167 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import AmortizationTable from '../../components/AmortizationTable.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import type { CountryConfig } from '../../countries';
+import { MAX_SNOWBALL_DEBTS, snowballField } from '../../engines/debtSnowball';
+import { createFormatters } from '../../lib/format';
+import { VISIBLE_SNOWBALL_ROWS, buildDebtSnowballView, snowballDefaults, type DebtSnowballParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.debtSnowball;
+if (!defaults) throw new Error(`Missing defaults.debtSnowball in the ${country.code} country config`);
+const params: DebtSnowballParams = { locale: country.locale, currency: country.currency };
+const d = snowballDefaults(defaults);
+const { view } = buildDebtSnowballView(d, params);
+if (!view) throw new Error('Debt snowball defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+const uk = country.code === 'uk';
+const rate = uk ? 'Interest rate' : 'APR';
+const rows = Array.from({ length: MAX_SNOWBALL_DEBTS }, (_, i) => ({ index: i, debt: d.debts[i] }));
+---
+
+<div class="calc-block" data-calc="debt-snowball" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="snowball" label="Debt snowball calculator">
+    <Fragment slot="inputs">
+      <fieldset class="field-group">
+        <legend>Your debts</legend>
+        {
+          rows.map(({ index, debt }) => (
+            <div class="debt-row" data-row-group="debt" hidden={index >= VISIBLE_SNOWBALL_ROWS} role="group" aria-label={`Debt ${index + 1}`}>
+              <p class="debt-row-title">Debt {index + 1}</p>
+              <Field id={`ds-name-${index}`} field={snowballField('name', index)} label="Name" value={debt?.name ?? ''} inputmode="text" optional placeholder={`Debt ${index + 1}`} />
+              <div class="debt-row-fields">
+                <Field id={`ds-balance-${index}`} field={snowballField('balance', index)} label="Balance" value={debt ? f.number(debt.balance) : ''} prefix={sym} money />
+                <Field id={`ds-apr-${index}`} field={snowballField('aprPercent', index)} label={rate} value={debt ? String(debt.aprPercent) : ''} suffix="%" />
+                <Field id={`ds-min-${index}`} field={snowballField('minimumPayment', index)} label="Minimum payment" value={debt ? f.number(debt.minimumPayment) : ''} prefix={sym} money />
+              </div>
+            </div>
+          ))
+        }
+        <button type="button" class="link-btn" data-reveal="debt">+ Add another debt</button>
+        <p class="field-hint">Leave a balance empty to skip that row. Up to {MAX_SNOWBALL_DEBTS} debts.</p>
+      </fieldset>
+      <fieldset class="field-group">
+        <legend>Your plan</legend>
+        <Field
+          id="ds-extra"
+          field="extraMonthly"
+          label="Extra each month"
+          value={f.number(d.extraMonthly)}
+          prefix={sym}
+          money
+          hint="On top of all your minimum payments. When a debt is paid off, its payment rolls into the next one."
+        />
+        <SelectField
+          id="ds-method"
+          field="method"
+          label="Payoff order"
+          value={d.method}
+          options={[
+            { value: 'snowball', label: 'Snowball: smallest balance first' },
+            { value: 'avalanche', label: `Avalanche: highest ${uk ? 'interest rate' : 'APR'} first` },
+          ]}
+        />
+      </fieldset>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Debt-free by</p>
+        <p class="result-figure" data-out="payoffDate">{view.payoffDate}</p>
+        <p class="result-sub" data-out="payoffTime">{view.payoffTime}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Monthly payment</dt><dd data-out="monthlyBudget">{view.monthlyBudget}</dd></div>
+        <div><dt>Total interest</dt><dd data-out="totalInterest">{view.totalInterest}</dd></div>
+        <div><dt>Interest saved vs minimums</dt><dd class="positive" data-out="interestSaved">{view.interestSaved}</dd></div>
+        <div><dt>Time saved</dt><dd class="positive" data-out="timeSaved">{view.timeSaved}</dd></div>
+      </dl>
+      <table class="compare-table">
+        <thead><tr><th scope="col">Method</th><th scope="col">Debt-free in</th><th scope="col">Interest</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Snowball</th><td data-out="snowballTime">{view.snowballTime}</td><td data-out="snowballInterest">{view.snowballInterest}</td></tr>
+          <tr><th scope="row">Avalanche</th><td data-out="avalancheTime">{view.avalancheTime}</td><td data-out="avalancheInterest">{view.avalancheInterest}</td></tr>
+          <tr><th scope="row">Minimums only</th><td data-out="minimumTime">{view.minimumTime}</td><td data-out="minimumInterest">{view.minimumInterest}</td></tr>
+        </tbody>
+      </table>
+      <p class="result-note" data-out="methodNote">{view.methodNote}</p>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="ds-breakdown-title">
+    <h2 id="ds-breakdown-title" class="h3">Your payoff plan</h2>
+    <div class="table-scroll table-plain">
+      <table class="data-table order-table">
+        <caption class="visually-hidden">Payoff order</caption>
+        <thead><tr><th scope="col">Order</th><th scope="col">Debt</th><th scope="col">Balance</th><th scope="col">{rate}</th><th scope="col">Paid off</th><th scope="col">Interest</th></tr></thead>
+        <tbody data-html="orderRows" set:html={view.orderRows} />
+      </table>
+    </div>
+    <SvgChart
+      id="ds-chart"
+      title="Debt and interest paid each year"
+      legend={[
+        { label: 'Debt paid off', className: 'chart-s1' },
+        { label: 'Interest', className: 'chart-s2' },
+      ]}
+      svg={view.chartSvg}
+      htmlKey="chartSvg"
+    />
+    <AmortizationTable
+      summary="Month-by-month schedule"
+      views={[
+        { id: 'yearly', label: 'By year', headers: ['Year', 'Debt paid', 'Interest', 'Balance left'], rowsHtml: view.yearlyRows },
+        { id: 'monthly', label: 'By month', headers: ['#', 'Month', 'Payment', 'Interest', 'Paid off', 'Balance left'], rowsHtml: view.monthlyRows },
+      ]}
+    />
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <ul>
+        <li><strong>Monthly payment</strong> = all your minimum payments + the extra amount. It stays the same until every debt is paid off.</li>
+        <li>Each month, interest = balance × {uk ? 'annual rate' : 'APR'} ÷ 12 is added to each debt, then every debt gets its minimum payment.</li>
+        <li>What's left goes to one target debt: the <strong>snowball</strong> targets the smallest starting balance first, the <strong>avalanche</strong> the highest rate first. When a debt is cleared, its payment moves to the next target.</li>
+        <li><strong>Minimums only</strong> pays each debt its minimum with no extra, and a cleared debt's payment is not reused.</li>
+        <li>Minimum payments are treated as fixed amounts. Card minimums that shrink as the balance falls, new spending, fees or rate changes will change the result. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildDebtSnowballView, readDebtSnowballInput, type DebtSnowballParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="debt-snowball"]')) {
+    const params = embeddedParams<DebtSnowballParams>(root);
+    const schedule = root.querySelector<HTMLDetailsElement>('[data-schedule]');
+    const monthlyBody = root.querySelector<HTMLElement>('[data-rows="monthly"]');
+    const yearlyBody = root.querySelector<HTMLElement>('[data-rows="yearly"]');
+    bindCalculator(root, (read) => {
+      const computed = buildDebtSnowballView(readDebtSnowballInput(read), params);
+      if (computed.view) {
+        if (yearlyBody) yearlyBody.innerHTML = computed.view.yearlyRows;
+        if (monthlyBody && schedule?.open) monthlyBody.innerHTML = computed.view.monthlyRows;
+        if (monthlyBody && !schedule?.open) monthlyBody.dataset.pending = computed.view.monthlyRows;
+      }
+      return computed;
+    });
+    schedule?.addEventListener('toggle', () => {
+      if (schedule.open && monthlyBody?.dataset.pending) {
+        monthlyBody.innerHTML = monthlyBody.dataset.pending;
+        delete monthlyBody.dataset.pending;
+      }
+    });
+  }
+</script>

@@ -29,8 +29,7 @@ function parse(text: string): Parsed | null {
   };
 }
 
-export function animateNumberChange(el: HTMLElement, before: string): void {
-  const after = el.textContent ?? '';
+export function animateNumberChange(el: HTMLElement, before: string, after: string): void {
   if (before === after || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const from = parse(before);
   const to = parse(after);
@@ -39,7 +38,7 @@ export function animateNumberChange(el: HTMLElement, before: string): void {
   // Write frames into a text node's data: the calculator replaces child nodes, so these writes never look
   // like a new result to the observer that called us.
   const node = el.firstChild;
-  if (!node || node.nodeType !== Node.TEXT_NODE || el.childNodes.length !== 1) return;
+  if (!node || node.nodeType !== Node.TEXT_NODE || el.childNodes.length !== 1 || node.textContent !== after) return;
   const text = node as Text;
 
   const format = new Intl.NumberFormat('en-US', {

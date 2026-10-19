@@ -166,10 +166,14 @@ for (const shell of document.querySelectorAll<HTMLElement>('[data-calc-shell]'))
   form.addEventListener('change', markInteracted, { capture: true });
   const counter = new MutationObserver((records) => {
     if (!interacted) return;
+    // One event can re-render several times (a select fires input and change together), so take each
+    // element's first "before" and the text the calculator wrote last, before any animation frame.
+    const changes = new Map<HTMLElement, { before: string; after: string }>();
     for (const r of records) {
-      const before = [...r.removedNodes].map((n) => n.textContent ?? '').join('');
-      if (before) animateNumberChange(r.target as HTMLElement, before);
+      const el = r.target as HTMLElement;
+      if (!changes.has(el)) changes.set(el, { before: [...r.removedNodes].map((n) => n.textContent ?? '').join(''), after: el.textContent ?? '' });
     }
+    for (const [el, { before, after }] of changes) if (before) animateNumberChange(el, before, after);
   });
   for (const el of results.querySelectorAll<HTMLElement>('[data-out]')) counter.observe(el, { childList: true });
 

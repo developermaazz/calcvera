@@ -14,6 +14,7 @@ export type EngineName =
   | 'dti'
   | 'carAffordability'
   | 'debtConsolidation'
+  | 'debtSnowball'
   | 'redundancyPay'
   | 'inheritanceTax'
   | 'selfEmploymentTax'
@@ -65,7 +66,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     countries: ['us', 'uk'],
     name: 'Loan Calculator',
     blurb: 'Monthly payment, total interest and payoff date for any fixed-rate loan, with extra payments.',
-    related: ['personal-loan-payoff-calculator', 'used-car-loan-calculator', 'credit-card-payoff-calculator', 'car-finance-calculator'],
+    related: ['personal-loan-payoff-calculator', 'used-car-loan-calculator', 'credit-card-payoff-calculator', 'debt-snowball-calculator', 'car-finance-calculator'],
     popular: true,
   },
 
@@ -93,6 +94,17 @@ export const CALCULATORS: CalculatorEntry[] = [
   },
 
   {
+    // Phase 1 continued. Uses the debtSnowball engine (rollover of freed payments; snowball or avalanche order).
+    slug: 'debt-snowball-calculator',
+    engine: 'debtSnowball',
+    category: 'debt',
+    countries: ['us', 'uk'],
+    name: 'Debt Snowball Calculator',
+    blurb: 'Your debt-free date with the snowball or avalanche method, the payoff order, and the interest you save.',
+    related: ['credit-card-payoff-calculator', 'debt-consolidation-calculator', 'debt-to-income-ratio-calculator', 'personal-loan-payoff-calculator', 'loan-calculator'],
+  },
+
+  {
     // Launch set #5. Uses the earlyPayoff engine (loan + extra payments).
     slug: 'personal-loan-payoff-calculator',
     engine: 'personalLoanPayoff',
@@ -100,7 +112,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     countries: ['us'],
     name: 'Personal Loan Payoff Calculator',
     blurb: 'How much paying extra each month, or a one-time lump sum, saves on a personal loan you already have.',
-    related: ['loan-calculator', 'debt-consolidation-calculator', 'credit-card-payoff-calculator', 'debt-to-income-ratio-calculator'],
+    related: ['loan-calculator', 'debt-snowball-calculator', 'debt-consolidation-calculator', 'credit-card-payoff-calculator', 'debt-to-income-ratio-calculator'],
   },
 
   {
@@ -181,7 +193,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     countries: ['us'],
     name: 'Debt-to-Income Ratio Calculator',
     blurb: 'Front-end and back-end DTI, what lenders look for, and how much debt to cut to reach a target ratio.',
-    related: ['debt-consolidation-calculator', 'credit-card-payoff-calculator', 'car-affordability-calculator', 'loan-calculator'],
+    related: ['debt-consolidation-calculator', 'debt-snowball-calculator', 'credit-card-payoff-calculator', 'car-affordability-calculator', 'loan-calculator'],
   },
   {
     // Uses the loan engine in reverse: budget → maximum loan → maximum price.

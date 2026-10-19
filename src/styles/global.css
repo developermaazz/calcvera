@@ -1988,11 +1988,10 @@ a:hover .card-arrow .icon {
 .result-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
-  gap: 1px;
+  gap: 0;
   margin: var(--space-3) 0 var(--space-2);
   border-radius: 12px;
   overflow: hidden;
-  background: var(--result-line);
   border: 1px solid var(--result-line);
 }
 
@@ -2002,7 +2001,8 @@ a:hover .card-arrow .icon {
   justify-content: flex-end;
   gap: 4px;
   padding: 12px 14px;
-  background: var(--result-bg);
+  /* Dividers drawn per tile (right and bottom), so an odd last row leaves no filler cell. */
+  box-shadow: 1px 0 0 var(--result-line), 0 1px 0 var(--result-line);
 }
 
 .result-list dt {
@@ -2491,6 +2491,11 @@ a:hover .card-arrow .icon {
   font-weight: 700;
   letter-spacing: 0.02em;
   vertical-align: 1px;
+}
+
+.order-table th:nth-child(2),
+.order-table td:nth-child(2) {
+  text-align: left;
 }
 
 .table-plain .data-table th[scope='row'] {

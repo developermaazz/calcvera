@@ -57,6 +57,15 @@ export const us: CountryConfig = {
   defaults: {
     loan: { amount: 20_000, aprPercent: 7.5, termYears: 5 },
     creditCard: { balance: 5_000, aprPercent: 21.99, monthlyPayment: 200, targetMonths: 24 },
+    debtSnowball: {
+      debts: [
+        { name: 'Medical bill', balance: 900, aprPercent: 0, minimumPayment: 50 },
+        { name: 'Store card', balance: 1_800, aprPercent: 29.99, minimumPayment: 55 },
+        { name: 'Credit card', balance: 4_500, aprPercent: 24.99, minimumPayment: 120 },
+        { name: 'Car loan', balance: 9_000, aprPercent: 7.9, minimumPayment: 285 },
+      ],
+      extraMonthly: 200,
+    },
     personalLoanPayoff: { balance: 12_000, aprPercent: 11.5, monthlyPayment: 350, extraMonthly: 100 },
     autoRefinance: { balance: 18_000, currentAprPercent: 9.9, remainingMonths: 48, newAprPercent: 6.4, newTermMonths: 48, fees: 300 },
     retirementMatch: {

@@ -22,6 +22,7 @@ export const ICONS = {
   briefcase: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8.5 7V5.5a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2V7M3 12.5h18"/>',
   landmark: '<path d="M3 21h18M5 21v-10M9.5 21v-10M14.5 21v-10M19 21v-10"/><path d="M2.5 9L12 3l9.5 6z"/>',
   receipt: '<path d="M5 3h14v18l-2.5-1.5L14 21l-2-1.5-2 1.5-2.5-1.5L5 21z"/><path d="M9 8h6M9 12h6M9 16h3"/>',
+  barsDown: '<path d="M3.5 20.5h17"/><rect x="5" y="4.5" width="3.5" height="13" rx="1"/><rect x="10.25" y="9" width="3.5" height="8.5" rx="1"/><rect x="15.5" y="13" width="3.5" height="4.5" rx="1"/>',
   sprout: '<path d="M12 21v-8"/><path d="M12 13C12 8.6 9 6 4 6c0 4.4 3 7 8 7z"/><path d="M12 15c0-3.6 2.4-6 6.5-6 0 3.6-2.4 6-6.5 6z"/>',
   // Interface
   search: '<circle cx="11" cy="11" r="7"/><path d="M20.5 20.5l-4.5-4.5"/>',
@@ -62,6 +63,7 @@ export const ENGINE_ICONS: Record<EngineName, IconName> = {
   dti: 'percent',
   carAffordability: 'tag',
   debtConsolidation: 'layers',
+  debtSnowball: 'barsDown',
   redundancyPay: 'briefcase',
   inheritanceTax: 'landmark',
   selfEmploymentTax: 'receipt',

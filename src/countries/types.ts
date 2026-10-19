@@ -25,6 +25,11 @@ export interface CreditCardDefaults {
   targetMonths: number;
 }
 
+export interface DebtSnowballDefaults {
+  debts: { name: string; balance: number; aprPercent: number; minimumPayment: number }[];
+  extraMonthly: number;
+}
+
 export interface AutoRefinanceDefaults {
   balance: number;
   currentAprPercent: number;
@@ -354,6 +359,7 @@ export interface CountryConfig {
     retirementMatch?: RetirementMatchDefaults;
     studentLoan?: StudentLoanDefaults;
     carFinance?: CarFinanceDefaults;
+    debtSnowball?: DebtSnowballDefaults;
   };
 
   // Country-specific figures, present only on the country that needs them.
