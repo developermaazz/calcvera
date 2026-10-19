@@ -48,6 +48,8 @@ npm run build         # static build to dist/
 npm run preview       # preview the build
 npm run check         # astro check (types)
 npm run check:verify  # lists VERIFY markers; fails if any [VERIFY] remains in a guide
+npm run indexnow      # tell IndexNow (Bing etc.) about pages; --days=N, --since=DATE or URLs. Runs automatically
+                      # after each push to main (.github/workflows/indexnow.yml, pages changed in 2 days)
 ```
 
 ## 5. Folder structure
