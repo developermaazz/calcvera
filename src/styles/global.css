@@ -2478,8 +2478,8 @@ a:hover .card-arrow .icon {
   background: var(--surface-sunken);
 }
 
-/* Payoff schedules: the last row is the payment that clears the balance. */
-.schedule tbody tr:last-child td:last-child::after {
+/* Payoff schedules (AmortizationTable): the last row is the payment that clears the balance. */
+.schedule[data-schedule] tbody tr:last-child td:last-child::after {
   content: 'Paid off';
   display: inline-block;
   margin-left: 10px;

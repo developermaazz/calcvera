@@ -1,0 +1,114 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import type { CountryConfig } from '../../countries';
+import { createFormatters } from '../../lib/format';
+import { buildSavingsGoalView, savingsGoalDefaults, type SavingsGoalParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.savingsGoal;
+if (!defaults) throw new Error(`Missing defaults.savingsGoal in the ${country.code} country config`);
+const uk = country.code === 'uk';
+const params: SavingsGoalParams = { locale: country.locale, currency: country.currency, rateName: uk ? 'AER' : 'APY' };
+const d = savingsGoalDefaults(defaults);
+const { view } = buildSavingsGoalView(d, params);
+if (!view) throw new Error('Savings goal defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+---
+
+<div class="calc-block" data-calc="savings-goal" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="goal" label="Savings goal calculator">
+    <Fragment slot="inputs">
+      <Field id="sg-goal" field="goal" label="Savings goal" value={f.number(d.goal)} prefix={sym} money />
+      <Field id="sg-current" field="currentSavings" label="Saved so far" value={f.number(d.currentSavings)} prefix={sym} money optional />
+      <Field
+        id="sg-rate"
+        field="ratePercent"
+        label={`Interest rate (${params.rateName})`}
+        value={String(d.ratePercent)}
+        suffix="%"
+        hint={uk ? 'The AER your savings account pays. Enter 0 for cash kept at home.' : 'The APY your savings account pays. Enter 0 for cash that earns nothing.'}
+      />
+      <SelectField
+        id="sg-mode"
+        field="mode"
+        label="What do you want to work out?"
+        value={d.mode}
+        options={[
+          { value: 'deposit', label: 'How much to save each month' },
+          { value: 'time', label: 'How long it will take' },
+        ]}
+      />
+      <Field id="sg-years" field="years" label="Time to reach your goal" value={String(d.years)} suffix="years" when="mode:deposit" hidden={d.mode !== 'deposit'} hint="Decimals work too: 1.5 is 18 months." />
+      <Field id="sg-deposit" field="monthlyDeposit" label="Monthly savings" value={f.number(d.monthlyDeposit)} prefix={sym} money when="mode:time" hidden={d.mode !== 'time'} />
+      <p class="field-hint">Assumes you save at the end of each month and the rate stays the same.</p>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label" data-out="headlineLabel">{view.headlineLabel}</p>
+        <p class="result-figure" data-out="headline">{view.headline}</p>
+        <p class="result-sub" data-out="subline">{view.subline}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Goal date</dt><dd data-out="goalDate">{view.goalDate}</dd></div>
+        <div><dt>You deposit</dt><dd data-out="totalDeposits">{view.totalDeposits}</dd></div>
+        <div><dt>Interest earned</dt><dd class="positive" data-out="interest">{view.interest}</dd></div>
+      </dl>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="sg-breakdown-title">
+    <h2 id="sg-breakdown-title" class="h3">Your savings plan</h2>
+    <SvgChart
+      id="sg-chart"
+      title="Savings at the end of each year"
+      legend={[
+        { label: 'Money you put in', className: 'chart-s1' },
+        { label: 'Interest', className: 'chart-s3' },
+      ]}
+      svg={view.chartSvg}
+      htmlKey="chartSvg"
+    />
+    <details class="schedule">
+      <summary>Year-by-year table</summary>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Year-by-year table">
+        <table class="data-table">
+          <thead><tr><th scope="col">Year</th><th scope="col">Deposits</th><th scope="col">Interest</th><th scope="col">Balance</th></tr></thead>
+          <tbody data-html="yearRows" set:html={view.yearRows} />
+        </table>
+      </div>
+    </details>
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <p class="formula-eq"><code>P = (G − S(1 + i)<sup>n</sup>) × i ÷ ((1 + i)<sup>n</sup> − 1)</code></p>
+      <ul>
+        <li><strong>P</strong> is the monthly deposit, <strong>G</strong> your goal, <strong>S</strong> what you've saved so far and <strong>n</strong> the number of months.</li>
+        <li><strong>i</strong> is the monthly rate: (1 + {params.rateName})<sup>1/12</sup> − 1. A 4% {params.rateName} gives i = 0.327%. The {params.rateName} already includes compounding, so the yearly growth matches what your account advertises.</li>
+        <li>For the time it takes: n = ln((G × i + P) ÷ (S × i + P)) ÷ ln(1 + i), rounded up to a whole month. At 0%, n = (G − S) ÷ P.</li>
+        <li>No tax, fees or inflation are included. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildSavingsGoalView, readSavingsGoalInput, type SavingsGoalParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="savings-goal"]')) {
+    const params = embeddedParams<SavingsGoalParams>(root);
+    bindCalculator(root, (read) => buildSavingsGoalView(readSavingsGoalInput(read), params));
+  }
+</script>

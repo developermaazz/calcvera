@@ -57,6 +57,8 @@ export const us: CountryConfig = {
   defaults: {
     loan: { amount: 20_000, aprPercent: 7.5, termYears: 5 },
     creditCard: { balance: 5_000, aprPercent: 21.99, monthlyPayment: 200, targetMonths: 24 },
+    compoundInterest: { initialDeposit: 10_000, monthlyDeposit: 200, annualRatePercent: 5, years: 20 },
+    savingsGoal: { goal: 20_000, currentSavings: 2_000, ratePercent: 4, years: 3, monthlyDeposit: 400 },
     debtSnowball: {
       debts: [
         { name: 'Medical bill', balance: 900, aprPercent: 0, minimumPayment: 50 },

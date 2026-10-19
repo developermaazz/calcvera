@@ -15,6 +15,8 @@ export type EngineName =
   | 'carAffordability'
   | 'debtConsolidation'
   | 'debtSnowball'
+  | 'compoundInterest'
+  | 'savingsGoal'
   | 'redundancyPay'
   | 'inheritanceTax'
   | 'selfEmploymentTax'
@@ -105,6 +107,29 @@ export const CALCULATORS: CalculatorEntry[] = [
   },
 
   {
+    // Phase 1 continued. Uses the compoundInterest engine (equivalent monthly rate for any compounding).
+    slug: 'compound-interest-calculator',
+    engine: 'compoundInterest',
+    category: 'savings',
+    countries: ['us', 'uk'],
+    name: 'Compound Interest Calculator',
+    blurb: 'How a lump sum and regular monthly deposits grow with compound interest, year by year.',
+    related: ['savings-goal-calculator', '401k-match-calculator', 'take-home-pay-calculator', 'debt-snowball-calculator', 'credit-card-payoff-calculator'],
+    popular: true,
+  },
+
+  {
+    // Phase 1 continued. Uses the savingsGoal engine (deposit needed, or time to reach a goal).
+    slug: 'savings-goal-calculator',
+    engine: 'savingsGoal',
+    category: 'savings',
+    countries: ['us', 'uk'],
+    name: 'Savings Goal Calculator',
+    blurb: 'How much to save each month to reach a goal by a date, or how long your monthly savings take to get there.',
+    related: ['compound-interest-calculator', 'take-home-pay-calculator', '401k-match-calculator', 'debt-snowball-calculator', 'credit-card-payoff-calculator'],
+  },
+
+  {
     // Launch set #5. Uses the earlyPayoff engine (loan + extra payments).
     slug: 'personal-loan-payoff-calculator',
     engine: 'personalLoanPayoff',
@@ -124,7 +149,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     countries: ['uk'],
     name: 'Take-Home Pay Calculator',
     blurb: 'Your monthly pay after Income Tax, National Insurance, student loan and pension, for England, Wales, NI or Scotland.',
-    related: ['redundancy-pay-calculator', 'student-loan-repayment-calculator', 'pension-tax-relief-calculator', 'credit-card-payoff-calculator', 'loan-calculator'],
+    related: ['redundancy-pay-calculator', 'student-loan-repayment-calculator', 'pension-tax-relief-calculator', 'savings-goal-calculator', 'credit-card-payoff-calculator', 'loan-calculator'],
     popular: true,
   },
 
@@ -160,7 +185,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     countries: ['us'],
     name: '401(k) Match Calculator',
     blurb: 'How much your employer adds to your 401(k), the match you might be missing, and what it could grow to.',
-    related: ['roth-ira-calculator', 'quarterly-estimated-tax-calculator', 'debt-to-income-ratio-calculator', 'paycheck-calculator'],
+    related: ['compound-interest-calculator', 'roth-ira-calculator', 'savings-goal-calculator', 'quarterly-estimated-tax-calculator', 'debt-to-income-ratio-calculator', 'paycheck-calculator'],
     popular: true,
   },
   {

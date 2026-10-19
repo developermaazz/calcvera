@@ -25,6 +25,21 @@ export interface CreditCardDefaults {
   targetMonths: number;
 }
 
+export interface CompoundInterestDefaults {
+  initialDeposit: number;
+  monthlyDeposit: number;
+  annualRatePercent: number;
+  years: number;
+}
+
+export interface SavingsGoalDefaults {
+  goal: number;
+  currentSavings: number;
+  ratePercent: number;
+  years: number;
+  monthlyDeposit: number;
+}
+
 export interface DebtSnowballDefaults {
   debts: { name: string; balance: number; aprPercent: number; minimumPayment: number }[];
   extraMonthly: number;
@@ -360,6 +375,8 @@ export interface CountryConfig {
     studentLoan?: StudentLoanDefaults;
     carFinance?: CarFinanceDefaults;
     debtSnowball?: DebtSnowballDefaults;
+    compoundInterest?: CompoundInterestDefaults;
+    savingsGoal?: SavingsGoalDefaults;
   };
 
   // Country-specific figures, present only on the country that needs them.

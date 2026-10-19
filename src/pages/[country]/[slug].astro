@@ -8,6 +8,8 @@ import StudentLoanCalculator from '../../calculators/studentLoan/StudentLoanCalc
 import CreditCardPayoffCalculator from '../../calculators/creditCardPayoff/CreditCardPayoffCalculator.astro';
 import DebtConsolidationCalculator from '../../calculators/debtConsolidation/DebtConsolidationCalculator.astro';
 import DebtSnowballCalculator from '../../calculators/debtSnowball/DebtSnowballCalculator.astro';
+import CompoundInterestCalculator from '../../calculators/compoundInterest/CompoundInterestCalculator.astro';
+import SavingsGoalCalculator from '../../calculators/savingsGoal/SavingsGoalCalculator.astro';
 import DtiCalculator from '../../calculators/dti/DtiCalculator.astro';
 import FhsaCalculator from '../../calculators/fhsa/FhsaCalculator.astro';
 import InheritanceTaxCalculator from '../../calculators/inheritanceTax/InheritanceTaxCalculator.astro';
@@ -45,6 +47,8 @@ const ENGINE_UI: Partial<Record<EngineName, typeof LoanCalculator>> = {
   carAffordability: CarAffordabilityCalculator,
   debtConsolidation: DebtConsolidationCalculator,
   debtSnowball: DebtSnowballCalculator,
+  compoundInterest: CompoundInterestCalculator,
+  savingsGoal: SavingsGoalCalculator,
   redundancyPay: RedundancyPayCalculator,
   inheritanceTax: InheritanceTaxCalculator,
   selfEmploymentTax: QuarterlyTaxCalculator,

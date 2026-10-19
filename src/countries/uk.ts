@@ -30,6 +30,8 @@ export const uk: CountryConfig = {
   defaults: {
     loan: { amount: 10_000, aprPercent: 6.9, termYears: 5 },
     creditCard: { balance: 3_000, aprPercent: 24.9, monthlyPayment: 150, targetMonths: 24 },
+    compoundInterest: { initialDeposit: 5_000, monthlyDeposit: 150, annualRatePercent: 4.5, years: 15 },
+    savingsGoal: { goal: 15_000, currentSavings: 1_000, ratePercent: 4, years: 3, monthlyDeposit: 300 },
     debtSnowball: {
       debts: [
         { name: 'Buy now pay later', balance: 300, aprPercent: 0, minimumPayment: 50 },
