@@ -1,0 +1,145 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import CheckboxField from '../../components/CheckboxField.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import type { W4Status } from '../../engines/paycheck';
+import { SPLIT_ASPECT } from '../../lib/charts';
+import { createFormatters } from '../../lib/format';
+import { FREQUENCY_LABELS, buildPaycheckView, paycheckDefaults, type PaycheckPageParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.paycheck;
+if (!defaults) throw new Error(`Missing defaults.paycheck in the ${country.code} country config`);
+const u = requireFigure(country.us, 'US figures');
+const statuses: W4Status[] = ['single', 'marriedJoint', 'headOfHousehold'];
+const params: PaycheckPageParams = {
+  locale: country.locale,
+  currency: country.currency,
+  taxYear: country.taxYear,
+  bands: Object.fromEntries(statuses.map((s) => [s, requireFigure(u.federalTax[s].bands, `federalTax.${s}.bands`)])) as PaycheckPageParams['bands'],
+  standardDeduction: Object.fromEntries(statuses.map((s) => [s, requireFigure(u.federalTax[s].standardDeduction, `federalTax.${s}.standardDeduction`)])) as PaycheckPageParams['standardDeduction'],
+  withholdingAdjustment: {
+    marriedJoint: requireFigure(u.payroll.withholdingAdjustment.marriedJoint, 'payroll.withholdingAdjustment.marriedJoint'),
+    other: requireFigure(u.payroll.withholdingAdjustment.other, 'payroll.withholdingAdjustment.other'),
+  },
+  socialSecurityRate: requireFigure(u.payroll.socialSecurityRate, 'payroll.socialSecurityRate'),
+  socialSecurityWageBase: requireFigure(u.selfEmployment.socialSecurityWageBase, 'selfEmployment.socialSecurityWageBase'),
+  medicareRate: requireFigure(u.payroll.medicareRate, 'payroll.medicareRate'),
+  additionalMedicareRate: requireFigure(u.payroll.additionalMedicareRate, 'payroll.additionalMedicareRate'),
+  additionalMedicareThreshold: requireFigure(u.payroll.additionalMedicareWithholdingThreshold, 'payroll.additionalMedicareWithholdingThreshold'),
+};
+const d = paycheckDefaults(defaults);
+const { view } = buildPaycheckView(d, params);
+if (!view) throw new Error('Paycheck defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const P = params;
+---
+
+<div class="calc-block" data-calc="paycheck" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="paycheck" label="Paycheck calculator">
+    <Fragment slot="inputs">
+      <fieldset class="field-group">
+        <legend>Your pay</legend>
+        <SelectField id="pc-type" field="payType" label="How you’re paid" value={d.payType} options={[{ value: 'salary', label: 'Salary' }, { value: 'hourly', label: 'Hourly' }]} />
+        <Field id="pc-salary" field="annualSalary" label="Yearly salary" value={f.number(d.annualSalary)} prefix="$" money when="payType:salary" hidden={d.payType !== 'salary'} />
+        <Field id="pc-rate" field="hourlyRate" label="Hourly rate" value={String(d.hourlyRate)} prefix="$" when="payType:hourly" hidden={d.payType !== 'hourly'} />
+        <Field id="pc-hours" field="hoursPerWeek" label="Hours a week" value={String(d.hoursPerWeek)} suffix="hours" when="payType:hourly" hidden={d.payType !== 'hourly'} />
+        <SelectField id="pc-freq" field="frequency" label="How often you’re paid" value={d.frequency} options={Object.entries(FREQUENCY_LABELS).map(([value, label]) => ({ value, label }))} />
+      </fieldset>
+      <fieldset class="field-group">
+        <legend>Your Form W-4</legend>
+        <SelectField
+          id="pc-status"
+          field="status"
+          label="Filing status (Step 1c)"
+          value={d.status}
+          options={[
+            { value: 'single', label: 'Single or married filing separately' },
+            { value: 'marriedJoint', label: 'Married filing jointly' },
+            { value: 'headOfHousehold', label: 'Head of household' },
+          ]}
+        />
+        <CheckboxField id="pc-step2" field="multipleJobs" label="Step 2 box is checked (two jobs, or both spouses work)" checked={d.multipleJobs} />
+        <Field id="pc-dep" field="dependentsCredit" label="Dependents amount (Step 3)" value="0" prefix="$" money optional hint="The yearly total from Step 3 of your Form W-4." />
+        <Field id="pc-other" field="otherIncome" label="Other income (Step 4a)" value="0" prefix="$" money optional />
+        <Field id="pc-ded" field="deductions" label="Deductions (Step 4b)" value="0" prefix="$" money optional />
+        <Field id="pc-extra" field="extraWithholding" label="Extra withholding (Step 4c)" value="0" prefix="$" suffix="per paycheck" money optional />
+      </fieldset>
+      <fieldset class="field-group">
+        <legend>Deductions and state tax</legend>
+        <Field id="pc-401k" field="retirementPercent" label="401(k) or 403(b), pre-tax" value={String(d.retirementPercent)} suffix="% of pay" optional />
+        <Field id="pc-benefits" field="pretaxBenefits" label="Pre-tax benefits" value={f.number(d.pretaxBenefits)} prefix="$" suffix="per paycheck" money optional hint="Health, dental or vision premiums and FSA contributions taken before tax." />
+        <Field id="pc-state" field="stateTaxPercent" label="State and local income tax" value="0" suffix="% of pay" optional hint="An estimate: check your state’s rate. Leave at 0 if your state doesn’t tax wages." />
+      </fieldset>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Take-home pay</p>
+        <p class="result-figure" data-out="takeHome">{view.takeHome}</p>
+        <p class="result-sub" data-out="takeHomeSub">{view.takeHomeSub}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Federal income tax</dt><dd data-out="federal">{view.federal}</dd></div>
+        <div><dt>Social Security and Medicare</dt><dd data-out="fica">{view.fica}</dd></div>
+        <div><dt>Pre-tax deductions</dt><dd data-out="pretax">{view.pretax}</dd></div>
+      </dl>
+      <ul class="result-warn-list" data-show="hasNotes" hidden={!view.hasNotes} data-html="notes" set:html={view.notes} />
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="pc-breakdown-title">
+    <h2 id="pc-breakdown-title" class="h3">Where your pay goes</h2>
+    <SvgChart
+      id="pc-chart"
+      title="Your yearly pay"
+      legend={[
+        { label: 'Take-home pay', className: 'chart-s1' },
+        { label: 'Federal income tax', className: 'chart-s2' },
+        { label: 'Social Security and Medicare', className: 'chart-s4' },
+        { label: 'Pre-tax 401(k) and benefits', className: 'chart-s3' },
+        { label: 'State and local tax', className: 'chart-rest' },
+      ]}
+      svg={view.chartSvg}
+      aspect={SPLIT_ASPECT}
+      htmlKey="chartSvg"
+    />
+    <div class="table-scroll table-plain">
+      <table class="data-table">
+        <thead><tr><th scope="col"><span class="visually-hidden">Item</span></th><th scope="col">Per paycheck</th><th scope="col">Per year</th></tr></thead>
+        <tbody data-html="rows" set:html={view.rows} />
+      </table>
+    </div>
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <ul>
+        <li><strong>Federal income tax</strong> uses the IRS percentage method for {P.taxYear} (Publication 15-T, Worksheet 1A): taxable pay per paycheck × paychecks a year, plus Step 4(a), minus Step 4(b) and minus {f.moneyWhole(P.withholdingAdjustment.marriedJoint)} (married filing jointly) or {f.moneyWhole(P.withholdingAdjustment.other)} (others) unless the Step 2 box is checked.</li>
+        <li>That yearly wage is run through the {P.taxYear} brackets, starting after the standard deduction minus that amount. With Step 2 checked, the brackets and standard deduction are halved. The result ÷ paychecks, minus Step 3 ÷ paychecks, plus Step 4(c), is withheld each paycheck.</li>
+        <li><strong>Social Security</strong> is {f.percent(P.socialSecurityRate * 100)} of pay up to {f.moneyWhole(P.socialSecurityWageBase)} a year; <strong>Medicare</strong> is {f.percent(P.medicareRate * 100)}, plus {f.percent(P.additionalMedicareRate * 100)} on wages over {f.moneyWhole(P.additionalMedicareThreshold)}.</li>
+        <li>Pre-tax 401(k) contributions lower income tax but not Social Security or Medicare. Section 125 benefits (such as health premiums) lower both.</li>
+        <li>This is what your employer withholds, not your final tax bill. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildPaycheckView, readPaycheckInput, type PaycheckPageParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="paycheck"]')) {
+    const params = embeddedParams<PaycheckPageParams>(root);
+    bindCalculator(root, (read) => buildPaycheckView(readPaycheckInput(read), params));
+  }
+</script>

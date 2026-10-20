@@ -1,0 +1,169 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import CheckboxField from '../../components/CheckboxField.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import { SPLIT_ASPECT } from '../../lib/charts';
+import { createFormatters } from '../../lib/format';
+import { METHOD_LABELS, buildPensionReliefView, pensionReliefDefaults, type PensionReliefPageParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.pensionRelief;
+if (!defaults) throw new Error(`Missing defaults.pensionRelief in the ${country.code} country config`);
+const c = requireFigure(country.uk, 'UK figures');
+const t = c.takeHomePay;
+const ni = t.nationalInsurance;
+const pe = c.pensions;
+const params: PensionReliefPageParams = {
+  locale: country.locale,
+  currency: country.currency,
+  taxYear: country.taxYear,
+  personalAllowance: country.incomeTax.allowance,
+  taperStart: requireFigure(t.personalAllowanceTaperStart, 'takeHomePay.personalAllowanceTaperStart'),
+  taperRate: requireFigure(t.personalAllowanceTaperRate, 'takeHomePay.personalAllowanceTaperRate'),
+  bands: { rUK: country.incomeTax.bands, scotland: requireFigure(t.scotlandBands, 'takeHomePay.scotlandBands') },
+  ni: {
+    primaryThreshold: requireFigure(ni.primaryThreshold, 'nationalInsurance.primaryThreshold'),
+    upperEarningsLimit: requireFigure(ni.upperEarningsLimit, 'nationalInsurance.upperEarningsLimit'),
+    mainRate: requireFigure(ni.mainRate, 'nationalInsurance.mainRate'),
+    upperRate: requireFigure(ni.upperRate, 'nationalInsurance.upperRate'),
+  },
+  reliefAtSourceRate: requireFigure(t.reliefAtSourceRate, 'takeHomePay.reliefAtSourceRate'),
+  annualAllowance: requireFigure(pe.annualAllowance, 'pensions.annualAllowance'),
+  taperThresholdIncome: requireFigure(pe.taperThresholdIncome, 'pensions.taperThresholdIncome'),
+  taperAdjustedIncome: requireFigure(pe.taperAdjustedIncome, 'pensions.taperAdjustedIncome'),
+  taperMinimum: requireFigure(pe.taperMinimum, 'pensions.taperMinimum'),
+  moneyPurchaseAnnualAllowance: requireFigure(pe.moneyPurchaseAnnualAllowance, 'pensions.moneyPurchaseAnnualAllowance'),
+  nonEarnerGrossLimit: requireFigure(pe.nonEarnerGrossLimit, 'pensions.nonEarnerGrossLimit'),
+};
+const d = pensionReliefDefaults(defaults);
+const { view } = buildPensionReliefView(d, params);
+if (!view) throw new Error('Pension tax relief defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const P = params;
+---
+
+<div class="calc-block" data-calc="pension-relief" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="pension" label="Pension tax relief calculator">
+    <Fragment slot="inputs">
+      <Field id="pr-salary" field="salary" label="Yearly salary before tax" value={f.number(d.salary)} prefix="£" money hint="Enter 0 if you have no earnings." />
+      <SelectField
+        id="pr-region"
+        field="region"
+        label="Where you live"
+        value={d.region}
+        options={[
+          { value: 'rUK', label: 'England, Wales or Northern Ireland' },
+          { value: 'scotland', label: 'Scotland' },
+        ]}
+      />
+      <SelectField
+        id="pr-method"
+        field="method"
+        label="How you pay into your pension"
+        value={d.method}
+        options={[
+          { value: 'reliefAtSource', label: `${METHOD_LABELS.reliefAtSource} (most personal pensions)` },
+          { value: 'netPay', label: `${METHOD_LABELS.netPay} (taken before tax)` },
+          { value: 'salarySacrifice', label: METHOD_LABELS.salarySacrifice },
+        ]}
+        hint="Your payslip or pension provider can tell you which one you have."
+      />
+      <SelectField
+        id="pr-type"
+        field="contributionType"
+        label="How much you pay in"
+        value={d.contributionType}
+        options={[
+          { value: 'percent', label: 'A % of my salary' },
+          { value: 'amount', label: 'An amount each month' },
+        ]}
+      />
+      <Field id="pr-percent" field="contributionPercent" label="Your contribution" value={String(d.contributionPercent)} suffix="% of salary" when="contributionType:percent" hidden={d.contributionType !== 'percent'} />
+      <Field
+        id="pr-monthly"
+        field="contributionMonthly"
+        label="Your contribution each month"
+        value={f.number(d.contributionMonthly)}
+        prefix="£"
+        money
+        when="contributionType:amount"
+        hidden={d.contributionType !== 'amount'}
+        hint="The total going into your pension from you, including tax relief. If you pay £80 into a relief at source pension, enter £100."
+      />
+      <Field id="pr-employer" field="employerPercent" label="Your employer pays in" value={String(d.employerPercent)} suffix="% of salary" optional />
+      <CheckboxField id="pr-flex" field="flexiblyAccessed" label="I’ve already taken money flexibly from a pension" checked={d.flexiblyAccessed} hint="This lowers your annual allowance to the money purchase annual allowance." />
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Your tax relief</p>
+        <p class="result-figure" data-out="relief">{view.relief}</p>
+        <p class="result-sub" data-out="reliefSub">{view.reliefSub}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Into your pension each month</dt><dd data-out="intoPension">{view.intoPension}</dd></div>
+        <div><dt>Costs you each month</dt><dd data-out="costMonthly">{view.costMonthly}</dd></div>
+        <div data-show="hasEmployer" hidden={!view.hasEmployer}><dt>Your employer adds</dt><dd data-out="employerMonthly">{view.employerMonthly}</dd></div>
+      </dl>
+      <table class="compare-table">
+        <thead><tr><th scope="col">Same contribution by</th><th scope="col">Costs you a year</th><th scope="col">Relief</th></tr></thead>
+        <tbody data-html="compareRows" set:html={view.compareRows} />
+      </table>
+      <ul class="result-warn-list" data-show="hasWarnings" hidden={!view.hasWarnings} data-html="warnings" set:html={view.warnings} />
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="pr-breakdown-title">
+    <h2 id="pr-breakdown-title" class="h3">Where the money in your pension comes from</h2>
+    <SvgChart
+      id="pr-chart"
+      title="Each year"
+      legend={[
+        { label: 'Costs you', className: 'chart-s1' },
+        { label: 'Tax relief', className: 'chart-s3' },
+        { label: 'NI saved', className: 'chart-s4' },
+        { label: 'Your employer', className: 'chart-rest' },
+      ]}
+      svg={view.chartSvg}
+      aspect={SPLIT_ASPECT}
+      htmlKey="chartSvg"
+    />
+    <div class="table-scroll table-plain">
+      <table class="data-table">
+        <thead><tr><th scope="col"><span class="visually-hidden">Item</span></th><th scope="col">Year</th><th scope="col">Month</th></tr></thead>
+        <tbody data-html="detailRows" set:html={view.detailRows} />
+      </table>
+    </div>
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <ul>
+        <li><strong>Relief at source:</strong> your provider adds {f.percent(P.reliefAtSourceRate * 100)} to what you pay, on contributions up to 100% of your earnings (or {f.moneyWhole(P.nonEarnerGrossLimit)} gross with no earnings). Where your income is taxed above 20%, the extra relief is the tax you’d save on that slice, which you claim from HMRC.</li>
+        <li><strong>Net pay:</strong> your contribution comes off your pay before Income Tax, so relief = tax on your salary − tax on (salary − contribution).</li>
+        <li><strong>Salary sacrifice:</strong> your salary falls by the contribution, so you save Income Tax and employee National Insurance ({f.percent(P.ni.mainRate * 100)} up to {f.moneyWhole(P.ni.upperEarningsLimit)}, {f.percent(P.ni.upperRate * 100)} above).</li>
+        <li>Personal Allowance falls by £1 for every £2 over {f.moneyWhole(P.taperStart)}, so contributions in that range get extra relief. Scottish rates are used if you live in Scotland.</li>
+        <li><strong>Annual allowance</strong> ({P.taxYear}): {f.moneyWhole(P.annualAllowance)} including your employer’s contributions, tapered by £1 for every £2 of adjusted income over {f.moneyWhole(P.taperAdjustedIncome)} (if threshold income is over {f.moneyWhole(P.taperThresholdIncome)}) to a minimum of {f.moneyWhole(P.taperMinimum)}, or {f.moneyWhole(P.moneyPurchaseAnnualAllowance)} after flexible access.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildPensionReliefView, readPensionReliefInput, type PensionReliefPageParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="pension-relief"]')) {
+    const params = embeddedParams<PensionReliefPageParams>(root);
+    bindCalculator(root, (read) => buildPensionReliefView(readPensionReliefInput(read), params));
+  }
+</script>

@@ -30,6 +30,7 @@ export const uk: CountryConfig = {
   defaults: {
     loan: { amount: 10_000, aprPercent: 6.9, termYears: 5 },
     creditCard: { balance: 3_000, aprPercent: 24.9, monthlyPayment: 150, targetMonths: 24 },
+    pensionRelief: { salary: 60_000, contributionPercent: 5, contributionMonthly: 250, employerPercent: 3 },
     rentVsBuy: {
       homePrice: 300_000,
       depositPercent: 15,
@@ -114,6 +115,18 @@ export const uk: CountryConfig = {
       },
       // VERIFY: https://www.gov.uk/tax-on-your-private-pension/pension-tax-relief (provider claims relief at the basic 20% rate). Checked 18 Oct 2026.
       reliefAtSourceRate: 0.2,
+    },
+    pensions: {
+      // VERIFY: https://www.gov.uk/government/publications/rates-and-allowances-pension-schemes/pension-schemes-rates (2026 to 2027: £60,000). Checked 20 Oct 2026.
+      annualAllowance: 60_000,
+      // VERIFY: same page (threshold income £200,000, adjusted income £260,000, minimum £10,000) and https://www.gov.uk/guidance/pension-schemes-work-out-your-tapered-annual-allowance (£1 for every £2). Checked 20 Oct 2026.
+      taperThresholdIncome: 200_000,
+      taperAdjustedIncome: 260_000,
+      taperMinimum: 10_000,
+      // VERIFY: same rates page (money purchase annual allowance 2026 to 2027: £10,000). Checked 20 Oct 2026.
+      moneyPurchaseAnnualAllowance: 10_000,
+      // VERIFY: https://www.gov.uk/tax-on-your-private-pension/pension-tax-relief (£2,880 net = £3,600 gross with no earnings). Checked 20 Oct 2026.
+      nonEarnerGrossLimit: 3_600,
     },
     stampDuty: {
       // VERIFY: https://www.gov.uk/stamp-duty-land-tax/residential-property-rates (England and Northern Ireland). Checked 18 Oct 2026.

@@ -57,6 +57,7 @@ export const us: CountryConfig = {
   defaults: {
     loan: { amount: 20_000, aprPercent: 7.5, termYears: 5 },
     creditCard: { balance: 5_000, aprPercent: 21.99, monthlyPayment: 200, targetMonths: 24 },
+    paycheck: { annualSalary: 65_000, hourlyRate: 25, hoursPerWeek: 40, retirementPercent: 5, pretaxBenefits: 75 },
     rentVsBuy: {
       homePrice: 350_000,
       depositPercent: 20,
@@ -151,6 +152,15 @@ export const us: CountryConfig = {
           { from: 640_600, to: null, rate: 0.37 },
         ],
       },
+    },
+    payroll: {
+      // VERIFY: https://www.irs.gov/publications/p15t, Worksheet 1A line 1g (2026: $12,900 married filing jointly, $8,600 otherwise). Checked 20 Oct 2026.
+      withholdingAdjustment: { marriedJoint: 12_900, other: 8_600 },
+      // VERIFY: https://www.irs.gov/taxtopics/tc751 (employee 6.2% Social Security, 1.45% Medicare; 0.9% Additional Medicare on wages over $200,000 without regard to filing status). Checked 20 Oct 2026.
+      socialSecurityRate: 0.062,
+      medicareRate: 0.0145,
+      additionalMedicareRate: 0.009,
+      additionalMedicareWithholdingThreshold: 200_000,
     },
     selfEmployment: {
       // VERIFY: https://www.irs.gov/pub/irs-pdf/f1040sse.pdf, line 4a (92.35%). Checked 16 Oct 2026.

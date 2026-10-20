@@ -47,6 +47,21 @@ export interface RentVsBuyDefaults {
   years: number;
 }
 
+export interface PaycheckDefaults {
+  annualSalary: number;
+  hourlyRate: number;
+  hoursPerWeek: number;
+  retirementPercent: number;
+  pretaxBenefits: number;
+}
+
+export interface PensionReliefDefaults {
+  salary: number;
+  contributionPercent: number;
+  contributionMonthly: number;
+  employerPercent: number;
+}
+
 export interface CompoundInterestDefaults {
   initialDeposit: number;
   monthlyDeposit: number;
@@ -169,6 +184,17 @@ export interface UsSelfEmploymentConfig {
   minimumNetEarnings: Pending<number>;
 }
 
+export interface UsPayrollConfig {
+  /** Pub 15-T Worksheet 1A line 1g: subtracted when the Form W-4 Step 2 box isn't checked. */
+  withholdingAdjustment: { marriedJoint: Pending<number>; other: Pending<number> };
+  /** Employee shares of FICA, as decimals. */
+  socialSecurityRate: Pending<number>;
+  medicareRate: Pending<number>;
+  additionalMedicareRate: Pending<number>;
+  /** Employers withhold Additional Medicare Tax on wages over this, whatever the filing status. */
+  additionalMedicareWithholdingThreshold: Pending<number>;
+}
+
 export interface UsDtiReference {
   /** Back-end DTI (all monthly debts ÷ gross monthly income) this reference allows, as a decimal. */
   backEndMax: number;
@@ -238,6 +264,19 @@ export interface UkTakeHomePayConfig {
   studentLoans: Record<'plan1' | 'plan2' | 'plan4' | 'plan5' | 'postgraduate', Pending<UkStudentLoanPlan>>;
   /** Basic-rate relief added by the provider under relief at source. */
   reliefAtSourceRate: Pending<number>;
+}
+
+export interface UkPensionConfig {
+  annualAllowance: Pending<number>;
+  /** Tapered annual allowance: applies only when threshold income is over this… */
+  taperThresholdIncome: Pending<number>;
+  /** …and adjusted income is over this; the allowance falls £1 for every £2 above it. */
+  taperAdjustedIncome: Pending<number>;
+  taperMinimum: Pending<number>;
+  /** Allowance after flexibly accessing a pension. */
+  moneyPurchaseAnnualAllowance: Pending<number>;
+  /** Relief at source: gross contributions that get relief with no (or low) earnings. */
+  nonEarnerGrossLimit: Pending<number>;
 }
 
 export type UkStudentLoanPlanCode = 'plan1' | 'plan2' | 'plan4' | 'plan5' | 'postgraduate';
@@ -400,12 +439,15 @@ export interface CountryConfig {
     compoundInterest?: CompoundInterestDefaults;
     savingsGoal?: SavingsGoalDefaults;
     rentVsBuy?: RentVsBuyDefaults;
+    paycheck?: PaycheckDefaults;
+    pensionRelief?: PensionReliefDefaults;
   };
 
   // Country-specific figures, present only on the country that needs them.
   us?: {
     federalTax: Record<UsFilingStatus, UsFilingStatusTax>;
     selfEmployment: UsSelfEmploymentConfig;
+    payroll: UsPayrollConfig;
     /** The four estimated tax due dates for the tax year (ISO dates). */
     estimatedTaxDueDates: Pending<[string, string, string, string]>;
     qbi: UsQbiConfig;
@@ -419,6 +461,7 @@ export interface CountryConfig {
     stampDuty: UkStampDutyConfig;
     studentLoanInterest: UkStudentLoanInterestConfig;
     inheritanceTax: UkInheritanceTaxConfig;
+    pensions: UkPensionConfig;
   };
   ca?: {
     fhsa: CaFhsaConfig;

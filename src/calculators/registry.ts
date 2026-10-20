@@ -18,6 +18,8 @@ export type EngineName =
   | 'compoundInterest'
   | 'savingsGoal'
   | 'rentVsBuy'
+  | 'paycheck'
+  | 'pensionTaxRelief'
   | 'redundancyPay'
   | 'inheritanceTax'
   | 'selfEmploymentTax'
@@ -148,6 +150,34 @@ export const CALCULATORS: CalculatorEntry[] = [
     titleHook: 'Which Leaves You Better Off',
     blurb: 'Whether buying or renting leaves you better off, the year buying pulls ahead, and every cost of owning.',
     related: ['stamp-duty-calculator', 'savings-goal-calculator', 'compound-interest-calculator', 'debt-to-income-ratio-calculator', 'loan-calculator'],
+  },
+
+  {
+    // Phase 1 continued. Uses the paycheck engine (IRS Pub 15-T percentage method, FICA).
+    slug: 'paycheck-calculator',
+    engine: 'paycheck',
+    category: 'tax',
+    countries: ['us'],
+    name: 'Paycheck Calculator',
+    titleHook: 'Take-Home Pay Per Paycheck',
+    blurb: 'Your take-home pay per paycheck after federal withholding, Social Security, Medicare and pre-tax deductions.',
+    related: ['quarterly-estimated-tax-calculator', '401k-match-calculator', 'savings-goal-calculator', 'debt-to-income-ratio-calculator', 'compound-interest-calculator'],
+    popular: true,
+    usesTaxYear: true,
+  },
+
+  {
+    // Phase 1 continued. Uses the pensionTaxRelief engine (relief at source, net pay, salary sacrifice).
+    slug: 'pension-tax-relief-calculator',
+    engine: 'pensionTaxRelief',
+    category: 'retirement',
+    countries: ['uk'],
+    name: 'Pension Tax Relief Calculator',
+    titleHook: 'Your Tax Relief',
+    blurb: 'The tax relief on your pension contributions, what they really cost you, and extra relief to claim back.',
+    related: ['take-home-pay-calculator', 'compound-interest-calculator', 'savings-goal-calculator', 'student-loan-repayment-calculator', 'redundancy-pay-calculator'],
+    popular: true,
+    usesTaxYear: true,
   },
 
   {

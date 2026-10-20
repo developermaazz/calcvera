@@ -25,6 +25,8 @@ export const ICONS = {
   barsDown: '<path d="M3.5 20.5h17"/><rect x="5" y="4.5" width="3.5" height="13" rx="1"/><rect x="10.25" y="9" width="3.5" height="8.5" rx="1"/><rect x="15.5" y="13" width="3.5" height="4.5" rx="1"/>',
   target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/>',
   scale: '<path d="M12 3.5v17M7 20.5h10M5 7h14"/><path d="M5 7l-2.5 6a2.5 2.5 0 0 0 5 0z"/><path d="M19 7l-2.5 6a2.5 2.5 0 0 0 5 0z"/>',
+  payslip: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h5M8 16h3M15 15.5h1.5"/>',
+  shieldPlus: '<path d="M12 3l7 3v5c0 4.4-3 8-7 10-4-2-7-5.6-7-10V6z"/><path d="M12 8v8M9.5 10.5h5M9.5 13.5h5"/>',
   sprout: '<path d="M12 21v-8"/><path d="M12 13C12 8.6 9 6 4 6c0 4.4 3 7 8 7z"/><path d="M12 15c0-3.6 2.4-6 6.5-6 0 3.6-2.4 6-6.5 6z"/>',
   // Interface
   search: '<circle cx="11" cy="11" r="7"/><path d="M20.5 20.5l-4.5-4.5"/>',
@@ -69,6 +71,8 @@ export const ENGINE_ICONS: Record<EngineName, IconName> = {
   compoundInterest: 'sprout',
   savingsGoal: 'target',
   rentVsBuy: 'scale',
+  paycheck: 'payslip',
+  pensionTaxRelief: 'shieldPlus',
   redundancyPay: 'briefcase',
   inheritanceTax: 'landmark',
   selfEmploymentTax: 'receipt',
