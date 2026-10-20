@@ -19,6 +19,8 @@ import RothIraCalculator from '../../calculators/rothIra/RothIraCalculator.astro
 import HelocCalculator from '../../calculators/heloc/HelocCalculator.astro';
 import CaMortgageCalculator from '../../calculators/caMortgage/CaMortgageCalculator.astro';
 import AuTakeHomeCalculator from '../../calculators/auTakeHome/AuTakeHomeCalculator.astro';
+import CaTakeHomeCalculator from '../../calculators/caTakeHome/CaTakeHomeCalculator.astro';
+import AuSuperCalculator from '../../calculators/auSuper/AuSuperCalculator.astro';
 import DtiCalculator from '../../calculators/dti/DtiCalculator.astro';
 import FhsaCalculator from '../../calculators/fhsa/FhsaCalculator.astro';
 import InheritanceTaxCalculator from '../../calculators/inheritanceTax/InheritanceTaxCalculator.astro';
@@ -67,6 +69,8 @@ const ENGINE_UI: Partial<Record<EngineName, typeof LoanCalculator>> = {
   heloc: HelocCalculator,
   caMortgage: CaMortgageCalculator,
   auTakeHome: AuTakeHomeCalculator,
+  caTakeHome: CaTakeHomeCalculator,
+  auSuper: AuSuperCalculator,
   redundancyPay: RedundancyPayCalculator,
   inheritanceTax: InheritanceTaxCalculator,
   selfEmploymentTax: QuarterlyTaxCalculator,

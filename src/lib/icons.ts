@@ -83,6 +83,8 @@ export const ENGINE_ICONS: Record<EngineName, IconName> = {
   heloc: 'homeLine',
   caMortgage: 'homeKey',
   auTakeHome: 'wallet',
+  caTakeHome: 'receipt',
+  auSuper: 'sunrise',
   redundancyPay: 'briefcase',
   inheritanceTax: 'landmark',
   selfEmploymentTax: 'receipt',

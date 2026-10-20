@@ -26,6 +26,8 @@ export type EngineName =
   | 'heloc'
   | 'caMortgage'
   | 'auTakeHome'
+  | 'caTakeHome'
+  | 'auSuper'
   | 'redundancyPay'
   | 'inheritanceTax'
   | 'selfEmploymentTax'
@@ -253,6 +255,34 @@ export const CALCULATORS: CalculatorEntry[] = [
     blurb: 'Your mortgage payment for any frequency, CMHC insurance, minimum down payment and balance at renewal.',
     related: ['fhsa-calculator', 'land-transfer-tax-calculator', 'rrsp-vs-tfsa-calculator', 'income-tax-calculator', 'cpp-calculator'],
     popular: true,
+  },
+
+  {
+    // Phase 2. Uses the caTakeHome engine (federal + provincial tax, CPP, EI; all provinces except Quebec).
+    slug: 'income-tax-calculator',
+    engine: 'caTakeHome',
+    category: 'tax',
+    countries: ['ca'],
+    name: 'Income Tax Calculator',
+    titleHook: 'Take-Home Pay & Tax',
+    blurb: 'Your federal and provincial income tax, CPP and EI, take-home pay and marginal rate for your province.',
+    related: ['mortgage-payment-calculator', 'fhsa-calculator', 'rrsp-vs-tfsa-calculator', 'cpp-calculator', 'land-transfer-tax-calculator'],
+    popular: true,
+    usesTaxYear: true,
+  },
+
+  {
+    // Phase 2. Uses the auSuper engine (super guarantee, contributions tax, salary sacrifice, fees).
+    slug: 'super-calculator',
+    engine: 'auSuper',
+    category: 'retirement',
+    countries: ['au'],
+    name: 'Super Calculator',
+    titleHook: 'Retirement Balance',
+    blurb: 'How much super you could have at retirement, in today’s dollars, and what extra contributions add.',
+    related: ['take-home-pay-calculator', 'novated-lease-calculator', 'home-loan-repayment-calculator', 'hecs-help-repayment-calculator'],
+    popular: true,
+    usesTaxYear: true,
   },
 
   {

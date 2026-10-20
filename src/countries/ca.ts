@@ -44,6 +44,7 @@ export const ca: CountryConfig = {
     ],
   },
   defaults: {
+    caIncomeTax: { income: 80_000 },
     caMortgage: { price: 600_000, downPayment: 60_000, ratePercent: 4.5, amortizationYears: 25, termYears: 5 },
   },
   ca: {
@@ -78,6 +79,23 @@ export const ca: CountryConfig = {
         { maxLtv: 0.95, rate: 0.04 },
       ],
       longAmortizationSurcharge: 0.002,
+    },
+    payroll: {
+      // VERIFY: CRA T4127 January 2026, tables 8.3–8.7 and 8.2:
+      // https://www.canada.ca/en/revenue-agency/services/forms-publications/payroll/t4127-payroll-deductions-formulas/t4127-jan/t4127-jan-payroll-deductions-formulas-computer-programs.html
+      // (CPP: basic exemption $3,500, YMPE $74,600, YAMPE $85,000, base 4.95%, first additional 1%, second additional 4%;
+      // EI outside Quebec: $68,900 maximum insurable earnings, 1.63%; Canada employment amount $1,501). Checked 20 Oct 2026.
+      cpp: { basicExemption: 3_500, ympe: 74_600, yampe: 85_000, baseRate: 0.0495, firstAdditionalRate: 0.01, secondAdditionalRate: 0.04 },
+      ei: { maxInsurableEarnings: 68_900, rate: 0.0163 },
+      canadaEmploymentAmount: 1_501,
+      // VERIFY: same T4127 page, Ontario Health Premium (V2) formula. Checked 20 Oct 2026.
+      ontarioHealthPremium: [
+        { from: 20_000, base: 0, rate: 0.06, cap: 300 },
+        { from: 36_000, base: 300, rate: 0.06, cap: 450 },
+        { from: 48_000, base: 450, rate: 0.25, cap: 600 },
+        { from: 72_000, base: 600, rate: 0.25, cap: 750 },
+        { from: 200_000, base: 750, rate: 0.25, cap: 900 },
+      ],
     },
     // Brackets, all except QC: https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html (2026)
     // Basic personal amounts, all except QC: CRA T4127 (122nd edition, January 2026):

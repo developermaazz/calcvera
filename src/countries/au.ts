@@ -41,6 +41,7 @@ export const au: CountryConfig = {
   },
   defaults: {
     auTakeHome: { salary: 90_000 },
+    auSuper: { age: 30, retirementAge: 67, balance: 50_000, salary: 85_000, salaryGrowthPercent: 3, returnPercent: 7, feesPerYear: 300, inflationPercent: 2.5 },
   },
   au: {
     medicareLevy: {
@@ -98,6 +99,14 @@ export const au: CountryConfig = {
       // VERIFY: https://www.ato.gov.au/tax-rates-and-codes/key-superannuation-rates-and-thresholds/contributions-caps
       // ($32,500 for 2026–27). Archive copy 17 Sep 2026. Checked 20 Oct 2026.
       concessionalCap: 32_500,
+      // VERIFY: same contributions caps page ($130,000 non-concessional cap for 2026–27). Archive copy 17 Sep 2026. Checked 20 Oct 2026.
+      nonConcessionalCap: 130_000,
+      // VERIFY: https://www.ato.gov.au/individuals-and-families/super-for-individuals-and-families/super/growing-and-keeping-track-of-your-super/how-to-save-more-in-your-super/personal-super-contributions
+      // (concessional contributions "are taxed in the fund at a rate of 15%"). Archive copy 15 Aug 2026. Checked 20 Oct 2026.
+      contributionsTaxRate: 0.15,
+      // VERIFY: https://www.ato.gov.au/individuals-and-families/super-for-individuals-and-families/super/withdrawing-and-using-your-super/super-withdrawal-options
+      // (preservation age 60 if born from 1 July 1964). Archive copy 23 Aug 2026. Checked 20 Oct 2026.
+      preservationAge: 60,
     },
     help: {
       // VERIFY: https://www.ato.gov.au/tax-rates-and-codes/study-and-training-support-loans-rates-and-repayment-thresholds

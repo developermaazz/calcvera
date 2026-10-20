@@ -1,0 +1,107 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import { createFormatters } from '../../lib/format';
+import { auSuperDefaults, buildAuSuperView, type AuSuperPageParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.auSuper;
+if (!defaults) throw new Error(`Missing defaults.auSuper in the ${country.code} country config`);
+const s = requireFigure(country.au, `${country.code}.au`).super;
+const params: AuSuperPageParams = { ...s, locale: country.locale, currency: country.currency, taxYear: country.taxYear };
+const d = auSuperDefaults(defaults);
+const { view } = buildAuSuperView(d, params);
+if (!view) throw new Error('Super defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+const pct = (x: number) => f.percent(x * 100);
+---
+
+<div class="calc-block" data-calc="au-super" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="ausuper" label="Super calculator">
+    <Fragment slot="inputs">
+      <fieldset class="field-group">
+        <legend>You</legend>
+        <Field id="su-age" field="age" label="Your age" value={String(d.age)} suffix="years" inputmode="numeric" />
+        <Field id="su-ret" field="retirementAge" label="Age you plan to retire" value={String(d.retirementAge)} suffix="years" inputmode="numeric" />
+        <Field id="su-salary" field="salary" label="Yearly salary" value={f.number(d.salary)} prefix={sym} money hint={`Before tax, not including super. Your employer pays ${pct(s.guaranteeRate)} on top.`} />
+        <Field id="su-growth" field="salaryGrowthPercent" label="Salary growth each year" value={String(d.salaryGrowthPercent)} suffix="%" />
+      </fieldset>
+      <fieldset class="field-group">
+        <legend>Your super</legend>
+        <Field id="su-balance" field="balance" label="Balance today" value={f.number(d.balance)} prefix={sym} money optional />
+        <Field id="su-sacrifice" field="salarySacrifice" label="Salary sacrifice" value={f.number(d.salarySacrifice)} prefix={sym} suffix="a year" money optional hint="Before-tax extra contributions." />
+        <Field id="su-aftertax" field="afterTaxContributions" label="After-tax contributions" value={f.number(d.afterTaxContributions)} prefix={sym} suffix="a year" money optional />
+        <Field id="su-return" field="returnPercent" label="Yearly return" value={String(d.returnPercent)} suffix="%" hint="After investment fees and tax. Check your fund's long-term returns." />
+        <Field id="su-fees" field="feesPerYear" label="Admin fees" value={f.number(d.feesPerYear)} prefix={sym} suffix="a year" money optional />
+        <Field id="su-infl" field="inflationPercent" label="Inflation" value={String(d.inflationPercent)} suffix="%" hint="Used to show the balance in today's dollars." />
+      </fieldset>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label" data-out="balanceLabel">{view.balanceLabel}</p>
+        <p class="result-figure" data-out="balance">{view.balance}</p>
+        <p class="result-sub" data-out="balanceSub">{view.balanceSub}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Contributions after tax</dt><dd data-out="contributions">{view.contributions}</dd></div>
+        <div><dt>Investment earnings</dt><dd class="positive" data-out="earnings">{view.earnings}</dd></div>
+        <div><dt>Fees</dt><dd data-out="fees">{view.fees}</dd></div>
+      </dl>
+      <ul class="result-warn-list" data-show="hasNotes" hidden={!view.hasNotes} data-html="notes" set:html={view.notes} />
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="su-breakdown-title">
+    <h2 id="su-breakdown-title" class="h3">How your super could grow</h2>
+    <SvgChart
+      id="su-chart"
+      title="Balance by age"
+      legend={[
+        { label: 'Paid in', className: 'chart-s1' },
+        { label: 'Growth after fees', className: 'chart-s3' },
+      ]}
+      svg={view.chartSvg}
+      htmlKey="chartSvg"
+    />
+    <details class="schedule">
+      <summary>Year-by-year table</summary>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Year-by-year table">
+        <table class="data-table">
+          <thead><tr><th scope="col">Age</th><th scope="col">Contributions</th><th scope="col">Earnings</th><th scope="col">Fees</th><th scope="col">Balance</th></tr></thead>
+          <tbody data-html="yearRows" set:html={view.yearRows} />
+        </table>
+      </div>
+    </details>
+    <div class="formula">
+      <h3>How this is calculated ({country.taxYear})</h3>
+      <ul>
+        <li><strong>Super guarantee:</strong> {pct(s.guaranteeRate)} of your salary, on earnings up to {f.moneyWhole(s.maxContributionBase)} a year.</li>
+        <li><strong>Contributions tax:</strong> concessional contributions (super guarantee and salary sacrifice) are taxed {pct(s.contributionsTaxRate)} in the fund. After-tax contributions aren't taxed again. Caps for {country.taxYear}: {f.moneyWhole(s.concessionalCap)} concessional, {f.moneyWhole(s.nonConcessionalCap)} non-concessional.</li>
+        <li><strong>Growth:</strong> contributions and fees go in monthly, and the balance grows at the monthly equivalent of the yearly return. Your salary grows each year; caps, the contribution base and fees stay at today's values.</li>
+        <li><strong>Today's dollars</strong> = balance ÷ (1 + inflation)<sup>years</sup>. Returns aren't guaranteed and can be negative in some years. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildAuSuperView, readAuSuperInput, type AuSuperPageParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="au-super"]')) {
+    const params = embeddedParams<AuSuperPageParams>(root);
+    bindCalculator(root, (read) => buildAuSuperView(readAuSuperInput(read), params));
+  }
+</script>

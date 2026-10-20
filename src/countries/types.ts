@@ -89,6 +89,21 @@ export interface CaMortgageDefaults {
   termYears: number;
 }
 
+export interface CaIncomeTaxDefaults {
+  income: number;
+}
+
+export interface AuSuperDefaults {
+  age: number;
+  retirementAge: number;
+  balance: number;
+  salary: number;
+  salaryGrowthPercent: number;
+  returnPercent: number;
+  feesPerYear: number;
+  inflationPercent: number;
+}
+
 export interface AuTakeHomeDefaults {
   salary: number;
 }
@@ -443,11 +458,24 @@ export interface CaMortgageConfig {
   longAmortizationSurcharge: number;
 }
 
+export interface CaPayrollConfig {
+  cpp: { basicExemption: number; ympe: number; yampe: number; baseRate: number; firstAdditionalRate: number; secondAdditionalRate: number };
+  ei: { maxInsurableEarnings: number; rate: number };
+  canadaEmploymentAmount: number;
+  /** Ontario Health Premium: in the highest band with taxable income over "from", min(cap, base + rate × (income − from)). */
+  ontarioHealthPremium: { from: number; base: number; rate: number; cap: number }[];
+}
+
 export interface AuSuperConfig {
   guaranteeRate: number;
   /** Annual earnings above which super guarantee isn't required. */
   maxContributionBase: number;
   concessionalCap: number;
+  nonConcessionalCap: number;
+  /** Tax on concessional contributions in the fund. */
+  contributionsTaxRate: number;
+  /** Preservation age for people born from 1 July 1964. */
+  preservationAge: number;
 }
 
 export interface AuHelpConfig {
@@ -556,6 +584,8 @@ export interface CountryConfig {
     heloc?: HelocDefaults;
     caMortgage?: CaMortgageDefaults;
     auTakeHome?: AuTakeHomeDefaults;
+    caIncomeTax?: CaIncomeTaxDefaults;
+    auSuper?: AuSuperDefaults;
   };
 
   // Country-specific figures, present only on the country that needs them.
@@ -583,6 +613,7 @@ export interface CountryConfig {
   ca?: {
     fhsa: CaFhsaConfig;
     mortgage: CaMortgageConfig;
+    payroll: CaPayrollConfig;
     provinces: CaProvinceTax[];
     extras: CaTaxExtras;
   };

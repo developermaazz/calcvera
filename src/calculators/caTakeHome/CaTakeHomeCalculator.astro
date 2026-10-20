@@ -1,0 +1,114 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import type { CaTakeHomeParams } from '../../engines/caTakeHome';
+import { SPLIT_ASPECT } from '../../lib/charts';
+import { createFormatters } from '../../lib/format';
+import { caTaxParamsByProvince } from '../caTax';
+import { buildCaTakeHomeView, caTakeHomeDefaults, type CaTakeHomePageParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.caIncomeTax;
+if (!defaults) throw new Error(`Missing defaults.caIncomeTax in the ${country.code} country config`);
+const c = requireFigure(country.ca, 'Canada figures');
+const tax = caTaxParamsByProvince(country);
+const { ontarioHealthPremium, ...payroll } = c.payroll;
+// Quebec has its own tax return and credits, so it isn't covered here.
+const provinces = c.provinces.filter((p) => p.code !== 'QC').map((p) => ({ code: p.code, name: p.name }));
+const byProvince: Record<string, CaTakeHomeParams> = {};
+for (const p of provinces) byProvince[p.code] = { tax: tax[p.code]!, payroll, ontarioHealthPremium: p.code === 'ON' ? ontarioHealthPremium : undefined };
+const params: CaTakeHomePageParams = { locale: country.locale, currency: country.currency, taxYear: country.taxYear, provinces, byProvince };
+const d = caTakeHomeDefaults(defaults);
+const { view } = buildCaTakeHomeView(d, params);
+if (!view) throw new Error('Canadian income tax defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+const pct = (x: number) => f.percent(Math.round(x * 10000) / 100);
+const cpp = payroll.cpp;
+---
+
+<div class="calc-block" data-calc="ca-income-tax" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="catax" label="Income tax calculator">
+    <Fragment slot="inputs">
+      <fieldset class="field-group">
+        <legend>Your income</legend>
+        <SelectField id="ct-prov" field="province" label="Province or territory" value={d.province} options={provinces.map((p) => ({ value: p.code, label: p.name }))} hint="Quebec isn't covered: it has its own tax return." />
+        <Field id="ct-income" field="income" label="Employment income" value={f.number(d.income)} prefix={sym} suffix="a year" money hint="Your salary or wages before tax (T4 box 14)." />
+        <Field id="ct-rrsp" field="rrspDeduction" label="RRSP and FHSA deductions" value={f.number(d.rrspDeduction)} prefix={sym} suffix="a year" money optional hint="Contributions you'll deduct for this tax year." />
+      </fieldset>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Take-home pay</p>
+        <p class="result-figure" data-out="takeHome">{view.takeHome}</p>
+        <p class="result-sub" data-out="takeHomeSub">{view.takeHomeSub}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Income tax</dt><dd data-out="incomeTax">{view.incomeTax}</dd></div>
+        <div><dt>CPP and EI</dt><dd data-out="payroll">{view.payroll}</dd></div>
+        <div><dt>Marginal tax rate</dt><dd data-out="marginal">{view.marginal}</dd></div>
+      </dl>
+      <table class="compare-table">
+        <tbody>
+          <tr><th scope="row">Federal tax</th><td data-out="federal">{view.federal}</td></tr>
+          <tr><th scope="row" data-out="provincialLabel">{view.provincialLabel}</th><td data-out="provincial">{view.provincial}</td></tr>
+          <tr><th scope="row">Average tax rate</th><td data-out="average">{view.average}</td></tr>
+        </tbody>
+      </table>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="ct-breakdown-title">
+    <h2 id="ct-breakdown-title" class="h3">Where your income goes</h2>
+    <SvgChart
+      id="ct-chart"
+      title="Your yearly income"
+      legend={[
+        { label: 'Take-home pay', className: 'chart-s1' },
+        { label: 'Federal tax', className: 'chart-s2' },
+        { label: 'Provincial tax', className: 'chart-s3' },
+        { label: 'CPP and EI', className: 'chart-s4' },
+      ]}
+      svg={view.chartSvg}
+      htmlKey="chartSvg"
+      aspect={SPLIT_ASPECT}
+    />
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Pay by period">
+      <table class="data-table">
+        <thead><tr><th scope="col"><span class="visually-hidden">Item</span></th><th scope="col">Year</th><th scope="col">Month</th><th scope="col">Every two weeks</th><th scope="col">Week</th></tr></thead>
+        <tbody data-html="tableHtml" set:html={view.tableHtml} />
+      </table>
+    </div>
+    <div class="formula">
+      <h3>How this is calculated ({country.taxYear})</h3>
+      <ul>
+        <li><strong>CPP:</strong> {pct(cpp.baseRate + cpp.firstAdditionalRate)} of earnings between {f.moneyWhole(cpp.basicExemption)} and {f.moneyWhole(cpp.ympe)}, plus {pct(cpp.secondAdditionalRate)} between {f.moneyWhole(cpp.ympe)} and {f.moneyWhole(cpp.yampe)}. <strong>EI:</strong> {pct(payroll.ei.rate)} of earnings up to {f.moneyWhole(payroll.ei.maxInsurableEarnings)}.</li>
+        <li><strong>Taxable income</strong> = income − enhanced CPP contributions − RRSP and FHSA deductions.</li>
+        <li><strong>Federal tax:</strong> {country.incomeTax.bands.map((b) => pct(b.rate)).join(', ')} brackets, less {pct(country.incomeTax.bands[0]!.rate)} of the basic personal amount ({f.moneyWhole(country.incomeTax.allowance)}, lower at high incomes), the Canada employment amount ({f.moneyWhole(payroll.canadaEmploymentAmount)}), base CPP and EI.</li>
+        <li><strong>Provincial tax:</strong> your province's brackets, less its lowest rate times its basic personal amount, base CPP and EI. Ontario adds its surtax and the Ontario Health Premium. Provincial low-income reductions and other credits aren't included. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildCaTakeHomeView, readCaTakeHomeInput, type CaTakeHomePageParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="ca-income-tax"]')) {
+    const params = embeddedParams<CaTakeHomePageParams>(root);
+    bindCalculator(root, (read) => buildCaTakeHomeView(readCaTakeHomeInput(read), params));
+  }
+</script>
