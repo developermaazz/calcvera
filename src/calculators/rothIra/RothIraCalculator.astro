@@ -1,0 +1,131 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import { createFormatters } from '../../lib/format';
+import { buildRothView, rothDefaults, type RothPageParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.rothIra;
+if (!defaults) throw new Error(`Missing defaults.rothIra in the ${country.code} country config`);
+const c = requireFigure(country.us, 'US figures').rothIra;
+const range = (k: 'single' | 'marriedJoint' | 'marriedSeparate') => ({
+  start: requireFigure(c.phaseOut[k].start, `rothIra.phaseOut.${k}.start`),
+  width: requireFigure(c.phaseOut[k].width, `rothIra.phaseOut.${k}.width`),
+});
+const params: RothPageParams = {
+  locale: country.locale,
+  currency: country.currency,
+  taxYear: country.taxYear,
+  contributionLimit: requireFigure(c.contributionLimit, 'rothIra.contributionLimit'),
+  catchUp: requireFigure(c.catchUp, 'rothIra.catchUp'),
+  catchUpAge: requireFigure(c.catchUpAge, 'rothIra.catchUpAge'),
+  phaseOut: { single: range('single'), marriedJoint: range('marriedJoint'), marriedSeparate: range('marriedSeparate') },
+  roundTo: requireFigure(c.roundTo, 'rothIra.roundTo'),
+  reducedMinimum: requireFigure(c.reducedMinimum, 'rothIra.reducedMinimum'),
+};
+const d = rothDefaults(defaults);
+const { view } = buildRothView(d, params);
+if (!view) throw new Error('Roth IRA defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const P = params;
+const end = (k: 'single' | 'marriedJoint' | 'marriedSeparate') => f.moneyWhole(P.phaseOut[k].start + P.phaseOut[k].width);
+---
+
+<div class="calc-block" data-calc="roth-ira" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="roth" label="Roth IRA calculator">
+    <Fragment slot="inputs">
+      <fieldset class="field-group">
+        <legend>You</legend>
+        <Field id="ro-age" field="age" label="Your age" value={String(d.age)} suffix="years" inputmode="numeric" />
+        <Field id="ro-retire" field="retirementAge" label="Age you plan to retire" value={String(d.retirementAge)} suffix="years" inputmode="numeric" />
+        <SelectField
+          id="ro-status"
+          field="status"
+          label="Filing status"
+          value={d.status}
+          options={[
+            { value: 'single', label: 'Single' },
+            { value: 'headOfHousehold', label: 'Head of household' },
+            { value: 'marriedJoint', label: 'Married filing jointly' },
+            { value: 'marriedSeparate', label: 'Married filing separately (lived together)' },
+          ]}
+        />
+        <Field id="ro-magi" field="magi" label="Modified adjusted gross income" value={f.number(d.magi)} prefix="$" money hint="Roughly your adjusted gross income; Pub 590-A Worksheet 2-1 gives the exact figure." />
+        <Field id="ro-comp" field="compensation" label="Taxable compensation" value="" prefix="$" money optional placeholder="Same as income" hint="Wages and self-employment income. Leave empty to use your income above." />
+      </fieldset>
+      <fieldset class="field-group">
+        <legend>Your Roth IRA</legend>
+        <Field id="ro-balance" field="currentBalance" label="Balance today" value={f.number(d.currentBalance)} prefix="$" money optional />
+        <Field id="ro-contrib" field="plannedContribution" label="You'd like to put in each year" value={f.number(d.plannedContribution)} prefix="$" money />
+        <Field id="ro-return" field="returnPercent" label="Expected yearly return" value={String(d.returnPercent)} suffix="%" />
+      </fieldset>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label" data-out="balanceLabel">{view.balanceLabel}</p>
+        <p class="result-figure" data-out="balance">{view.balance}</p>
+        <p class="result-sub" data-out="balanceSub">{view.balanceSub}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Your {P.taxYear} limit</dt><dd data-out="limit">{view.limit}</dd></div>
+        <div><dt>You'll put in this year</dt><dd data-out="contribution">{view.contribution}</dd></div>
+        <div><dt>Tax-free growth</dt><dd class="positive" data-out="growth">{view.growth}</dd></div>
+      </dl>
+      <ul class="result-warn-list" data-show="hasNotes" hidden={!view.hasNotes} data-html="notes" set:html={view.notes} />
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="ro-breakdown-title">
+    <h2 id="ro-breakdown-title" class="h3">How your Roth IRA could grow</h2>
+    <SvgChart
+      id="ro-chart"
+      title="Balance by age"
+      legend={[
+        { label: 'What you put in', className: 'chart-s1' },
+        { label: 'Growth', className: 'chart-s3' },
+      ]}
+      svg={view.chartSvg}
+      htmlKey="chartSvg"
+    />
+    <details class="schedule">
+      <summary>Year-by-year table</summary>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Year-by-year table">
+        <table class="data-table">
+          <thead><tr><th scope="col">Age</th><th scope="col">Contribution</th><th scope="col">Balance at year end</th></tr></thead>
+          <tbody data-html="yearRows" set:html={view.yearRows} />
+        </table>
+      </div>
+    </details>
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <ul>
+        <li><strong>Limit ({P.taxYear}):</strong> {f.moneyWhole(P.contributionLimit)}, or {f.moneyWhole(P.contributionLimit + P.catchUp)} from age {P.catchUpAge}, but no more than your taxable compensation.</li>
+        <li><strong>Income phase-out:</strong> the limit shrinks from {f.moneyWhole(P.phaseOut.single.start)} to {end('single')} (single or head of household), {f.moneyWhole(P.phaseOut.marriedJoint.start)} to {end('marriedJoint')} (married filing jointly) and $0 to {end('marriedSeparate')} (married filing separately). Reduced limit = limit − limit × (income − start) ÷ range, rounded up to the next ${P.roundTo}, and at least ${P.reducedMinimum} (IRS Publication 590-A, Worksheet 2-2).</li>
+        <li><strong>Growth:</strong> your contribution goes in monthly, and the balance grows at the monthly equivalent of the yearly return. Limits and your income stay at today's values.</li>
+        <li>Withdrawals of earnings are tax-free only once the Roth IRA rules are met. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildRothView, readRothInput, type RothPageParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="roth-ira"]')) {
+    const params = embeddedParams<RothPageParams>(root);
+    bindCalculator(root, (read) => buildRothView(readRothInput(read), params));
+  }
+</script>

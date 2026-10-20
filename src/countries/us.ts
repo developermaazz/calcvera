@@ -57,6 +57,7 @@ export const us: CountryConfig = {
   defaults: {
     loan: { amount: 20_000, aprPercent: 7.5, termYears: 5 },
     creditCard: { balance: 5_000, aprPercent: 21.99, monthlyPayment: 200, targetMonths: 24 },
+    rothIra: { age: 30, retirementAge: 65, currentBalance: 5_000, plannedContribution: 7_500, magi: 75_000, returnPercent: 7 },
     paycheck: { annualSalary: 65_000, hourlyRate: 25, hoursPerWeek: 40, retirementPercent: 5, pretaxBenefits: 75 },
     rentVsBuy: {
       homePrice: 350_000,
@@ -152,6 +153,21 @@ export const us: CountryConfig = {
           { from: 640_600, to: null, rate: 0.37 },
         ],
       },
+    },
+    rothIra: {
+      // VERIFY: https://www.irs.gov/newsroom/401k-limit-increases-to-24500-for-2026-ira-limit-increases-to-7500 (2026: $7,500 limit, $1,100 catch-up at 50+). Checked 20 Oct 2026.
+      contributionLimit: 7_500,
+      catchUp: 1_100,
+      catchUpAge: 50,
+      // VERIFY: same release (Roth phase-out 2026: $153,000–$168,000 single/head of household; $242,000–$252,000 joint; $0–$10,000 married filing separately). Checked 20 Oct 2026.
+      phaseOut: {
+        single: { start: 153_000, width: 15_000 },
+        marriedJoint: { start: 242_000, width: 10_000 },
+        marriedSeparate: { start: 0, width: 10_000 },
+      },
+      // VERIFY: https://www.irs.gov/publications/p590a, Worksheet 2-2 line 8 (round up to the nearest $10; at least $200). Checked 20 Oct 2026.
+      roundTo: 10,
+      reducedMinimum: 200,
     },
     payroll: {
       // VERIFY: https://www.irs.gov/publications/p15t, Worksheet 1A line 1g (2026: $12,900 married filing jointly, $8,600 otherwise). Checked 20 Oct 2026.

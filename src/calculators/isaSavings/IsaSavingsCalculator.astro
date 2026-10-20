@@ -1,0 +1,119 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import { createFormatters } from '../../lib/format';
+import { BAND_LABELS, buildIsaView, isaDefaults, type IsaPageParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.isa;
+if (!defaults) throw new Error(`Missing defaults.isa in the ${country.code} country config`);
+const s = requireFigure(country.uk, 'UK figures').savings;
+const params: IsaPageParams = {
+  locale: country.locale,
+  currency: country.currency,
+  taxYear: country.taxYear,
+  isaAllowance: requireFigure(s.isaAllowance, 'savings.isaAllowance'),
+  personalSavingsAllowance: {
+    basic: requireFigure(s.personalSavingsAllowance.basic, 'savings.personalSavingsAllowance.basic'),
+    higher: requireFigure(s.personalSavingsAllowance.higher, 'savings.personalSavingsAllowance.higher'),
+    additional: requireFigure(s.personalSavingsAllowance.additional, 'savings.personalSavingsAllowance.additional'),
+  },
+  savingsTaxRate: {
+    basic: requireFigure(s.savingsTaxRate.basic, 'savings.savingsTaxRate.basic'),
+    higher: requireFigure(s.savingsTaxRate.higher, 'savings.savingsTaxRate.higher'),
+    additional: requireFigure(s.savingsTaxRate.additional, 'savings.savingsTaxRate.additional'),
+  },
+  startingRateLimit: requireFigure(s.startingRateLimit, 'savings.startingRateLimit'),
+};
+const d = isaDefaults(defaults);
+const { view } = buildIsaView(d, params);
+if (!view) throw new Error('ISA defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const P = params;
+---
+
+<div class="calc-block" data-calc="isa" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="isa" label="ISA savings calculator">
+    <Fragment slot="inputs">
+      <Field id="isa-start" field="startingBalance" label="Already in your ISA" value={f.number(d.startingBalance)} prefix="£" money optional />
+      <Field id="isa-monthly" field="monthlyDeposit" label="Pay in each month" value={f.number(d.monthlyDeposit)} prefix="£" money />
+      <Field id="isa-rate" field="ratePercent" label="Interest rate (AER)" value={String(d.ratePercent)} suffix="%" hint="For a stocks and shares ISA, enter the yearly growth you expect after fees. The tax comparison is for savings interest." />
+      <Field id="isa-years" field="years" label="How long" value={String(d.years)} suffix="years" inputmode="numeric" />
+      <SelectField
+        id="isa-band"
+        field="taxBand"
+        label="Your Income Tax band"
+        value={d.taxBand}
+        options={Object.entries(BAND_LABELS).map(([value, label]) => ({ value, label }))}
+        hint="Used to work out the tax you'd pay on the same savings outside an ISA."
+      />
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label" data-out="balanceLabel">{view.balanceLabel}</p>
+        <p class="result-figure" data-out="balance">{view.balance}</p>
+        <p class="result-sub" data-out="balanceSub">{view.balanceSub}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Allowance used each year</dt><dd data-out="allowanceUsed">{view.allowanceUsed}</dd></div>
+        <div><dt>Tax you'd pay outside an ISA</dt><dd data-out="taxOutside">{view.taxOutside}</dd></div>
+        <div><dt>Better off in an ISA by</dt><dd class="positive" data-out="advantage">{view.advantage}</dd></div>
+      </dl>
+      <ul class="result-warn-list" data-html="notes" set:html={view.notes} />
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="isa-breakdown-title">
+    <h2 id="isa-breakdown-title" class="h3">How your ISA grows</h2>
+    <SvgChart
+      id="isa-chart"
+      title="Balance at the end of each year"
+      legend={[
+        { label: 'Money you paid in', className: 'chart-s1' },
+        { label: 'Interest', className: 'chart-s3' },
+      ]}
+      svg={view.chartSvg}
+      htmlKey="chartSvg"
+    />
+    <details class="schedule">
+      <summary>Year-by-year table</summary>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Year-by-year table">
+        <table class="data-table">
+          <thead><tr><th scope="col">Year</th><th scope="col">Paid in</th><th scope="col">Interest</th><th scope="col">ISA balance</th><th scope="col">Outside an ISA</th><th scope="col">Tax outside</th></tr></thead>
+          <tbody data-html="yearRows" set:html={view.yearRows} />
+        </table>
+      </div>
+    </details>
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <ul>
+        <li><strong>Growth:</strong> the monthly rate is (1 + AER)<sup>1/12</sup> − 1, and you pay in at the end of each month. A 4% AER gives 0.327% a month.</li>
+        <li><strong>ISA allowance:</strong> you can pay up to {f.moneyWhole(P.isaAllowance)} into ISAs in the {P.taxYear} tax year. Money already in your ISA doesn't count.</li>
+        <li><strong>Outside an ISA:</strong> each year, interest over your Personal Savings Allowance ({f.moneyWhole(P.personalSavingsAllowance.basic)} basic rate, {f.moneyWhole(P.personalSavingsAllowance.higher)} higher, {f.moneyWhole(P.personalSavingsAllowance.additional)} additional) is taxed at your usual rate. The tax comes off the balance at the end of the year, so it stops earning interest.</li>
+        <li>The starting rate for savings, rate changes and inflation aren't included. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildIsaView, readIsaInput, type IsaPageParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="isa"]')) {
+    const params = embeddedParams<IsaPageParams>(root);
+    bindCalculator(root, (read) => buildIsaView(readIsaInput(read), params));
+  }
+</script>

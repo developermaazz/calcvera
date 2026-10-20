@@ -30,6 +30,8 @@ export const uk: CountryConfig = {
   defaults: {
     loan: { amount: 10_000, aprPercent: 6.9, termYears: 5 },
     creditCard: { balance: 3_000, aprPercent: 24.9, monthlyPayment: 150, targetMonths: 24 },
+    mortgageOverpayment: { balance: 200_000, ratePercent: 4.5, years: 25, monthlyOverpayment: 200, allowancePercent: 10 },
+    isa: { startingBalance: 5_000, monthlyDeposit: 300, ratePercent: 4, years: 10 },
     pensionRelief: { salary: 60_000, contributionPercent: 5, contributionMonthly: 250, employerPercent: 3 },
     rentVsBuy: {
       homePrice: 300_000,
@@ -115,6 +117,16 @@ export const uk: CountryConfig = {
       },
       // VERIFY: https://www.gov.uk/tax-on-your-private-pension/pension-tax-relief (provider claims relief at the basic 20% rate). Checked 18 Oct 2026.
       reliefAtSourceRate: 0.2,
+    },
+    savings: {
+      // VERIFY: https://www.gov.uk/individual-savings-accounts ("In the 2026 to 2027 tax year, the maximum you can save in ISAs is £20,000"). Checked 20 Oct 2026.
+      isaAllowance: 20_000,
+      // VERIFY: https://www.gov.uk/apply-tax-free-interest-on-savings/how-much-is-tax-free (£1,000 basic, £500 higher, £0 additional; starting rate up to £5,000). Checked 20 Oct 2026.
+      personalSavingsAllowance: { basic: 1_000, higher: 500, additional: 0 },
+      // VERIFY: https://www.gov.uk/apply-tax-free-interest-on-savings/how-you-pay-tax-on-savings-interest ("at your usual rate of Income Tax")
+      // and https://www.gov.uk/income-tax-rates (20% basic, 40% higher, 45% additional). Checked 20 Oct 2026.
+      savingsTaxRate: { basic: 0.2, higher: 0.4, additional: 0.45 },
+      startingRateLimit: 5_000,
     },
     pensions: {
       // VERIFY: https://www.gov.uk/government/publications/rates-and-allowances-pension-schemes/pension-schemes-rates (2026 to 2027: £60,000). Checked 20 Oct 2026.

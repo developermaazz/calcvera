@@ -20,6 +20,9 @@ export type EngineName =
   | 'rentVsBuy'
   | 'paycheck'
   | 'pensionTaxRelief'
+  | 'mortgageOverpayment'
+  | 'isaSavings'
+  | 'rothIra'
   | 'redundancyPay'
   | 'inheritanceTax'
   | 'selfEmploymentTax'
@@ -124,7 +127,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     name: 'Compound Interest Calculator',
     titleHook: 'Growth Year by Year',
     blurb: 'How a lump sum and regular monthly deposits grow with compound interest, year by year.',
-    related: ['savings-goal-calculator', '401k-match-calculator', 'take-home-pay-calculator', 'debt-snowball-calculator', 'credit-card-payoff-calculator'],
+    related: ['savings-goal-calculator', 'isa-savings-calculator', 'roth-ira-calculator', '401k-match-calculator', 'take-home-pay-calculator', 'debt-snowball-calculator', 'credit-card-payoff-calculator'],
     popular: true,
   },
 
@@ -137,7 +140,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     name: 'Savings Goal Calculator',
     titleHook: 'Monthly Savings Needed',
     blurb: 'How much to save each month to reach a goal by a date, or how long your monthly savings take to get there.',
-    related: ['compound-interest-calculator', 'rent-vs-buy-calculator', 'take-home-pay-calculator', '401k-match-calculator', 'debt-snowball-calculator', 'credit-card-payoff-calculator'],
+    related: ['compound-interest-calculator', 'isa-savings-calculator', 'roth-ira-calculator', 'rent-vs-buy-calculator', 'take-home-pay-calculator', '401k-match-calculator', 'debt-snowball-calculator'],
   },
 
   {
@@ -149,7 +152,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     name: 'Rent vs Buy Calculator',
     titleHook: 'Which Leaves You Better Off',
     blurb: 'Whether buying or renting leaves you better off, the year buying pulls ahead, and every cost of owning.',
-    related: ['stamp-duty-calculator', 'savings-goal-calculator', 'compound-interest-calculator', 'debt-to-income-ratio-calculator', 'loan-calculator'],
+    related: ['stamp-duty-calculator', 'mortgage-overpayment-calculator', 'savings-goal-calculator', 'compound-interest-calculator', 'debt-to-income-ratio-calculator', 'loan-calculator'],
   },
 
   {
@@ -176,6 +179,46 @@ export const CALCULATORS: CalculatorEntry[] = [
     titleHook: 'Your Tax Relief',
     blurb: 'The tax relief on your pension contributions, what they really cost you, and extra relief to claim back.',
     related: ['take-home-pay-calculator', 'compound-interest-calculator', 'savings-goal-calculator', 'student-loan-repayment-calculator', 'redundancy-pay-calculator'],
+    popular: true,
+    usesTaxYear: true,
+  },
+
+  {
+    // Phase 1 continued. Uses the mortgageOverpayment engine (monthly overpayments and lump sums).
+    slug: 'mortgage-overpayment-calculator',
+    engine: 'mortgageOverpayment',
+    category: 'property',
+    countries: ['uk'],
+    name: 'Mortgage Overpayment Calculator',
+    titleHook: 'Interest & Time Saved',
+    blurb: 'How much interest and time you save by overpaying your mortgage each month or with a lump sum.',
+    related: ['stamp-duty-calculator', 'rent-vs-buy-calculator', 'savings-goal-calculator', 'isa-savings-calculator', 'loan-calculator'],
+    popular: true,
+  },
+
+  {
+    // Phase 1 continued. Uses the isaSavings engine (growth, allowance check, tax saved vs a savings account).
+    slug: 'isa-savings-calculator',
+    engine: 'isaSavings',
+    category: 'savings',
+    countries: ['uk'],
+    name: 'ISA Savings Calculator',
+    titleHook: 'Growth & Tax Saved',
+    blurb: 'How your ISA grows, how much of your allowance you use, and the tax you save against a normal savings account.',
+    related: ['compound-interest-calculator', 'savings-goal-calculator', 'pension-tax-relief-calculator', 'take-home-pay-calculator', 'mortgage-overpayment-calculator'],
+    usesTaxYear: true,
+  },
+
+  {
+    // Phase 1 continued. Uses the rothIra engine (Pub 590-A Worksheet 2-2 phase-out, projection).
+    slug: 'roth-ira-calculator',
+    engine: 'rothIra',
+    category: 'retirement',
+    countries: ['us'],
+    name: 'Roth IRA Calculator',
+    titleHook: 'Contribution Limit & Growth',
+    blurb: 'How much you can put in a Roth IRA this year based on your income, and what it could grow to tax-free.',
+    related: ['401k-match-calculator', 'compound-interest-calculator', 'paycheck-calculator', 'savings-goal-calculator', 'quarterly-estimated-tax-calculator'],
     popular: true,
     usesTaxYear: true,
   },

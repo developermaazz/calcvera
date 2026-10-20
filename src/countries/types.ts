@@ -47,6 +47,30 @@ export interface RentVsBuyDefaults {
   years: number;
 }
 
+export interface MortgageOverpaymentDefaults {
+  balance: number;
+  ratePercent: number;
+  years: number;
+  monthlyOverpayment: number;
+  allowancePercent: number;
+}
+
+export interface IsaDefaults {
+  startingBalance: number;
+  monthlyDeposit: number;
+  ratePercent: number;
+  years: number;
+}
+
+export interface RothIraDefaults {
+  age: number;
+  retirementAge: number;
+  currentBalance: number;
+  plannedContribution: number;
+  magi: number;
+  returnPercent: number;
+}
+
 export interface PaycheckDefaults {
   annualSalary: number;
   hourlyRate: number;
@@ -184,6 +208,18 @@ export interface UsSelfEmploymentConfig {
   minimumNetEarnings: Pending<number>;
 }
 
+export interface UsRothIraConfig {
+  contributionLimit: Pending<number>;
+  /** Extra allowed from age 50. */
+  catchUp: Pending<number>;
+  catchUpAge: Pending<number>;
+  /** Modified AGI where the limit starts to shrink, and the width of the phase-out range. */
+  phaseOut: Record<'single' | 'marriedJoint' | 'marriedSeparate', { start: Pending<number>; width: Pending<number> }>;
+  /** Pub 590-A Worksheet 2-2: a reduced limit is rounded up to this multiple and is at least the minimum. */
+  roundTo: Pending<number>;
+  reducedMinimum: Pending<number>;
+}
+
 export interface UsPayrollConfig {
   /** Pub 15-T Worksheet 1A line 1g: subtracted when the Form W-4 Step 2 box isn't checked. */
   withholdingAdjustment: { marriedJoint: Pending<number>; other: Pending<number> };
@@ -264,6 +300,17 @@ export interface UkTakeHomePayConfig {
   studentLoans: Record<'plan1' | 'plan2' | 'plan4' | 'plan5' | 'postgraduate', Pending<UkStudentLoanPlan>>;
   /** Basic-rate relief added by the provider under relief at source. */
   reliefAtSourceRate: Pending<number>;
+}
+
+export interface UkSavingsConfig {
+  /** Total you can pay into ISAs in the tax year. */
+  isaAllowance: Pending<number>;
+  /** Personal Savings Allowance by Income Tax band. */
+  personalSavingsAllowance: Record<'basic' | 'higher' | 'additional', Pending<number>>;
+  /** Tax rate on savings interest over the allowance, by band (the main Income Tax rates). */
+  savingsTaxRate: Record<'basic' | 'higher' | 'additional', Pending<number>>;
+  /** Starting rate for savings: up to this much interest is tax-free when other income is low. */
+  startingRateLimit: Pending<number>;
 }
 
 export interface UkPensionConfig {
@@ -441,6 +488,9 @@ export interface CountryConfig {
     rentVsBuy?: RentVsBuyDefaults;
     paycheck?: PaycheckDefaults;
     pensionRelief?: PensionReliefDefaults;
+    mortgageOverpayment?: MortgageOverpaymentDefaults;
+    isa?: IsaDefaults;
+    rothIra?: RothIraDefaults;
   };
 
   // Country-specific figures, present only on the country that needs them.
@@ -448,6 +498,7 @@ export interface CountryConfig {
     federalTax: Record<UsFilingStatus, UsFilingStatusTax>;
     selfEmployment: UsSelfEmploymentConfig;
     payroll: UsPayrollConfig;
+    rothIra: UsRothIraConfig;
     /** The four estimated tax due dates for the tax year (ISO dates). */
     estimatedTaxDueDates: Pending<[string, string, string, string]>;
     qbi: UsQbiConfig;
@@ -462,6 +513,7 @@ export interface CountryConfig {
     studentLoanInterest: UkStudentLoanInterestConfig;
     inheritanceTax: UkInheritanceTaxConfig;
     pensions: UkPensionConfig;
+    savings: UkSavingsConfig;
   };
   ca?: {
     fhsa: CaFhsaConfig;
