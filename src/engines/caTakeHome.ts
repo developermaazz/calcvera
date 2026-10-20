@@ -90,6 +90,11 @@ function incomeTaxOn(taxable: number, credits: { employment: number; cppBase: nu
 
 const total = (x: TaxParts) => x.federal + x.provincialBasic + x.surtax + x.ohp;
 
+/** Income tax on taxable income with no employment, CPP or EI credits (e.g. retirement income or an RRSP withdrawal). */
+export function caIncomeTaxOnly(taxable: number, p: CaTakeHomeParams): number {
+  return total(incomeTaxOn(Math.max(0, taxable), { employment: 0, cppBase: 0, ei: 0 }, p));
+}
+
 export function calculateCaTakeHome(input: CaTakeHomeInput, p: CaTakeHomeParams): CaTakeHomeResult {
   const errors = validateCaTakeHomeInput(input);
   if (errors.length > 0) throw new RangeError(errors.map((e) => `${e.field}: ${e.message}`).join(' '));

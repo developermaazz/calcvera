@@ -23,6 +23,10 @@ import CaTakeHomeCalculator from '../../calculators/caTakeHome/CaTakeHomeCalcula
 import AuSuperCalculator from '../../calculators/auSuper/AuSuperCalculator.astro';
 import AuHomeLoanCalculator from '../../calculators/auHomeLoan/AuHomeLoanCalculator.astro';
 import HelpDebtCalculator from '../../calculators/helpDebt/HelpDebtCalculator.astro';
+import RrspVsTfsaCalculator from '../../calculators/rrspVsTfsa/RrspVsTfsaCalculator.astro';
+import CppCalculator from '../../calculators/cppTiming/CppCalculator.astro';
+import LandTransferCalculator from '../../calculators/caLandTransfer/LandTransferCalculator.astro';
+import AuStampDutyCalculator from '../../calculators/auStampDuty/AuStampDutyCalculator.astro';
 import DtiCalculator from '../../calculators/dti/DtiCalculator.astro';
 import FhsaCalculator from '../../calculators/fhsa/FhsaCalculator.astro';
 import InheritanceTaxCalculator from '../../calculators/inheritanceTax/InheritanceTaxCalculator.astro';
@@ -75,6 +79,10 @@ const ENGINE_UI: Partial<Record<EngineName, typeof LoanCalculator>> = {
   auSuper: AuSuperCalculator,
   auHomeLoan: AuHomeLoanCalculator,
   helpDebt: HelpDebtCalculator,
+  rrspVsTfsa: RrspVsTfsaCalculator,
+  cppTiming: CppCalculator,
+  caLandTransfer: LandTransferCalculator,
+  auStampDuty: AuStampDutyCalculator,
   redundancyPay: RedundancyPayCalculator,
   inheritanceTax: InheritanceTaxCalculator,
   selfEmploymentTax: QuarterlyTaxCalculator,

@@ -89,6 +89,24 @@ export interface CaMortgageDefaults {
   termYears: number;
 }
 
+export interface CaRrspTfsaDefaults {
+  income: number;
+  retirementIncome: number;
+  contribution: number;
+  years: number;
+  returnPercent: number;
+}
+
+export interface CaCppDefaults {
+  pensionAt65: number;
+  startAge: number;
+  lifeExpectancy: number;
+}
+
+export interface CaLandTransferDefaults {
+  price: number;
+}
+
 export interface CaIncomeTaxDefaults {
   income: number;
 }
@@ -102,6 +120,10 @@ export interface AuSuperDefaults {
   returnPercent: number;
   feesPerYear: number;
   inflationPercent: number;
+}
+
+export interface AuStampDutyDefaults {
+  value: number;
 }
 
 export interface AuHomeLoanDefaults {
@@ -478,6 +500,51 @@ export interface CaPayrollConfig {
   ontarioHealthPremium: { from: number; base: number; rate: number; cap: number }[];
 }
 
+/** Marginal bands: rate applies to the part of the value between from and to (null = no top). */
+export interface RateBand {
+  from: number;
+  to: number | null;
+  rate: number;
+}
+
+export type CaLandTransferProvince = 'ON' | 'BC' | 'MB' | 'QC' | 'NB' | 'NS' | 'PE';
+
+export interface CaLandTransferConfig {
+  ontario: { bands: RateBand[]; firstTimeRefundMax: number };
+  toronto: { bands: RateBand[]; firstTimeRebateMax: number };
+  bc: {
+    bands: RateBand[];
+    /** Further tax on residential value over a threshold. */
+    furtherRate: number;
+    furtherThreshold: number;
+    firstTime: { fullExemptionValue: number; exemptionAmount: number; flatUpTo: number; phaseOutTo: number };
+    newBuild: { fullExemptionBelow: number; phaseOutTo: number };
+  };
+  manitoba: { bands: RateBand[] };
+  quebec: { bands: RateBand[]; year: string };
+  montreal: { bands: RateBand[]; year: string };
+  newBrunswick: { rate: number };
+  novaScotia: { defaultMunicipalRate: number; defaultMunicipality: string };
+  pei: { rate: number; lowValueExemptUpTo: number };
+}
+
+export interface CaRegisteredConfig {
+  tfsaLimit: number;
+  rrspDollarLimit: number;
+  /** RRSP room as a share of the previous year's earned income. */
+  rrspIncomeRate: number;
+}
+
+export interface CaCppConfig {
+  maxMonthlyAt65: number;
+  averageMonthlyAt65: number;
+  averageAsOf: string;
+  earlyReductionPerMonth: number;
+  lateIncreasePerMonth: number;
+  earliestAge: number;
+  latestAge: number;
+}
+
 export interface AuSuperConfig {
   guaranteeRate: number;
   /** Annual earnings above which super guarantee isn't required. */
@@ -503,6 +570,33 @@ export interface AuHelpConfig {
   /** Indexation applied on 1 June (latest published year). */
   indexationRate: number;
   indexationYear: string;
+}
+
+/**
+ * Duty band: from "from" upwards, duty = base + rate × (value − from); or, if flat, rate × the whole value.
+ * Rates are per dollar (4.5% = 0.045).
+ */
+export interface DutyBand {
+  from: number;
+  base: number;
+  rate: number;
+  flat?: boolean;
+}
+
+export type AuState = 'NSW' | 'VIC' | 'QLD' | 'WA' | 'SA' | 'TAS' | 'ACT' | 'NT';
+
+export interface AuStampDutyConfig {
+  year: string;
+  nsw: { bands: DutyBand[]; minimum: number; firstHome: { exemptUpTo: number; concessionBelow: number } };
+  vic: { bands: DutyBand[]; pprBands: DutyBand[]; pprUpTo: number; firstHome: { exemptUpTo: number; concessionUpTo: number } };
+  qld: { bands: DutyBand[]; homeBands: DutyBand[]; firstHomeConcession: { below: number; amount: number }[] };
+  wa: { bands: DutyBand[]; concessionalBands: DutyBand[]; concessionalUpTo: number; firstHome: { exemptUpTo: number; upTo: number; rate: number } };
+  sa: { bands: DutyBand[] };
+  tas: { bands: DutyBand[] };
+  act: { ownerBands: DutyBand[]; investorBands: DutyBand[] };
+  nt: { formulaUpTo: number; a: number; b: number; bands: DutyBand[] };
+  /** States where duty is charged per $100 "or part of $100" (the excess is rounded up to the next $100). */
+  roundUpTo100: AuState[];
 }
 
 export interface AuMlsConfig {
@@ -600,8 +694,12 @@ export interface CountryConfig {
     caMortgage?: CaMortgageDefaults;
     auTakeHome?: AuTakeHomeDefaults;
     caIncomeTax?: CaIncomeTaxDefaults;
+    caRrspTfsa?: CaRrspTfsaDefaults;
+    caCpp?: CaCppDefaults;
+    caLandTransfer?: CaLandTransferDefaults;
     auSuper?: AuSuperDefaults;
     auHomeLoan?: AuHomeLoanDefaults;
+    auStampDuty?: AuStampDutyDefaults;
     auHelp?: AuHelpDefaults;
   };
 
@@ -631,6 +729,9 @@ export interface CountryConfig {
     fhsa: CaFhsaConfig;
     mortgage: CaMortgageConfig;
     payroll: CaPayrollConfig;
+    landTransfer: CaLandTransferConfig;
+    registered: CaRegisteredConfig;
+    cpp: CaCppConfig;
     provinces: CaProvinceTax[];
     extras: CaTaxExtras;
   };
@@ -642,5 +743,6 @@ export interface CountryConfig {
     super: AuSuperConfig;
     help: AuHelpConfig;
     mls: AuMlsConfig;
+    stampDuty: AuStampDutyConfig;
   };
 }

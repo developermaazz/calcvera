@@ -1,0 +1,79 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import CheckboxField from '../../components/CheckboxField.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import { AU_STATES } from '../../engines/auStampDuty';
+import { createFormatters } from '../../lib/format';
+import { BUYERS, STATE_NAMES, buildStampDutyView, stampDutyDefaults, type AuStampDutyPageParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.auStampDuty;
+if (!defaults) throw new Error(`Missing defaults.auStampDuty in the ${country.code} country config`);
+const sd = requireFigure(country.au, `${country.code}.au`).stampDuty;
+const params: AuStampDutyPageParams = { ...sd, locale: country.locale, currency: country.currency };
+const d = stampDutyDefaults(defaults);
+const { view } = buildStampDutyView(d, params);
+if (!view) throw new Error('Stamp duty defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+---
+
+<div class="calc-block" data-calc="au-stamp-duty" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="ausd" label="Stamp duty calculator">
+    <Fragment slot="inputs">
+      <fieldset class="field-group">
+        <legend>Your purchase</legend>
+        <SelectField id="sd-state" field="state" label="State or territory" value={d.state} options={AU_STATES.map((s) => ({ value: s, label: STATE_NAMES[s] }))} />
+        <Field id="sd-value" field="value" label="Property value" value={f.number(d.value)} prefix={sym} money hint="The price, or the market value if it's higher." />
+        <SelectField id="sd-buyer" field="buyer" label="Who's buying" value={d.buyer} options={BUYERS} />
+        <CheckboxField id="sd-new" field="newHome" label="It's a new home (never lived in)" checked={d.newHome} when="state:QLD,SA" hidden hint="First home buyers of eligible new homes pay no duty in Queensland and South Australia." />
+      </fieldset>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Stamp duty</p>
+        <p class="result-figure" data-out="duty">{view.duty}</p>
+        <p class="result-sub" data-out="dutySub">{view.dutySub}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>At the general rate</dt><dd data-out="generalDuty">{view.generalDuty}</dd></div>
+        <div><dt>Concession saves</dt><dd class="positive" data-out="saving">{view.saving}</dd></div>
+        <div><dt>Share of value</dt><dd data-out="effective">{view.effective}</dd></div>
+      </dl>
+      <p class="result-note" data-out="note">{view.note}</p>
+      <p class="result-warn" data-show="hasStateNote" hidden={!view.hasStateNote} data-out="stateNote">{view.stateNote}</p>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="sd-breakdown-title">
+    <h2 id="sd-breakdown-title" class="h3">How this is calculated ({sd.year})</h2>
+    <div class="formula">
+      <ul>
+        <li><strong>General rates:</strong> each state charges a base amount plus a rate on the value above a threshold. Queensland, Western Australia, South Australia, Tasmania and the ACT charge per $100 "or part of $100". Victoria charges 5.5% of the whole value between $960,000 and $2 million. The Northern Territory uses a formula up to $525,000, then a flat percentage of the whole value.</li>
+        <li><strong>Concessions:</strong> first home buyer and owner-occupier concessions are applied where you qualify. NSW and Victoria reduce first home buyer duty in a straight line to their upper thresholds; Queensland deducts a set concession amount for your price band.</li>
+        <li><strong>Not included:</strong> foreign purchaser surcharges, pensioner and off-the-plan concessions, vacant land and shared ownership. You must meet each scheme's conditions, such as living in the home. Figures are calculated at full precision; some revenue offices round to the dollar.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildStampDutyView, readStampDutyInput, type AuStampDutyPageParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="au-stamp-duty"]')) {
+    const params = embeddedParams<AuStampDutyPageParams>(root);
+    bindCalculator(root, (read) => buildStampDutyView(readStampDutyInput(read), params));
+  }
+</script>

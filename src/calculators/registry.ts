@@ -30,6 +30,10 @@ export type EngineName =
   | 'auSuper'
   | 'auHomeLoan'
   | 'helpDebt'
+  | 'rrspVsTfsa'
+  | 'cppTiming'
+  | 'caLandTransfer'
+  | 'auStampDuty'
   | 'redundancyPay'
   | 'inheritanceTax'
   | 'selfEmploymentTax'
@@ -314,6 +318,46 @@ export const CALCULATORS: CalculatorEntry[] = [
   },
 
   {
+    // Phase 2. Uses the rrspVsTfsa engine (same before-tax amount in each; marginal rates from the caTakeHome engine).
+    slug: 'rrsp-vs-tfsa-calculator',
+    engine: 'rrspVsTfsa',
+    category: 'savings',
+    countries: ['ca'],
+    name: 'RRSP vs TFSA Calculator',
+    titleHook: 'Which Saves More',
+    blurb: 'Whether an RRSP or a TFSA leaves you with more after tax, based on your tax rate now and in retirement.',
+    related: ['income-tax-calculator', 'fhsa-calculator', 'cpp-calculator', 'mortgage-payment-calculator'],
+    popular: true,
+    usesTaxYear: true,
+  },
+
+  {
+    // Phase 2. Uses the cppTiming engine (0.6% a month less before 65, 0.7% a month more after 65).
+    slug: 'cpp-calculator',
+    engine: 'cppTiming',
+    category: 'retirement',
+    countries: ['ca'],
+    name: 'CPP Calculator',
+    titleHook: 'When to Start',
+    blurb: 'Your CPP pension at every start age from 60 to 70, the break-even age and the total you could receive.',
+    related: ['rrsp-vs-tfsa-calculator', 'income-tax-calculator', 'fhsa-calculator'],
+  },
+
+  {
+    // Phase 2. Uses the caLandTransfer engine (ON + Toronto, BC, MB, QC + Montréal, NB, NS, PE; first-time buyer relief).
+    slug: 'land-transfer-tax-calculator',
+    engine: 'caLandTransfer',
+    category: 'property',
+    countries: ['ca'],
+    name: 'Land Transfer Tax Calculator',
+    titleHook: 'With Rebates',
+    blurb: 'Land transfer tax for your province, including Toronto and Montréal, with first-time buyer rebates.',
+    related: ['mortgage-payment-calculator', 'fhsa-calculator', 'income-tax-calculator', 'rrsp-vs-tfsa-calculator'],
+    popular: true,
+    usesTaxYear: true,
+  },
+
+  {
     // Launch set #5. Uses the earlyPayoff engine (loan + extra payments).
     slug: 'personal-loan-payoff-calculator',
     engine: 'personalLoanPayoff',
@@ -354,12 +398,21 @@ export const CALCULATORS: CalculatorEntry[] = [
     engine: 'stampDuty',
     usesTaxYear: true,
     category: 'property',
-    countries: ['uk'],
+    countries: ['uk', 'au'],
     name: 'Stamp Duty Calculator',
     titleHook: 'SDLT for Any Buyer',
     blurb: 'Stamp Duty Land Tax on a home in England or Northern Ireland, for first-time buyers, movers and additional properties.',
     related: ['rent-vs-buy-calculator', 'take-home-pay-calculator', 'inheritance-tax-calculator', 'mortgage-overpayment-calculator', 'loan-calculator'],
     popular: true,
+    overrides: {
+      // Phase 2. Uses the auStampDuty engine (transfer duty for every state and territory, with home buyer concessions).
+      au: {
+        engine: 'auStampDuty',
+        titleHook: 'Every State',
+        blurb: 'Transfer duty on a home in any state or territory, with first home buyer and owner-occupier concessions.',
+        related: ['home-loan-repayment-calculator', 'take-home-pay-calculator', 'super-calculator', 'hecs-help-repayment-calculator'],
+      },
+    },
   },
 
   {

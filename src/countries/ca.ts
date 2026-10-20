@@ -45,6 +45,9 @@ export const ca: CountryConfig = {
   },
   defaults: {
     caIncomeTax: { income: 80_000 },
+    caRrspTfsa: { income: 80_000, retirementIncome: 50_000, contribution: 5_000, years: 25, returnPercent: 6 },
+    caCpp: { pensionAt65: 858.34, startAge: 65, lifeExpectancy: 87 },
+    caLandTransfer: { price: 700_000 },
     caMortgage: { price: 600_000, downPayment: 60_000, ratePercent: 4.5, amortizationYears: 25, termYears: 5 },
   },
   ca: {
@@ -96,6 +99,126 @@ export const ca: CountryConfig = {
         { from: 72_000, base: 600, rate: 0.25, cap: 750 },
         { from: 200_000, base: 750, rate: 0.25, cap: 900 },
       ],
+    },
+    registered: {
+      // VERIFY: https://www.canada.ca/en/revenue-agency/services/tax/registered-plans-administrators/pspa/mp-rrsp-dpsp-tfsa-limits-ympe.html
+      // (2026: TFSA dollar limit $7,000; RRSP dollar limit $33,810). Checked 20 Oct 2026.
+      tfsaLimit: 7_000,
+      rrspDollarLimit: 33_810,
+      // VERIFY: https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/rrsps-related-plans/contributing-a-rrsp-prpp/contributions-affect-your-rrsp-prpp-deduction-limit.html
+      // (18% of earned income in the previous year, up to the yearly limit). Checked 20 Oct 2026.
+      rrspIncomeRate: 0.18,
+    },
+    cpp: {
+      // VERIFY: https://www.canada.ca/en/services/benefits/publicpensions/cpp/cpp-benefit/amount.html
+      // (maximum at 65 in January 2026 $1,507.65 a month; average for new recipients at 65, July 2026, $858.34). Checked 20 Oct 2026.
+      maxMonthlyAt65: 1_507.65,
+      averageMonthlyAt65: 858.34,
+      averageAsOf: 'July 2026',
+      // VERIFY: https://www.canada.ca/en/services/benefits/publicpensions/cpp/when-start.html
+      // (decrease by 0.6% each month, up to 36% at 60; increase by 0.7% each month, up to 42% at 70; start at 60 to 70).
+      // Checked 20 Oct 2026.
+      earlyReductionPerMonth: 0.006,
+      lateIncreasePerMonth: 0.007,
+      earliestAge: 60,
+      latestAge: 70,
+    },
+    landTransfer: {
+      ontario: {
+        // VERIFY: https://www.ontario.ca/document/land-transfer-tax/calculating-land-transfer-tax (0.5% to $55,000; 1% to $250,000;
+        // 1.5% to $400,000; 2% over $400,000; 2.5% over $2,000,000 for one or two single family residences). Checked 20 Oct 2026.
+        bands: [
+          { from: 0, to: 55_000, rate: 0.005 },
+          { from: 55_000, to: 250_000, rate: 0.01 },
+          { from: 250_000, to: 400_000, rate: 0.015 },
+          { from: 400_000, to: 2_000_000, rate: 0.02 },
+          { from: 2_000_000, to: null, rate: 0.025 },
+        ],
+        // VERIFY: https://www.ontario.ca/document/land-transfer-tax/land-transfer-tax-refunds-first-time-homebuyers ($4,000). Checked 20 Oct 2026.
+        firstTimeRefundMax: 4_000,
+      },
+      toronto: {
+        // VERIFY: https://www.toronto.ca/services-payments/property-taxes-utilities/municipal-land-transfer-tax-mltt/municipal-land-transfer-tax-mltt-rates-and-fees/
+        // (one or two single-family residences; luxury tiers as of April 1, 2026). Checked 20 Oct 2026.
+        bands: [
+          { from: 0, to: 55_000, rate: 0.005 },
+          { from: 55_000, to: 250_000, rate: 0.01 },
+          { from: 250_000, to: 400_000, rate: 0.015 },
+          { from: 400_000, to: 2_000_000, rate: 0.02 },
+          { from: 2_000_000, to: 3_000_000, rate: 0.025 },
+          { from: 3_000_000, to: 4_000_000, rate: 0.044 },
+          { from: 4_000_000, to: 5_000_000, rate: 0.0545 },
+          { from: 5_000_000, to: 10_000_000, rate: 0.065 },
+          { from: 10_000_000, to: 20_000_000, rate: 0.0755 },
+          { from: 20_000_000, to: null, rate: 0.086 },
+        ],
+        // VERIFY: https://www.toronto.ca/services-payments/property-taxes-utilities/municipal-land-transfer-tax-mltt/municipal-land-transfer-tax-mltt-rebate-opportunities/
+        // ("a rebate of up to $4,475.00"). Checked 20 Oct 2026.
+        firstTimeRebateMax: 4_475,
+      },
+      bc: {
+        // VERIFY: https://www2.gov.bc.ca/gov/content/taxes/property-taxes/property-transfer-tax (1% to $200,000; 2% to $2,000,000;
+        // 3% over $2,000,000; further 2% on residential value over $3,000,000). Checked 20 Oct 2026.
+        bands: [
+          { from: 0, to: 200_000, rate: 0.01 },
+          { from: 200_000, to: 2_000_000, rate: 0.02 },
+          { from: 2_000_000, to: null, rate: 0.03 },
+        ],
+        furtherRate: 0.02,
+        furtherThreshold: 3_000_000,
+        // VERIFY: https://www2.gov.bc.ca/gov/content/taxes/property-taxes/property-transfer-tax/exemptions/first-time-home-buyers/current-amount
+        // (full tax exempt at $500,000 or less; $8,000 up to $835,000; reduced to nil at $860,000, e.g. $850,000 gives $3,200).
+        // Checked 20 Oct 2026.
+        firstTime: { fullExemptionValue: 500_000, exemptionAmount: 8_000, flatUpTo: 835_000, phaseOutTo: 860_000 },
+        // VERIFY: https://www2.gov.bc.ca/gov/content/taxes/property-taxes/property-transfer-tax/exemptions/newly-built-home-exemption/exemption-amounts
+        // (full exemption below $1,100,000; PTT x ((1,100,000 + 50,000 - FMV) / 50,000) up to $1,150,000). Checked 20 Oct 2026.
+        newBuild: { fullExemptionBelow: 1_100_000, phaseOutTo: 1_150_000 },
+      },
+      manitoba: {
+        // VERIFY: https://www.gov.mb.ca/finance/other/landtransfertax.html (0% to $30,000; 0.5% to $90,000; 1% to $150,000;
+        // 1.5% to $200,000; 2% over $200,000). Checked 20 Oct 2026.
+        bands: [
+          { from: 0, to: 30_000, rate: 0 },
+          { from: 30_000, to: 90_000, rate: 0.005 },
+          { from: 90_000, to: 150_000, rate: 0.01 },
+          { from: 150_000, to: 200_000, rate: 0.015 },
+          { from: 200_000, to: null, rate: 0.02 },
+        ],
+      },
+      quebec: {
+        // VERIFY: https://www.quebec.ca/gouvernement/gestion-municipale/finances-fiscalite-municipales/fiscalite/droits-mutations-immobilieres
+        // (2026: 0.5% to $62,900; 1% to $315,000; 1.5% over $315,000; municipalities may set a higher rate over $500,000).
+        // Checked 20 Oct 2026.
+        year: '2026',
+        bands: [
+          { from: 0, to: 62_900, rate: 0.005 },
+          { from: 62_900, to: 315_000, rate: 0.01 },
+          { from: 315_000, to: null, rate: 0.015 },
+        ],
+      },
+      montreal: {
+        // VERIFY: https://montreal.ca/en/articles/how-property-transfer-duties-are-calculated-9279 (2026 brackets). Checked 20 Oct 2026.
+        year: '2026',
+        bands: [
+          { from: 0, to: 62_900, rate: 0.005 },
+          { from: 62_900, to: 315_000, rate: 0.01 },
+          { from: 315_000, to: 552_300, rate: 0.015 },
+          { from: 552_300, to: 1_104_700, rate: 0.02 },
+          { from: 1_104_700, to: 2_136_500, rate: 0.025 },
+          { from: 2_136_500, to: 3_113_000, rate: 0.035 },
+          { from: 3_113_000, to: null, rate: 0.04 },
+        ],
+      },
+      // VERIFY: https://laws.gnb.ca/en/document/cs/R-2.1 (s. 2(1.03): 1% of the greater of the consideration and the assessed value,
+      // from April 1, 2016). Read from the web.archive.org copy of 1 Oct 2026. Checked 20 Oct 2026.
+      newBrunswick: { rate: 0.01 },
+      // VERIFY: https://www.halifax.ca/home-property/property-taxes/taxes-halifax (deed transfer tax 1.5% of the purchase price in
+      // the Halifax Regional Municipality; each municipality sets its own rate). Checked 20 Oct 2026.
+      novaScotia: { defaultMunicipalRate: 0.015, defaultMunicipality: 'Halifax' },
+      // VERIFY: https://www.princeedwardisland.ca/sites/default/files/legislation/r-05-1-real_property_transfer_tax_act.pdf (current to
+      // May 29, 2026: s. 3(1) 1% of the greater of consideration and assessed value; s. 4(2) none if $30,000 or less; s. 5(2)
+      // first-time home buyers exempt). Checked 20 Oct 2026.
+      pei: { rate: 0.01, lowValueExemptUpTo: 30_000 },
     },
     // Brackets, all except QC: https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html (2026)
     // Basic personal amounts, all except QC: CRA T4127 (122nd edition, January 2026):

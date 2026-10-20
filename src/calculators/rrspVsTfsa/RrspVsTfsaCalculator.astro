@@ -1,0 +1,111 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import type { CaTakeHomeParams } from '../../engines/caTakeHome';
+import { createFormatters } from '../../lib/format';
+import { caTaxParamsByProvince } from '../caTax';
+import { buildRrspTfsaView, rrspTfsaDefaults, type RrspTfsaPageParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.caRrspTfsa;
+if (!defaults) throw new Error(`Missing defaults.caRrspTfsa in the ${country.code} country config`);
+const c = requireFigure(country.ca, 'Canada figures');
+const tax = caTaxParamsByProvince(country);
+const { ontarioHealthPremium, ...payroll } = c.payroll;
+// Quebec has its own tax return and credits, so it isn't covered here.
+const provinces = c.provinces.filter((p) => p.code !== 'QC').map((p) => ({ code: p.code, name: p.name }));
+const byProvince: Record<string, CaTakeHomeParams> = {};
+for (const p of provinces) byProvince[p.code] = { tax: tax[p.code]!, payroll, ontarioHealthPremium: p.code === 'ON' ? ontarioHealthPremium : undefined };
+const params: RrspTfsaPageParams = { locale: country.locale, currency: country.currency, taxYear: country.taxYear, provinces, byProvince, registered: c.registered };
+const d = rrspTfsaDefaults(defaults);
+const { view } = buildRrspTfsaView(d, params);
+if (!view) throw new Error('RRSP vs TFSA defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+---
+
+<div class="calc-block" data-calc="rrsp-tfsa" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="rrsptfsa" label="RRSP vs TFSA calculator">
+    <Fragment slot="inputs">
+      <fieldset class="field-group">
+        <legend>Your income</legend>
+        <SelectField id="rt-prov" field="province" label="Province or territory" value={d.province} options={provinces.map((p) => ({ value: p.code, label: p.name }))} hint="Quebec isn't covered: it has its own tax return." />
+        <Field id="rt-income" field="income" label="Employment income now" value={f.number(d.income)} prefix={sym} suffix="a year" money />
+        <Field id="rt-retire" field="retirementIncome" label="Income in retirement" value={f.number(d.retirementIncome)} prefix={sym} suffix="a year" money hint="Include CPP, OAS, pensions and your planned RRSP withdrawals." />
+      </fieldset>
+      <fieldset class="field-group">
+        <legend>Your savings</legend>
+        <Field id="rt-contrib" field="contribution" label="Before-tax income to save each year" value={f.number(d.contribution)} prefix={sym} money hint="The RRSP gets all of it; the TFSA gets what's left after tax." />
+        <Field id="rt-years" field="years" label="Years until you withdraw" value={String(d.years)} suffix="years" inputmode="numeric" />
+        <Field id="rt-return" field="returnPercent" label="Yearly return" value={String(d.returnPercent)} suffix="%" />
+      </fieldset>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label" data-out="winnerLabel">{view.winnerLabel}</p>
+        <p class="result-figure" data-out="difference">{view.difference}</p>
+        <p class="result-sub" data-out="winnerSub">{view.winnerSub}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>RRSP after tax</dt><dd data-out="rrspAfterTax">{view.rrspAfterTax}</dd></div>
+        <div><dt>TFSA</dt><dd data-out="tfsaValue">{view.tfsaValue}</dd></div>
+        <div><dt>Tax rate</dt><dd data-out="rates">{view.rates}</dd></div>
+      </dl>
+      <ul class="result-warn-list" data-show="hasNotes" hidden={!view.hasNotes} data-html="notes" set:html={view.notes} />
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="rt-breakdown-title">
+    <h2 id="rt-breakdown-title" class="h3">Value after tax over time</h2>
+    <SvgChart
+      id="rt-chart"
+      title="What each is worth after tax"
+      legend={[
+        { label: 'RRSP after tax', className: 'chart-s1' },
+        { label: 'TFSA', className: 'chart-s3' },
+      ]}
+      svg={view.chartSvg}
+      htmlKey="chartSvg"
+    />
+    <details class="schedule">
+      <summary>Year-by-year table</summary>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Year-by-year table">
+        <table class="data-table">
+          <thead><tr><th scope="col">Year</th><th scope="col">RRSP</th><th scope="col">RRSP after tax</th><th scope="col">TFSA</th></tr></thead>
+          <tbody data-html="yearRows" set:html={view.yearRows} />
+        </table>
+      </div>
+    </details>
+    <div class="formula">
+      <h3>How this is calculated ({country.taxYear})</h3>
+      <ul>
+        <li><strong>RRSP:</strong> you put in the full before-tax amount each year (your tax refund is reinvested). At withdrawal, the balance is taxed at your marginal rate in retirement.</li>
+        <li><strong>TFSA:</strong> you put in the amount left after tax at today's rate. Withdrawals are tax-free.</li>
+        <li><strong>Tax rate now</strong> = the tax your RRSP deduction saves ÷ the deduction, using federal and provincial tax for {country.taxYear}. <strong>Tax rate later</strong> = your combined marginal rate on your retirement income at today's brackets.</li>
+        <li>Deposits are made at the start of each year and grow at the same return in both. Limits for {country.taxYear}: TFSA {f.moneyWhole(c.registered.tfsaLimit)}; RRSP 18% of last year's earned income up to {f.moneyWhole(c.registered.rrspDollarLimit)}. OAS recovery tax and benefit clawbacks aren't included. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildRrspTfsaView, readRrspTfsaInput, type RrspTfsaPageParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="rrsp-tfsa"]')) {
+    const params = embeddedParams<RrspTfsaPageParams>(root);
+    bindCalculator(root, (read) => buildRrspTfsaView(readRrspTfsaInput(read), params));
+  }
+</script>

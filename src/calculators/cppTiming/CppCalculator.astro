@@ -1,0 +1,94 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import { createFormatters } from '../../lib/format';
+import { buildCppView, cppDefaults, type CppPageParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.caCpp;
+if (!defaults) throw new Error(`Missing defaults.caCpp in the ${country.code} country config`);
+const cpp = requireFigure(country.ca, 'Canada figures').cpp;
+const params: CppPageParams = { ...cpp, locale: country.locale, currency: country.currency };
+const d = cppDefaults(defaults);
+const { view } = buildCppView(d, params);
+if (!view) throw new Error('CPP defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+const pct = (x: number) => f.percent(Math.round(x * 10_000) / 100);
+---
+
+<div class="calc-block" data-calc="cpp" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="cpp" label="CPP calculator">
+    <Fragment slot="inputs">
+      <fieldset class="field-group">
+        <legend>Your CPP</legend>
+        <Field id="cp-65" field="pensionAt65" label="Monthly pension at 65" value={f.number(d.pensionAt65)} prefix={sym} money hint={`Find your estimate in My Service Canada Account. The average for new recipients is ${f.money(cpp.averageMonthlyAt65)} (${cpp.averageAsOf}); the maximum is ${f.money(cpp.maxMonthlyAt65)}.`} />
+        <Field id="cp-age" field="startAge" label="Age you'll start" value={String(d.startAge)} suffix="years" inputmode="numeric" hint={`From ${cpp.earliestAge} to ${cpp.latestAge}.`} />
+        <Field id="cp-life" field="lifeExpectancy" label="Compare totals up to age" value={String(d.lifeExpectancy)} suffix="years" inputmode="numeric" />
+      </fieldset>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label" data-out="monthlyLabel">{view.monthlyLabel}</p>
+        <p class="result-figure" data-out="monthly">{view.monthly}</p>
+        <p class="result-sub" data-out="monthlySub">{view.monthlySub}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Yearly</dt><dd data-out="yearly">{view.yearly}</dd></div>
+        <div><dt data-out="breakEvenLabel">{view.breakEvenLabel}</dt><dd data-out="breakEven">{view.breakEven}</dd></div>
+        <div><dt data-out="totalLabel">{view.totalLabel}</dt><dd data-out="total">{view.total}</dd></div>
+      </dl>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="cp-breakdown-title">
+    <h2 id="cp-breakdown-title" class="h3">Total received by age</h2>
+    <SvgChart
+      id="cp-chart"
+      title="Running total of CPP payments"
+      legend={[
+        { label: 'Start at 60', className: 'chart-s2' },
+        { label: 'Start at 65', className: 'chart-s4' },
+        { label: 'Start at 70', className: 'chart-s1' },
+      ]}
+      svg={view.chartSvg}
+      htmlKey="chartSvg"
+    />
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Pension by start age">
+      <table class="data-table">
+        <thead><tr><th scope="col">Start age</th><th scope="col">Change</th><th scope="col">Monthly</th><th scope="col">Yearly</th><th scope="col">Total by your age</th></tr></thead>
+        <tbody data-html="ageRows" set:html={view.ageRows} />
+      </table>
+    </div>
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <ul>
+        <li><strong>Before 65:</strong> your pension is {pct(cpp.earlyReductionPerMonth)} lower for each month before 65, so {pct(cpp.earlyReductionPerMonth * 60)} lower at {cpp.earliestAge}.</li>
+        <li><strong>After 65:</strong> it's {pct(cpp.lateIncreasePerMonth)} higher for each month after 65, so {pct(cpp.lateIncreasePerMonth * 60)} higher at {cpp.latestAge}. There's no increase after {cpp.latestAge}.</li>
+        <li><strong>Break-even age:</strong> when the total from your start age equals the total from starting at 65.</li>
+        <li>Amounts are in today's dollars: CPP payments rise with inflation each year. Income tax, the post-retirement benefit and survivor benefits aren't included. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildCppView, readCppInput, type CppPageParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="cpp"]')) {
+    const params = embeddedParams<CppPageParams>(root);
+    bindCalculator(root, (read) => buildCppView(readCppInput(read), params));
+  }
+</script>

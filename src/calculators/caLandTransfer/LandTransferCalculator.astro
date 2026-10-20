@@ -1,0 +1,88 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import CheckboxField from '../../components/CheckboxField.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import { createFormatters } from '../../lib/format';
+import { LTT_PROVINCES, buildLandTransferView, landTransferDefaults, type LandTransferPageParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.caLandTransfer;
+if (!defaults) throw new Error(`Missing defaults.caLandTransfer in the ${country.code} country config`);
+const lt = requireFigure(country.ca, 'Canada figures').landTransfer;
+const params: LandTransferPageParams = { ...lt, locale: country.locale, currency: country.currency };
+const d = landTransferDefaults(defaults, lt);
+const { view } = buildLandTransferView(d, params);
+if (!view) throw new Error('Land transfer defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+---
+
+<div class="calc-block" data-calc="ca-ltt" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="caltt" label="Land transfer tax calculator">
+    <Fragment slot="inputs">
+      <fieldset class="field-group">
+        <legend>Your purchase</legend>
+        <SelectField id="lt-prov" field="province" label="Province" value={d.province} options={LTT_PROVINCES} />
+        <Field id="lt-price" field="price" label="Purchase price" value={f.number(d.price)} prefix={sym} money />
+        <Field id="lt-assessed" field="assessedValue" label="Assessed or market value, if higher" value="" prefix={sym} money optional when="province:QC,NB,PE" hidden placeholder="Same as price" />
+        <Field id="lt-ns" field="municipalRatePercent" label="Municipal deed transfer tax rate" value={String(d.municipalRatePercent)} suffix="%" when="province:NS" hidden hint={`${lt.novaScotia.defaultMunicipality} charges ${lt.novaScotia.defaultMunicipalRate * 100}%.`} />
+      </fieldset>
+      <fieldset class="field-group">
+        <legend>About you</legend>
+        <CheckboxField id="lt-toronto" field="inToronto" label="The home is in the City of Toronto" checked={false} when="province:ON" />
+        <CheckboxField id="lt-montreal" field="inMontreal" label="The home is in Montréal" checked={false} when="province:QC" hidden />
+        <CheckboxField id="lt-ftb" field="firstTimeBuyer" label="I'm a first-time buyer" checked={false} when="province:ON,BC,PE" />
+        <CheckboxField id="lt-new" field="newBuild" label="It's a newly built home" checked={false} when="province:BC" hidden />
+      </fieldset>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Land transfer tax</p>
+        <p class="result-figure" data-out="total">{view.total}</p>
+        <p class="result-sub" data-out="totalSub">{view.totalSub}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Before rebates</dt><dd data-out="beforeRelief">{view.beforeRelief}</dd></div>
+        <div><dt>First-time buyer relief</dt><dd data-out="relief">{view.relief}</dd></div>
+        <div><dt>Share of price</dt><dd data-out="effective">{view.effective}</dd></div>
+      </dl>
+      <table class="compare-table">
+        <tbody data-html="lineRows" set:html={view.lineRows} />
+      </table>
+      <p class="result-note" data-out="note">{view.note}</p>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="lt-breakdown-title">
+    <h2 id="lt-breakdown-title" class="h3">How this is calculated</h2>
+    <div class="formula">
+      <ul>
+        <li><strong>Brackets:</strong> in Ontario, Toronto, BC, Manitoba and Quebec, each rate applies only to the part of the price inside its bracket, like income tax. BC adds a further {lt.bc.furtherRate * 100}% on residential value over {f.moneyWhole(lt.bc.furtherThreshold)}.</li>
+        <li><strong>Flat rates:</strong> New Brunswick and PEI charge {lt.newBrunswick.rate * 100}% of the higher of the price and the assessed value; Nova Scotia municipalities charge their own rate on the price.</li>
+        <li><strong>First-time buyers:</strong> Ontario refunds up to {f.moneyWhole(lt.ontario.firstTimeRefundMax)} and Toronto up to {f.moneyWhole(lt.toronto.firstTimeRebateMax)}. BC exempts the full tax up to {f.moneyWhole(lt.bc.firstTime.fullExemptionValue)}, then {f.moneyWhole(lt.bc.firstTime.exemptionAmount)} up to {f.moneyWhole(lt.bc.firstTime.flatUpTo)}, reducing to nothing at {f.moneyWhole(lt.bc.firstTime.phaseOutTo)}. BC's newly built home exemption covers homes under {f.moneyWhole(lt.bc.newBuild.fullExemptionBelow)}, reducing to nothing at {f.moneyWhole(lt.bc.newBuild.phaseOutTo)}. PEI exempts eligible first-time buyers.</li>
+        <li>You must meet each program's conditions, such as living in the home. Foreign buyer taxes, registration fees and Alberta, Saskatchewan, Newfoundland and Labrador and the territories aren't included. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildLandTransferView, readLandTransferInput, type LandTransferPageParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="ca-ltt"]')) {
+    const params = embeddedParams<LandTransferPageParams>(root);
+    bindCalculator(root, (read) => buildLandTransferView(readLandTransferInput(read), params));
+  }
+</script>
