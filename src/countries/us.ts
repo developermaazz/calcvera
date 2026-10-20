@@ -57,6 +57,7 @@ export const us: CountryConfig = {
   defaults: {
     loan: { amount: 20_000, aprPercent: 7.5, termYears: 5 },
     creditCard: { balance: 5_000, aprPercent: 21.99, monthlyPayment: 200, targetMonths: 24 },
+    heloc: { balance: 50_000, ratePercent: 8, drawYears: 10, repayYears: 20, homeValue: 400_000, mortgageBalance: 250_000, maxCltvPercent: 85 },
     rothIra: { age: 30, retirementAge: 65, currentBalance: 5_000, plannedContribution: 7_500, magi: 75_000, returnPercent: 7 },
     paycheck: { annualSalary: 65_000, hourlyRate: 25, hoursPerWeek: 40, retirementPercent: 5, pretaxBenefits: 75 },
     rentVsBuy: {

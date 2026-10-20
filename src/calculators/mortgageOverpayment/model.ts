@@ -8,7 +8,7 @@ import {
 } from '../../engines/mortgageOverpayment';
 import type { CalcView, Computed, Reader } from '../../lib/calcUi';
 import { lineChart } from '../../lib/charts';
-import { addMonths, createFormatters, escapeHtml, formatDuration } from '../../lib/format';
+import { addMonths, createFormatters, formatDuration } from '../../lib/format';
 import { currentStartMonth } from '../loan/view';
 
 export interface MortgageOverpaymentParams {
@@ -117,7 +117,7 @@ export function buildOverpaymentView(input: MortgageOverpaymentInput, p: Mortgag
       withTime: formatDuration(r.months),
       withoutInterest: f.money(r.totalInterestWithout),
       withInterest: f.money(r.totalInterest),
-      warning: escapeHtml(warning),
+      warning,
       hasWarning: warning !== '',
       chartSvg,
       yearRows,

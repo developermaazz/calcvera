@@ -30,6 +30,7 @@ export const ICONS = {
   homeDown: '<path d="M3 10.5L12 3l9 7.5"/><path d="M5 9v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9"/><path d="M12 11v6M9.5 14.5L12 17l2.5-2.5"/>',
   shieldPound: '<path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/><path d="M13.8 9.2a2 2 0 0 0-3.6 1.2v4.1M9 12.5h4M9 15.5h6"/>',
   sunrise: '<path d="M3 18h18M7 18a5 5 0 0 1 10 0M12 4v4M5.2 9.2l1.6 1.6M18.8 9.2l-1.6 1.6M2 14h2M20 14h2"/>',
+  homeLine: '<path d="M3 10.5L12 3l9 7.5"/><path d="M5 9v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9"/><path d="M8.5 17.5l2.5-2.5 2 2 3-3.5"/>',
   sprout: '<path d="M12 21v-8"/><path d="M12 13C12 8.6 9 6 4 6c0 4.4 3 7 8 7z"/><path d="M12 15c0-3.6 2.4-6 6.5-6 0 3.6-2.4 6-6.5 6z"/>',
   // Interface
   search: '<circle cx="11" cy="11" r="7"/><path d="M20.5 20.5l-4.5-4.5"/>',
@@ -79,6 +80,7 @@ export const ENGINE_ICONS: Record<EngineName, IconName> = {
   mortgageOverpayment: 'homeDown',
   isaSavings: 'shieldPound',
   rothIra: 'sunrise',
+  heloc: 'homeLine',
   redundancyPay: 'briefcase',
   inheritanceTax: 'landmark',
   selfEmploymentTax: 'receipt',

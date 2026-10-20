@@ -16,6 +16,7 @@ import PensionTaxReliefCalculator from '../../calculators/pensionTaxRelief/Pensi
 import MortgageOverpaymentCalculator from '../../calculators/mortgageOverpayment/MortgageOverpaymentCalculator.astro';
 import IsaSavingsCalculator from '../../calculators/isaSavings/IsaSavingsCalculator.astro';
 import RothIraCalculator from '../../calculators/rothIra/RothIraCalculator.astro';
+import HelocCalculator from '../../calculators/heloc/HelocCalculator.astro';
 import DtiCalculator from '../../calculators/dti/DtiCalculator.astro';
 import FhsaCalculator from '../../calculators/fhsa/FhsaCalculator.astro';
 import InheritanceTaxCalculator from '../../calculators/inheritanceTax/InheritanceTaxCalculator.astro';
@@ -61,6 +62,7 @@ const ENGINE_UI: Partial<Record<EngineName, typeof LoanCalculator>> = {
   mortgageOverpayment: MortgageOverpaymentCalculator,
   isaSavings: IsaSavingsCalculator,
   rothIra: RothIraCalculator,
+  heloc: HelocCalculator,
   redundancyPay: RedundancyPayCalculator,
   inheritanceTax: InheritanceTaxCalculator,
   selfEmploymentTax: QuarterlyTaxCalculator,

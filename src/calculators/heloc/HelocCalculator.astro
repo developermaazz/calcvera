@@ -1,0 +1,126 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import type { CountryConfig } from '../../countries';
+import { createFormatters } from '../../lib/format';
+import { buildHelocView, helocDefaults, type HelocParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.heloc;
+if (!defaults) throw new Error(`Missing defaults.heloc in the ${country.code} country config`);
+const params: HelocParams = { locale: country.locale, currency: country.currency };
+const d = helocDefaults(defaults);
+const { view } = buildHelocView(d, params);
+if (!view) throw new Error('HELOC defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+---
+
+<div class="calc-block" data-calc="heloc" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="heloc" label="HELOC payment calculator">
+    <Fragment slot="inputs">
+      <fieldset class="field-group">
+        <legend>Your HELOC</legend>
+        <Field id="he-balance" field="balance" label="Amount you'll borrow" value={f.number(d.balance)} prefix={sym} money hint="The amount you'll draw from the line, not the credit limit." />
+        <Field id="he-rate" field="ratePercent" label="Interest rate" value={String(d.ratePercent)} suffix="%" hint="Most HELOC rates are variable, so this can change." />
+        <Field id="he-draw" field="drawYears" label="Draw period" value={String(d.drawYears)} suffix="years" />
+        <Field id="he-repay" field="repayYears" label="Repayment period" value={String(d.repayYears)} suffix="years" />
+        <SelectField
+          id="he-type"
+          field="drawPaymentType"
+          label="Payments in the draw period"
+          value={d.drawPaymentType}
+          options={[
+            { value: 'interestOnly', label: 'Interest only' },
+            { value: 'principalAndInterest', label: 'Principal and interest' },
+          ]}
+          hint="Many HELOCs only require interest in the draw period. Check your agreement."
+        />
+        <Field id="he-extra" field="extraDrawPayment" label="Extra each month in the draw period" value={f.number(d.extraDrawPayment)} prefix={sym} money optional hint="Paid off the balance on top of your payment." />
+        <Field id="he-rise" field="rateRisePercent" label="Test a rate rise of" value={String(d.rateRisePercent)} suffix="points" />
+      </fieldset>
+      <fieldset class="field-group">
+        <legend>Your home (optional)</legend>
+        <Field id="he-home" field="homeValue" label="Home value" value={f.number(d.homeValue)} prefix={sym} money optional hint="Leave empty to skip the credit line estimate." />
+        <Field id="he-mortgage" field="mortgageBalance" label="Mortgage balance" value={f.number(d.mortgageBalance)} prefix={sym} money optional />
+        <Field id="he-cltv" field="maxCltvPercent" label="Lender's maximum combined loan-to-value" value={String(d.maxCltvPercent)} suffix="%" hint="The most of your home's value a lender lets your mortgage and HELOC add up to. Ask your lender." />
+      </fieldset>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Draw period payment</p>
+        <p class="result-figure" data-out="drawPayment">{view.drawPayment}</p>
+        <p class="result-sub" data-out="drawSub">{view.drawSub}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Repayment period payment</dt><dd data-out="repayPayment">{view.repayPayment}</dd></div>
+        <div><dt>Payment change</dt><dd data-out="increase">{view.increase}</dd></div>
+        <div><dt>Total interest</dt><dd data-out="totalInterest">{view.totalInterest}</dd></div>
+      </dl>
+      <table class="compare-table">
+        <thead><tr><th scope="col"><span class="visually-hidden">Item</span></th><th scope="col">Draw</th><th scope="col">Repayment</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Length</th><td data-out="drawLength">{view.drawLength}</td><td data-out="repayLength">{view.repayLength}</td></tr>
+          <tr><th scope="row">Interest</th><td data-out="drawInterest">{view.drawInterest}</td><td data-out="repayInterest">{view.repayInterest}</td></tr>
+        </tbody>
+      </table>
+      <p class="result-note" data-show="hasStress" hidden={!view.hasStress} data-out="stressNote">{view.stressNote}</p>
+      <p class="result-note" data-show="hasCredit" hidden={!view.hasCredit}>Estimated credit line: <strong data-out="creditLine">{view.creditLine}</strong>. <span data-out="creditNote">{view.creditNote}</span></p>
+      <p class="result-warn" data-show="hasWarning" hidden={!view.hasWarning} data-out="warning">{view.warning}</p>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="he-breakdown-title">
+    <h2 id="he-breakdown-title" class="h3">What you pay each year</h2>
+    <SvgChart
+      id="he-chart"
+      title="Principal and interest paid each year"
+      legend={[
+        { label: 'Principal', className: 'chart-s1' },
+        { label: 'Interest', className: 'chart-s2' },
+      ]}
+      svg={view.chartSvg}
+      htmlKey="chartSvg"
+    />
+    <details class="schedule">
+      <summary>Year-by-year table</summary>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Year-by-year table">
+        <table class="data-table">
+          <thead><tr><th scope="col">Year</th><th scope="col">Period</th><th scope="col">Paid</th><th scope="col">Principal</th><th scope="col">Interest</th><th scope="col">Balance</th></tr></thead>
+          <tbody data-html="yearRows" set:html={view.yearRows} />
+        </table>
+      </div>
+    </details>
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <p class="formula-eq"><code>Draw (interest only) = B × r &nbsp;·&nbsp; Repayment M = B × r ÷ (1 − (1 + r)<sup>−n</sup>)</code></p>
+      <ul>
+        <li><strong>B</strong> is the balance, <strong>r</strong> the monthly rate (annual rate ÷ 12 ÷ 100) and <strong>n</strong> the months in the repayment period.</li>
+        <li><strong>Draw period:</strong> interest only keeps the balance the same. Principal and interest uses one level payment over the draw and repayment periods together. Any extra comes straight off the balance.</li>
+        <li><strong>Repayment period:</strong> the balance left is repaid in equal monthly payments; the last one is adjusted so the balance ends at exactly 0.</li>
+        <li><strong>Credit line:</strong> home value × maximum combined loan-to-value − mortgage balance. The calculator assumes you draw the full amount at the start and the rate stays the same, except in the rate-rise test. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildHelocView, readHelocInput, type HelocParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="heloc"]')) {
+    const params = embeddedParams<HelocParams>(root);
+    bindCalculator(root, (read) => buildHelocView(readHelocInput(read), params));
+  }
+</script>

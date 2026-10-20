@@ -71,6 +71,16 @@ export interface RothIraDefaults {
   returnPercent: number;
 }
 
+export interface HelocDefaults {
+  balance: number;
+  ratePercent: number;
+  drawYears: number;
+  repayYears: number;
+  homeValue: number;
+  mortgageBalance: number;
+  maxCltvPercent: number;
+}
+
 export interface PaycheckDefaults {
   annualSalary: number;
   hourlyRate: number;
@@ -491,6 +501,7 @@ export interface CountryConfig {
     mortgageOverpayment?: MortgageOverpaymentDefaults;
     isa?: IsaDefaults;
     rothIra?: RothIraDefaults;
+    heloc?: HelocDefaults;
   };
 
   // Country-specific figures, present only on the country that needs them.
