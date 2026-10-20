@@ -28,6 +28,8 @@ export type EngineName =
   | 'auTakeHome'
   | 'caTakeHome'
   | 'auSuper'
+  | 'auHomeLoan'
+  | 'helpDebt'
   | 'redundancyPay'
   | 'inheritanceTax'
   | 'selfEmploymentTax'
@@ -282,6 +284,32 @@ export const CALCULATORS: CalculatorEntry[] = [
     blurb: 'How much super you could have at retirement, in today’s dollars, and what extra contributions add.',
     related: ['take-home-pay-calculator', 'novated-lease-calculator', 'home-loan-repayment-calculator', 'hecs-help-repayment-calculator'],
     popular: true,
+    usesTaxYear: true,
+  },
+
+  {
+    // Phase 2. Uses the auHomeLoan engine (frequencies, interest-only period, offset, extra repayments).
+    slug: 'home-loan-repayment-calculator',
+    engine: 'auHomeLoan',
+    category: 'property',
+    countries: ['au'],
+    name: 'Home Loan Repayment Calculator',
+    titleHook: 'Offset & Extras',
+    blurb: 'Your home loan repayments weekly, fortnightly or monthly, with an offset account, extra repayments or interest-only.',
+    related: ['take-home-pay-calculator', 'stamp-duty-calculator', 'super-calculator', 'hecs-help-repayment-calculator'],
+    popular: true,
+  },
+
+  {
+    // Phase 2. Uses the helpDebt engine (marginal repayment system, 1 June indexation, voluntary repayments).
+    slug: 'hecs-help-repayment-calculator',
+    engine: 'helpDebt',
+    category: 'debt',
+    countries: ['au'],
+    name: 'HECS-HELP Repayment Calculator',
+    titleHook: 'Payoff Time',
+    blurb: 'Your compulsory HELP repayment this year, how long your debt takes to repay, and what voluntary repayments save.',
+    related: ['take-home-pay-calculator', 'super-calculator', 'home-loan-repayment-calculator', 'novated-lease-calculator'],
     usesTaxYear: true,
   },
 

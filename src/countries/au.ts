@@ -41,6 +41,8 @@ export const au: CountryConfig = {
   },
   defaults: {
     auTakeHome: { salary: 90_000 },
+    auHomeLoan: { amount: 600_000, ratePercent: 5.8, termYears: 30 },
+    auHelp: { balance: 25_000, income: 85_000, incomeGrowthPercent: 3 },
     auSuper: { age: 30, retirementAge: 67, balance: 50_000, salary: 85_000, salaryGrowthPercent: 3, returnPercent: 7, feesPerYear: 300, inflationPercent: 2.5 },
   },
   au: {
@@ -119,6 +121,10 @@ export const au: CountryConfig = {
       secondRate: 0.17,
       flatThreshold: 186_051,
       flatRate: 0.1,
+      // VERIFY: https://www.ato.gov.au/tax-rates-and-codes/study-and-training-support-loans-indexation-rates
+      // (2.8% applied 1 June 2026; the lower of CPI and WPI). Archive copy 11 Oct 2026. Checked 20 Oct 2026.
+      indexationRate: 0.028,
+      indexationYear: '2026',
     },
     mls: {
       // VERIFY: https://www.ato.gov.au/individuals-and-families/medicare-and-private-health-insurance/medicare-levy-surcharge/medicare-levy-surcharge-income-thresholds-and-rates

@@ -1,0 +1,105 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import type { CountryConfig } from '../../countries';
+import { createFormatters } from '../../lib/format';
+import { FREQUENCIES, buildHomeLoanView, homeLoanDefaults, type AuHomeLoanParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.auHomeLoan;
+if (!defaults) throw new Error(`Missing defaults.auHomeLoan in the ${country.code} country config`);
+const params: AuHomeLoanParams = { locale: country.locale, currency: country.currency };
+const d = homeLoanDefaults(defaults);
+const { view } = buildHomeLoanView(d, params);
+if (!view) throw new Error('Home loan defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+---
+
+<div class="calc-block" data-calc="au-home-loan" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="auhl" label="Home loan repayment calculator">
+    <Fragment slot="inputs">
+      <fieldset class="field-group">
+        <legend>Your loan</legend>
+        <Field id="hl-amount" field="amount" label="Loan amount" value={f.number(d.amount)} prefix={sym} money />
+        <Field id="hl-rate" field="ratePercent" label="Interest rate" value={String(d.ratePercent)} suffix="% p.a." />
+        <Field id="hl-term" field="termYears" label="Loan term" value={String(d.termYears)} suffix="years" inputmode="numeric" />
+        <SelectField id="hl-freq" field="frequency" label="Repayment frequency" value={d.frequency} options={FREQUENCIES.map(({ value, label }) => ({ value, label }))} hint="Paying half the monthly repayment every fortnight adds up to one extra monthly repayment a year." />
+        <Field id="hl-io" field="interestOnlyYears" label="Interest-only period" value={String(d.interestOnlyYears)} suffix="years" inputmode="numeric" optional hint="Leave at 0 for principal and interest from the start." />
+      </fieldset>
+      <fieldset class="field-group">
+        <legend>Pay it off faster</legend>
+        <Field id="hl-extra" field="extraRepayment" label="Extra with each repayment" value={f.number(d.extraRepayment)} prefix={sym} money optional />
+        <Field id="hl-offset" field="offsetBalance" label="Offset account balance" value={f.number(d.offsetBalance)} prefix={sym} money optional hint="Money in an offset account reduces the balance you pay interest on." />
+      </fieldset>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label" data-out="repaymentLabel">{view.repaymentLabel}</p>
+        <p class="result-figure" data-out="repayment">{view.repayment}</p>
+        <p class="result-sub" data-out="repaymentSub">{view.repaymentSub}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Total interest</dt><dd data-out="totalInterest">{view.totalInterest}</dd></div>
+        <div><dt>Total repaid</dt><dd data-out="totalPaid">{view.totalPaid}</dd></div>
+        <div><dt>Paid off in</dt><dd data-out="payoff">{view.payoff}</dd></div>
+      </dl>
+      <p class="result-note" data-show="hasIo" hidden={!view.hasIo} data-out="ioNote">{view.ioNote}</p>
+      <p class="result-note" data-show="hasSaved" hidden={!view.hasSaved} data-out="savedNote">{view.savedNote}</p>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="hl-breakdown-title">
+    <h2 id="hl-breakdown-title" class="h3">Your loan balance over time</h2>
+    <SvgChart
+      id="hl-chart"
+      title="Balance left at the end of each year"
+      legend={[
+        { label: 'Your loan', className: 'chart-s1' },
+        { label: 'Without offset or extras', className: 'chart-s4' },
+      ]}
+      svg={view.chartSvg}
+      htmlKey="chartSvg"
+    />
+    <details class="schedule">
+      <summary>Year-by-year table</summary>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Year-by-year table">
+        <table class="data-table">
+          <thead><tr><th scope="col">Year</th><th scope="col">Repaid</th><th scope="col">Principal</th><th scope="col">Interest</th><th scope="col">Balance</th></tr></thead>
+          <tbody data-html="yearRows" set:html={view.yearRows} />
+        </table>
+      </div>
+    </details>
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <p class="formula-eq"><code>M = P × r ÷ (1 − (1 + r)<sup>−n</sup>)</code></p>
+      <ul>
+        <li><strong>M</strong> is the repayment, <strong>P</strong> the loan amount, <strong>r</strong> the rate per repayment (annual rate ÷ 12, 26 or 52) and <strong>n</strong> the number of repayments.</li>
+        <li><strong>Half the monthly repayment fortnightly:</strong> 26 half-repayments a year equal 13 monthly repayments, so the loan ends sooner.</li>
+        <li><strong>Interest-only:</strong> you pay just the interest for that period, then principal and interest over the rest of the term.</li>
+        <li><strong>Offset and extra repayments</strong> keep your scheduled repayment the same: interest is charged on the balance minus your offset, and extra repayments come straight off the balance. The rate is assumed to stay the same. Some lenders work out interest daily, so your statement may differ slightly. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildHomeLoanView, readHomeLoanInput, type AuHomeLoanParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="au-home-loan"]')) {
+    const params = embeddedParams<AuHomeLoanParams>(root);
+    bindCalculator(root, (read) => buildHomeLoanView(readHomeLoanInput(read), params));
+  }
+</script>

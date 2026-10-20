@@ -104,6 +104,18 @@ export interface AuSuperDefaults {
   inflationPercent: number;
 }
 
+export interface AuHomeLoanDefaults {
+  amount: number;
+  ratePercent: number;
+  termYears: number;
+}
+
+export interface AuHelpDefaults {
+  balance: number;
+  income: number;
+  incomeGrowthPercent: number;
+}
+
 export interface AuTakeHomeDefaults {
   salary: number;
 }
@@ -488,6 +500,9 @@ export interface AuHelpConfig {
   /** From this repayment income, flatRate × total repayment income. */
   flatThreshold: number;
   flatRate: number;
+  /** Indexation applied on 1 June (latest published year). */
+  indexationRate: number;
+  indexationYear: string;
 }
 
 export interface AuMlsConfig {
@@ -586,6 +601,8 @@ export interface CountryConfig {
     auTakeHome?: AuTakeHomeDefaults;
     caIncomeTax?: CaIncomeTaxDefaults;
     auSuper?: AuSuperDefaults;
+    auHomeLoan?: AuHomeLoanDefaults;
+    auHelp?: AuHelpDefaults;
   };
 
   // Country-specific figures, present only on the country that needs them.

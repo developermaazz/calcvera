@@ -85,6 +85,8 @@ export const ENGINE_ICONS: Record<EngineName, IconName> = {
   auTakeHome: 'wallet',
   caTakeHome: 'receipt',
   auSuper: 'sunrise',
+  auHomeLoan: 'homeDown',
+  helpDebt: 'cap',
   redundancyPay: 'briefcase',
   inheritanceTax: 'landmark',
   selfEmploymentTax: 'receipt',

@@ -1,0 +1,90 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import { createFormatters } from '../../lib/format';
+import { buildHelpView, helpDefaults, type HelpPageParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.auHelp;
+if (!defaults) throw new Error(`Missing defaults.auHelp in the ${country.code} country config`);
+const h = requireFigure(country.au, `${country.code}.au`).help;
+const params: HelpPageParams = { ...h, locale: country.locale, currency: country.currency, taxYear: country.taxYear };
+const d = helpDefaults(defaults, h);
+const { view } = buildHelpView(d, params);
+if (!view) throw new Error('HELP defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+const pct = (x: number) => f.percent(x * 100);
+---
+
+<div class="calc-block" data-calc="help-debt" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="help" label="HECS-HELP repayment calculator">
+    <Fragment slot="inputs">
+      <fieldset class="field-group">
+        <legend>Your HELP debt</legend>
+        <Field id="hp-balance" field="balance" label="HELP balance" value={f.number(d.balance)} prefix={sym} money hint="Check myGov (ATO online services) for your current balance." />
+        <Field id="hp-income" field="income" label="Repayment income" value={f.number(d.income)} prefix={sym} suffix="a year" money hint="Taxable income plus reportable super contributions, reportable fringe benefits and net investment losses." />
+        <Field id="hp-growth" field="incomeGrowthPercent" label="Pay rise each year" value={String(d.incomeGrowthPercent)} suffix="%" />
+        <Field id="hp-index" field="indexationPercent" label="Indexation each year" value={String(d.indexationPercent)} suffix="%" hint={`${pct(h.indexationRate)} was applied on 1 June ${h.indexationYear}.`} />
+        <Field id="hp-vol" field="voluntaryPerYear" label="Voluntary repayments" value={f.number(d.voluntaryPerYear)} prefix={sym} suffix="a year" money optional />
+      </fieldset>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Compulsory repayment for {country.taxYear}</p>
+        <p class="result-figure" data-out="repayment">{view.repayment}</p>
+        <p class="result-sub" data-out="repaymentSub">{view.repaymentSub}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Repaid in</dt><dd data-out="payoff">{view.payoff}</dd></div>
+        <div><dt>Total repaid</dt><dd data-out="totalRepaid">{view.totalRepaid}</dd></div>
+        <div><dt>Total indexation</dt><dd data-out="indexation">{view.indexation}</dd></div>
+      </dl>
+      <ul class="result-warn-list" data-show="hasNotes" hidden={!view.hasNotes} data-html="notes" set:html={view.notes} />
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="hp-breakdown-title">
+    <h2 id="hp-breakdown-title" class="h3">Your HELP balance over time</h2>
+    <SvgChart id="hp-chart" title="Balance at the end of each year" legend={[{ label: 'HELP balance', className: 'chart-s1' }]} svg={view.chartSvg} htmlKey="chartSvg" />
+    <details class="schedule">
+      <summary>Year-by-year table</summary>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Year-by-year table">
+        <table class="data-table">
+          <thead><tr><th scope="col">Year</th><th scope="col">Repayment income</th><th scope="col">Compulsory</th><th scope="col">Voluntary</th><th scope="col">Indexation</th><th scope="col">Balance</th></tr></thead>
+          <tbody data-html="yearRows" set:html={view.yearRows} />
+        </table>
+      </div>
+    </details>
+    <div class="formula">
+      <h3>How this is calculated ({country.taxYear})</h3>
+      <ul>
+        <li><strong>Compulsory repayment:</strong> nil up to {f.moneyWhole(h.firstThreshold)}; {pct(h.firstRate)} of repayment income over {f.moneyWhole(h.firstThreshold)}; {f.moneyWhole(h.secondBase)} plus {pct(h.secondRate)} over {f.moneyWhole(h.secondThreshold)}; or {pct(h.flatRate)} of all repayment income from {f.moneyWhole(h.flatThreshold)}.</li>
+        <li><strong>Indexation:</strong> on 1 June each year, the balance (less voluntary repayments made that year) grows by the indexation rate. The compulsory repayment for the year is credited after your tax return is assessed.</li>
+        <li><strong>Future years:</strong> your income grows by your pay rise. As an assumption, the repayment thresholds rise by the indexation rate each year; the actual figures are set each year.</li>
+        <li>Your employer may withhold more during the year; the difference is settled when you lodge your tax return. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildHelpView, readHelpInput, type HelpPageParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="help-debt"]')) {
+    const params = embeddedParams<HelpPageParams>(root);
+    bindCalculator(root, (read) => buildHelpView(readHelpInput(read), params));
+  }
+</script>
