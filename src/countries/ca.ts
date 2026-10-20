@@ -43,7 +43,9 @@ export const ca: CountryConfig = {
       { from: 258_482, to: null, rate: 0.33 },
     ],
   },
-  defaults: {},
+  defaults: {
+    caMortgage: { price: 600_000, downPayment: 60_000, ratePercent: 4.5, amortizationYears: 25, termYears: 5 },
+  },
   ca: {
     fhsa: {
       // VERIFY: https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/first-home-savings-account/contributing-your-fhsa.html
@@ -54,6 +56,28 @@ export const ca: CountryConfig = {
       // VERIFY: https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/first-home-savings-account/closing-your-fhsa.html
       // (15th anniversary of opening, the year you turn 71, or the year after a qualifying withdrawal). Checked 16 Oct 2026.
       maxParticipationYears: 15,
+    },
+    mortgage: {
+      // VERIFY: https://www.canada.ca/en/financial-consumer-agency/services/mortgages/down-payment.html (5% of the first $500,000,
+      // 10% of the rest; 20% at $1.5 million or more; insurance needed below 20% down). Checked 20 Oct 2026.
+      minDownPayment: { firstTierTop: 500_000, firstRate: 0.05, secondRate: 0.1, uninsuredRate: 0.2 },
+      insuranceRequiredBelow: 0.2,
+      // VERIFY: https://www.canada.ca/en/department-finance/news/2024/12/boldest-mortgage-reforms-in-decades-come-into-force-today.html
+      // (insured price cap $1.5 million; 30-year insured amortizations for all first-time buyers and buyers of new builds, from
+      // 15 December 2024; otherwise 25 years). Checked 20 Oct 2026.
+      insuredPriceCap: 1_500_000,
+      maxInsuredAmortizationYears: 25,
+      maxInsuredAmortizationYearsFirstTime: 30,
+      // VERIFY: https://www.cmhc-schl.gc.ca/professionals/project-funding-and-mortgage-financing/mortgage-loan-insurance/mortgage-loan-insurance-homeownership-programs/premium-information-for-homeowner-and-small-rental-loans
+      // (homeowner premiums on the total loan: 80.01–85% 2.80%, 85.01–90% 3.10%, 90.01–95% 4.00%; "An amortization period beyond
+      // 25 years is subject to a 0.20% surcharge"). The site blocks automated access; read from the web.archive.org copy of
+      // 26 Aug 2026. Checked 20 Oct 2026.
+      premiums: [
+        { maxLtv: 0.85, rate: 0.028 },
+        { maxLtv: 0.9, rate: 0.031 },
+        { maxLtv: 0.95, rate: 0.04 },
+      ],
+      longAmortizationSurcharge: 0.002,
     },
     // Brackets, all except QC: https://www.canada.ca/en/revenue-agency/services/tax/individuals/tax-rates-brackets/current-year.html (2026)
     // Basic personal amounts, all except QC: CRA T4127 (122nd edition, January 2026):

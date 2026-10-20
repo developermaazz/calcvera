@@ -81,6 +81,18 @@ export interface HelocDefaults {
   maxCltvPercent: number;
 }
 
+export interface CaMortgageDefaults {
+  price: number;
+  downPayment: number;
+  ratePercent: number;
+  amortizationYears: number;
+  termYears: number;
+}
+
+export interface AuTakeHomeDefaults {
+  salary: number;
+}
+
 export interface PaycheckDefaults {
   annualSalary: number;
   hourlyRate: number;
@@ -415,6 +427,46 @@ export interface CaTaxExtras {
 
 // ---------- Australia ----------
 
+export interface CaMortgageConfig {
+  /** Minimum down payment: firstRate on the price up to firstTierTop, secondRate on the rest, up to insuredPriceCap. */
+  minDownPayment: { firstTierTop: number; firstRate: number; secondRate: number; uninsuredRate: number };
+  /** Below this down payment share, mortgage loan insurance is required. */
+  insuranceRequiredBelow: number;
+  /** Purchase price at or above which insurance isn't available (20% down needed). */
+  insuredPriceCap: number;
+  maxInsuredAmortizationYears: number;
+  /** First-time buyers and buyers of new builds. */
+  maxInsuredAmortizationYearsFirstTime: number;
+  /** Premium on the total loan by loan-to-value, ascending. */
+  premiums: { maxLtv: number; rate: number }[];
+  /** Added to the premium rate when the amortization is over maxInsuredAmortizationYears. */
+  longAmortizationSurcharge: number;
+}
+
+export interface AuSuperConfig {
+  guaranteeRate: number;
+  /** Annual earnings above which super guarantee isn't required. */
+  maxContributionBase: number;
+  concessionalCap: number;
+}
+
+export interface AuHelpConfig {
+  /** Nil up to firstThreshold; firstRate on income above it; secondBase + secondRate above secondThreshold. */
+  firstThreshold: number;
+  firstRate: number;
+  secondThreshold: number;
+  secondBase: number;
+  secondRate: number;
+  /** From this repayment income, flatRate × total repayment income. */
+  flatThreshold: number;
+  flatRate: number;
+}
+
+export interface AuMlsConfig {
+  /** Single tiers, ascending: income for MLS purposes above "from" pays "rate" × taxable income. */
+  singleTiers: { from: number; rate: number }[];
+}
+
 export interface AuMedicareLevyConfig {
   rate: Pending<number>;
   /** Income year the low-income thresholds were published for (may lag the tax year). */
@@ -502,6 +554,8 @@ export interface CountryConfig {
     isa?: IsaDefaults;
     rothIra?: RothIraDefaults;
     heloc?: HelocDefaults;
+    caMortgage?: CaMortgageDefaults;
+    auTakeHome?: AuTakeHomeDefaults;
   };
 
   // Country-specific figures, present only on the country that needs them.
@@ -528,6 +582,7 @@ export interface CountryConfig {
   };
   ca?: {
     fhsa: CaFhsaConfig;
+    mortgage: CaMortgageConfig;
     provinces: CaProvinceTax[];
     extras: CaTaxExtras;
   };
@@ -536,5 +591,8 @@ export interface CountryConfig {
     lowIncomeTaxOffset: AuLowIncomeTaxOffset;
     fbt: AuFbtConfig;
     novatedLease: AuNovatedLeaseConfig;
+    super: AuSuperConfig;
+    help: AuHelpConfig;
+    mls: AuMlsConfig;
   };
 }

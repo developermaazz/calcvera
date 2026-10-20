@@ -24,6 +24,8 @@ export type EngineName =
   | 'isaSavings'
   | 'rothIra'
   | 'heloc'
+  | 'caMortgage'
+  | 'auTakeHome'
   | 'redundancyPay'
   | 'inheritanceTax'
   | 'selfEmploymentTax'
@@ -63,7 +65,11 @@ export interface CalculatorEntry {
   usesTaxYear?: boolean;
   /** Planned but not built: no page, not linked, not in the sitemap. Remove when the definition of done is met. */
   draft?: boolean;
+  /** Per-country changes when one slug needs a different engine or wording in a country. See forCountry(). */
+  overrides?: Partial<Record<CountryCode, CountryOverride>>;
 }
+
+export type CountryOverride = Partial<Pick<CalculatorEntry, 'engine' | 'titleHook' | 'blurb' | 'related' | 'popular'>>;
 
 /**
  * Every calculator on the site. A page exists only if it is listed here for that country.
@@ -237,6 +243,19 @@ export const CALCULATORS: CalculatorEntry[] = [
   },
 
   {
+    // Phase 2. Uses the caMortgage engine (semi-annual compounding, accelerated payments, CMHC insurance).
+    slug: 'mortgage-payment-calculator',
+    engine: 'caMortgage',
+    category: 'property',
+    countries: ['ca'],
+    name: 'Mortgage Payment Calculator',
+    titleHook: 'With CMHC Insurance',
+    blurb: 'Your mortgage payment for any frequency, CMHC insurance, minimum down payment and balance at renewal.',
+    related: ['fhsa-calculator', 'land-transfer-tax-calculator', 'rrsp-vs-tfsa-calculator', 'income-tax-calculator', 'cpp-calculator'],
+    popular: true,
+  },
+
+  {
     // Launch set #5. Uses the earlyPayoff engine (loan + extra payments).
     slug: 'personal-loan-payoff-calculator',
     engine: 'personalLoanPayoff',
@@ -254,12 +273,21 @@ export const CALCULATORS: CalculatorEntry[] = [
     engine: 'takeHomePay',
     usesTaxYear: true,
     category: 'tax',
-    countries: ['uk'],
+    countries: ['uk', 'au'],
     name: 'Take-Home Pay Calculator',
     titleHook: 'Salary After Tax',
     blurb: 'Your monthly pay after Income Tax, National Insurance, student loan and pension, for England, Wales, NI or Scotland.',
     related: ['redundancy-pay-calculator', 'student-loan-repayment-calculator', 'pension-tax-relief-calculator', 'savings-goal-calculator', 'credit-card-payoff-calculator', 'loan-calculator'],
     popular: true,
+    overrides: {
+      // Phase 2. Uses the auTakeHome engine (ATO rates, Medicare levy and surcharge, HELP, super guarantee).
+      au: {
+        engine: 'auTakeHome',
+        titleHook: 'Pay After Tax',
+        blurb: 'Your pay after income tax, the Medicare levy and HELP repayments, weekly, fortnightly or monthly, plus your super.',
+        related: ['novated-lease-calculator', 'super-calculator', 'hecs-help-repayment-calculator', 'home-loan-repayment-calculator', 'stamp-duty-calculator'],
+      },
+    },
   },
 
   {
@@ -400,6 +428,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     titleHook: 'Balance & Tax Refunds',
     blurb: 'Project your First Home Savings Account balance, contributions and tax refunds, with limit warnings.',
     related: ['rrsp-vs-tfsa-calculator', 'mortgage-payment-calculator', 'land-transfer-tax-calculator', 'income-tax-calculator'],
+    popular: true,
   },
   {
     slug: 'novated-lease-calculator',
@@ -411,8 +440,15 @@ export const CALCULATORS: CalculatorEntry[] = [
     titleHook: 'EV Savings',
     blurb: 'Pre-tax and post-tax deductions, take-home pay change and the true cost against buying outright.',
     related: ['take-home-pay-calculator', 'home-loan-repayment-calculator', 'super-calculator'],
+    popular: true,
   },
 ];
+
+/** The entry as it applies in one country, with that country's overrides. */
+export function forCountry(calc: CalculatorEntry, country: CountryCode): CalculatorEntry {
+  const o = calc.overrides?.[country];
+  return o ? { ...calc, ...o } : calc;
+}
 
 export function getCalculator(slug: string): CalculatorEntry {
   const calc = CALCULATORS.find((c) => c.slug === slug);
@@ -427,14 +463,15 @@ export function liveCountries(calc: CalculatorEntry): CountryCode[] {
 
 /** Published (non-draft) calculators for a country. */
 export function calculatorsFor(country: CountryCode): CalculatorEntry[] {
-  return CALCULATORS.filter((c) => !c.draft && c.countries.includes(country));
+  return CALCULATORS.filter((c) => !c.draft && c.countries.includes(country)).map((c) => forCountry(c, country));
 }
 
 export function relatedFor(calc: CalculatorEntry, country: CountryCode): CalculatorEntry[] {
   return calc.related
     .map((slug) => CALCULATORS.find((c) => c.slug === slug))
     .filter((c): c is CalculatorEntry => c !== undefined && !c.draft && c.countries.includes(country))
-    .slice(0, 5);
+    .slice(0, 5)
+    .map((c) => forCountry(c, country));
 }
 
 export function calculatorPath(country: CountryCode, slug: string): string {

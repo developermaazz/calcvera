@@ -89,7 +89,7 @@ public/                     robots.txt, ads.txt, _headers, fonts/, brand/ (logo 
 
 - **Engines are pure:** input object in, result object out. No DOM, no formatting, no country lookups inside an engine. Country values are passed in.
 - **Countries are data:** every country-specific number lives in `src/countries/*.ts`, never in an engine or component.
-- **One registry:** a calculator page exists only if it is listed in `registry.ts` for that country and not marked `draft: true`. Pages are generated with `getStaticPaths` from the registry. Drafts get no page, no links and no sitemap entry; remove `draft` only when section 16 is met.
+- **One registry:** a calculator page exists only if it is listed in `registry.ts` for that country and not marked `draft: true`. Pages are generated with `getStaticPaths` from the registry. Drafts get no page, no links and no sitemap entry; remove `draft` only when section 16 is met. When one slug needs a different engine or wording in a country (e.g. take-home-pay-calculator in the UK and AU), add `overrides.<country>` to the entry; every page and list reads entries through `forCountry()`.
 - **Shared UI:** every calculator page uses CalculatorShell + ResultSummary + AdSlot + FAQ + RelatedCalculators. No one-off page layouts.
 - **No server, no cookies set by us, no user data sent anywhere.** All math runs in the browser.
 - **localStorage** only for the remembered country, dismissed banner and theme choice, always wrapped in try/catch.
@@ -177,7 +177,7 @@ public/                     robots.txt, ads.txt, _headers, fonts/, brand/ (logo 
 | B7 | CA | fhsa-calculator | fhsa | Starting balance, annual contribution, years, expected return %, province, marginal tax rate (or income to estimate it), unused carry-forward room | Projected balance, total contributions, total tax refunds, a warning when annual or lifetime limits are hit |
 | B8 | AU | novated-lease-calculator | novatedLease | Annual salary, car price, lease term, interest rate, annual running costs, electric vehicle (FBT-exempt) yes/no | Pre-tax and post-tax deductions, change in take-home pay, total cost vs buying outright with savings. Residual uses the ATO minimum residual for the term |
 
-**Phase 2:** CA rrsp-vs-tfsa-calculator, income-tax-calculator, cpp-calculator, land-transfer-tax-calculator, mortgage-payment-calculator. AU super-calculator, take-home-pay-calculator, stamp-duty-calculator, hecs-help-repayment-calculator, home-loan-repayment-calculator.
+**Phase 2:** CA rrsp-vs-tfsa-calculator, income-tax-calculator, cpp-calculator, land-transfer-tax-calculator, mortgage-payment-calculator (built 20 Oct 2026, engine caMortgage). AU super-calculator, take-home-pay-calculator (built 20 Oct 2026, engine auTakeHome via the UK entry's `overrides.au`), stamp-duty-calculator, hecs-help-repayment-calculator, home-loan-repayment-calculator.
 
 **Phase 3:** IN emi-calculator, sip-calculator, ppf-calculator, income-tax-calculator. PK salary-tax-calculator, zakat-calculator, loan-calculator.
 

@@ -17,6 +17,8 @@ import MortgageOverpaymentCalculator from '../../calculators/mortgageOverpayment
 import IsaSavingsCalculator from '../../calculators/isaSavings/IsaSavingsCalculator.astro';
 import RothIraCalculator from '../../calculators/rothIra/RothIraCalculator.astro';
 import HelocCalculator from '../../calculators/heloc/HelocCalculator.astro';
+import CaMortgageCalculator from '../../calculators/caMortgage/CaMortgageCalculator.astro';
+import AuTakeHomeCalculator from '../../calculators/auTakeHome/AuTakeHomeCalculator.astro';
 import DtiCalculator from '../../calculators/dti/DtiCalculator.astro';
 import FhsaCalculator from '../../calculators/fhsa/FhsaCalculator.astro';
 import InheritanceTaxCalculator from '../../calculators/inheritanceTax/InheritanceTaxCalculator.astro';
@@ -28,7 +30,7 @@ import RedundancyPayCalculator from '../../calculators/redundancyPay/RedundancyP
 import StampDutyCalculator from '../../calculators/stampDuty/StampDutyCalculator.astro';
 import TakeHomePayCalculator from '../../calculators/takeHomePay/TakeHomePayCalculator.astro';
 import UsedCarLoanCalculator from '../../calculators/usedCarLoan/UsedCarLoanCalculator.astro';
-import { CALCULATORS, getCalculator, liveCountries, type EngineName } from '../../calculators/registry';
+import { CALCULATORS, forCountry, getCalculator, liveCountries, type EngineName } from '../../calculators/registry';
 import { getCountry } from '../../countries';
 import CalculatorLayout from '../../layouts/CalculatorLayout.astro';
 
@@ -63,6 +65,8 @@ const ENGINE_UI: Partial<Record<EngineName, typeof LoanCalculator>> = {
   isaSavings: IsaSavingsCalculator,
   rothIra: RothIraCalculator,
   heloc: HelocCalculator,
+  caMortgage: CaMortgageCalculator,
+  auTakeHome: AuTakeHomeCalculator,
   redundancyPay: RedundancyPayCalculator,
   inheritanceTax: InheritanceTaxCalculator,
   selfEmploymentTax: QuarterlyTaxCalculator,
@@ -72,7 +76,7 @@ const ENGINE_UI: Partial<Record<EngineName, typeof LoanCalculator>> = {
 
 const { country: countryCode, slug } = Astro.params;
 const country = getCountry(countryCode);
-const calc = getCalculator(slug);
+const calc = forCountry(getCalculator(slug), country.code);
 
 const guide = await getEntry('guides', `${country.code}/${calc.slug}`);
 if (!guide) {

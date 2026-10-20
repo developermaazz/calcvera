@@ -1,0 +1,127 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import CheckboxField from '../../components/CheckboxField.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import { createFormatters } from '../../lib/format';
+import { FREQUENCIES, buildCaMortgageView, caMortgageDefaults, type CaMortgagePageParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.caMortgage;
+if (!defaults) throw new Error(`Missing defaults.caMortgage in the ${country.code} country config`);
+const m = requireFigure(country.ca, `${country.code}.ca`).mortgage;
+const params: CaMortgagePageParams = { ...m, locale: country.locale, currency: country.currency };
+const d = caMortgageDefaults(defaults);
+const { view } = buildCaMortgageView(d, params);
+if (!view) throw new Error('Canadian mortgage defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+const pct = (x: number) => f.percent(x * 100);
+---
+
+<div class="calc-block" data-calc="ca-mortgage" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="camort" label="Mortgage payment calculator">
+    <Fragment slot="inputs">
+      <fieldset class="field-group">
+        <legend>Your home</legend>
+        <Field id="cm-price" field="price" label="Purchase price" value={f.number(d.price)} prefix={sym} money />
+        <Field id="cm-down" field="downPayment" label="Down payment" value={f.number(d.downPayment)} prefix={sym} money hint={`At least ${pct(m.minDownPayment.firstRate)} of the first ${f.moneyWhole(m.minDownPayment.firstTierTop)} and ${pct(m.minDownPayment.secondRate)} of the rest.`} />
+        <CheckboxField id="cm-first" field="firstTimeOrNewBuild" label="First-time buyer or buying a new build" checked={d.firstTimeOrNewBuild} hint={`Lets you amortize an insured mortgage over up to ${m.maxInsuredAmortizationYearsFirstTime} years.`} />
+      </fieldset>
+      <fieldset class="field-group">
+        <legend>Your mortgage</legend>
+        <Field id="cm-rate" field="ratePercent" label="Interest rate" value={String(d.ratePercent)} suffix="%" />
+        <SelectField
+          id="cm-type"
+          field="rateType"
+          label="Rate type"
+          value={d.rateType}
+          options={[
+            { value: 'fixed', label: 'Fixed (compounded semi-annually)' },
+            { value: 'variable', label: 'Variable (compounded monthly)' },
+          ]}
+          hint="Variable rates move with your lender's prime rate, so your payment can change."
+        />
+        <Field id="cm-amort" field="amortizationYears" label="Amortization period" value={String(d.amortizationYears)} suffix="years" inputmode="numeric" hint="The total time to pay off the mortgage." />
+        <SelectField id="cm-freq" field="frequency" label="Payment frequency" value={d.frequency} options={FREQUENCIES.map(({ value, label }) => ({ value, label }))} />
+        <Field id="cm-term" field="termYears" label="Mortgage term" value={String(d.termYears)} suffix="years" inputmode="numeric" hint="How long your rate is set for, until renewal." />
+      </fieldset>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label" data-out="paymentLabel">{view.paymentLabel}</p>
+        <p class="result-figure" data-out="payment">{view.payment}</p>
+        <p class="result-sub" data-out="paymentSub">{view.paymentSub}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Mortgage amount</dt><dd data-out="mortgage">{view.mortgage}</dd></div>
+        <div><dt>CMHC insurance premium</dt><dd data-out="premium">{view.premium}</dd></div>
+        <div><dt>Total interest</dt><dd data-out="totalInterest">{view.totalInterest}</dd></div>
+      </dl>
+      <table class="compare-table">
+        <thead><tr><th scope="col" colspan="2" data-out="termHeading">{view.termHeading}</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Balance left at renewal</th><td data-out="termBalance">{view.termBalance}</td></tr>
+          <tr><th scope="row">Interest paid</th><td data-out="termInterest">{view.termInterest}</td></tr>
+          <tr><th scope="row">Principal paid</th><td data-out="termPrincipal">{view.termPrincipal}</td></tr>
+        </tbody>
+      </table>
+      <p class="result-note" data-out="insuranceNote">{view.insuranceNote}</p>
+      <p class="result-note" data-show="hasAccel" hidden={!view.hasAccel} data-out="accelNote">{view.accelNote}</p>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="cm-breakdown-title">
+    <h2 id="cm-breakdown-title" class="h3">What you pay each year</h2>
+    <SvgChart
+      id="cm-chart"
+      title="Principal and interest paid each year"
+      legend={[
+        { label: 'Principal', className: 'chart-s1' },
+        { label: 'Interest', className: 'chart-s2' },
+      ]}
+      svg={view.chartSvg}
+      htmlKey="chartSvg"
+    />
+    <details class="schedule">
+      <summary>Year-by-year table</summary>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Year-by-year table">
+        <table class="data-table">
+          <thead><tr><th scope="col">Year</th><th scope="col">Paid</th><th scope="col">Principal</th><th scope="col">Interest</th><th scope="col">Balance</th></tr></thead>
+          <tbody data-html="yearRows" set:html={view.yearRows} />
+        </table>
+      </div>
+    </details>
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <p class="formula-eq"><code>i = (1 + r ÷ 2)<sup>2 ÷ n</sup> − 1 &nbsp;·&nbsp; P = M × i ÷ (1 − (1 + i)<sup>−N</sup>)</code></p>
+      <ul>
+        <li><strong>r</strong> is the annual rate, <strong>n</strong> the payments a year, <strong>M</strong> the mortgage and <strong>N</strong> the number of payments. Fixed rates in Canada compound semi-annually, so <strong>i</strong> is the rate per payment; variable rates use (1 + r ÷ 12)<sup>12 ÷ n</sup> − 1.</li>
+        <li><strong>Accelerated</strong> bi-weekly and weekly payments are the monthly payment ÷ 2 or ÷ 4. You make the equivalent of one extra monthly payment a year, so the mortgage ends sooner.</li>
+        <li><strong>Minimum down payment:</strong> {pct(m.minDownPayment.firstRate)} of the first {f.moneyWhole(m.minDownPayment.firstTierTop)} and {pct(m.minDownPayment.secondRate)} of the rest, or {pct(m.minDownPayment.uninsuredRate)} for homes of {f.moneyWhole(m.insuredPriceCap)} or more.</li>
+        <li><strong>Mortgage loan insurance</strong> (under {pct(m.insuranceRequiredBelow)} down): CMHC premium on the loan of {m.premiums.map((t) => pct(t.rate)).join(', ')} for loan-to-value up to {m.premiums.map((t) => pct(t.maxLtv)).join(', ')}, plus {pct(m.longAmortizationSurcharge)} for amortizations over {m.maxInsuredAmortizationYears} years. The last payment is adjusted so the balance ends at exactly 0. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildCaMortgageView, readCaMortgageInput, type CaMortgagePageParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="ca-mortgage"]')) {
+    const params = embeddedParams<CaMortgagePageParams>(root);
+    bindCalculator(root, (read) => buildCaMortgageView(readCaMortgageInput(read), params));
+  }
+</script>

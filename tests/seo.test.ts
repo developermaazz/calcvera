@@ -1,11 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { CALCULATORS, MAX_TITLE_LENGTH, calculatorTitle, liveCountries } from '../src/calculators/registry';
+import { CALCULATORS, MAX_TITLE_LENGTH, calculatorTitle, forCountry, liveCountries } from '../src/calculators/registry';
 import { COUNTRIES } from '../src/countries';
 
 /** SEO rules from CLAUDE.md section 10, checked for every live calculator page. */
 
-const pages = CALCULATORS.flatMap((calc) => liveCountries(calc).map((code) => ({ calc, country: COUNTRIES[code]! })));
+const pages = CALCULATORS.flatMap((calc) => liveCountries(calc).map((code) => ({ calc: forCountry(calc, code), country: COUNTRIES[code]! })));
 const guide = (code: string, slug: string) => readFileSync(new URL(`../src/content/guides/${code}/${slug}.md`, import.meta.url), 'utf8');
 const field = (text: string, name: string) => new RegExp(`^${name}: (["']?)(.*?)\\1\\r?$`, 'm').exec(text)?.[2] ?? '';
 

@@ -1,0 +1,109 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import CheckboxField from '../../components/CheckboxField.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import { SPLIT_ASPECT } from '../../lib/charts';
+import { createFormatters } from '../../lib/format';
+import { auTakeHomeParams } from './params';
+import { PERIODS, auTakeHomeDefaults, buildAuTakeHomeView, type AuTakeHomePageParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.auTakeHome;
+if (!defaults) throw new Error(`Missing defaults.auTakeHome in the ${country.code} country config`);
+const c = requireFigure(country.au, `${country.code}.au`);
+const params: AuTakeHomePageParams = { ...auTakeHomeParams(country), locale: country.locale, currency: country.currency, taxYear: country.taxYear };
+const d = auTakeHomeDefaults(defaults);
+const { view } = buildAuTakeHomeView(d, params);
+if (!view) throw new Error('Australian take-home pay defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+const pct = (x: number) => f.percent(x * 100);
+const h = c.help;
+---
+
+<div class="calc-block" data-calc="au-take-home" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="authp" label="Take-home pay calculator">
+    <Fragment slot="inputs">
+      <fieldset class="field-group">
+        <legend>Your pay</legend>
+        <Field id="au-salary" field="salary" label="Yearly salary" value={f.number(d.salary)} prefix={sym} money hint="Before tax." />
+        <CheckboxField id="au-pkg" field="includesSuper" label="My salary includes super" checked={d.includesSuper} hint={`Tick this if your salary is a package. Super guarantee is ${pct(c.super.guaranteeRate)}.`} />
+        <Field id="au-sacrifice" field="salarySacrifice" label="Salary sacrifice to super" value={f.number(d.salarySacrifice)} prefix={sym} suffix="a year" money optional />
+        <SelectField id="au-period" field="period" label="Show my pay" value={d.period} options={PERIODS.map(({ value, label }) => ({ value, label }))} />
+      </fieldset>
+      <fieldset class="field-group">
+        <legend>Loans and health cover</legend>
+        <CheckboxField id="au-help" field="hasHelpDebt" label="I have a HELP or other study loan" checked={d.hasHelpDebt} hint="HECS-HELP, VET Student Loans, Australian Apprenticeship Support Loans and similar." />
+        <CheckboxField id="au-mls" field="noPrivateCover" label="I don't have private hospital cover" checked={!d.hasPrivateHospitalCover} hint={`The Medicare levy surcharge applies to singles earning over ${f.moneyWhole(c.mls.singleTiers[0]!.from)} without cover.`} />
+      </fieldset>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label" data-out="takeHomeLabel">{view.takeHomeLabel}</p>
+        <p class="result-figure" data-out="takeHome">{view.takeHome}</p>
+        <p class="result-sub" data-out="takeHomeSub">{view.takeHomeSub}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Income tax</dt><dd data-out="incomeTax">{view.incomeTax}</dd></div>
+        <div><dt>Medicare</dt><dd data-out="medicare">{view.medicare}</dd></div>
+        <div><dt>Super</dt><dd class="positive" data-out="super">{view.super}</dd></div>
+      </dl>
+      <ul class="result-warn-list" data-show="hasNotes" hidden={!view.hasNotes} data-html="notes" set:html={view.notes} />
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="au-breakdown-title">
+    <h2 id="au-breakdown-title" class="h3">Where your salary goes</h2>
+    <SvgChart
+      id="au-chart"
+      title="Your yearly salary"
+      legend={[
+        { label: 'Take-home pay', className: 'chart-s1' },
+        { label: 'Income tax', className: 'chart-s2' },
+        { label: 'Medicare', className: 'chart-s3' },
+        { label: 'HELP', className: 'chart-s4' },
+        { label: 'Salary sacrifice', className: 'chart-rest' },
+      ]}
+      svg={view.chartSvg}
+      htmlKey="chartSvg"
+      aspect={SPLIT_ASPECT}
+    />
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Pay by period">
+      <table class="data-table">
+        <thead><tr><th scope="col"><span class="visually-hidden">Item</span></th><th scope="col">Year</th><th scope="col">Month</th><th scope="col">Fortnight</th><th scope="col">Week</th></tr></thead>
+        <tbody data-html="tableHtml" set:html={view.tableHtml} />
+      </table>
+    </div>
+    <div class="formula">
+      <h3>How this is calculated ({country.taxYear})</h3>
+      <ul>
+        <li><strong>Income tax:</strong> nil up to {f.moneyWhole(country.incomeTax.allowance)}, then {country.incomeTax.bands.map((b) => `${pct(b.rate)} from ${f.moneyWhole(b.from + country.incomeTax.allowance)}`).join(', ')}, less the low income tax offset (up to {f.moneyWhole(params.tax.lito.maxOffset)}). Assumes you're a resident and claim the tax-free threshold.</li>
+        <li><strong>Medicare levy:</strong> {pct(params.tax.medicare.rate)} of taxable income, reduced on low incomes. <strong>Surcharge</strong> without private hospital cover: {c.mls.singleTiers.map((t) => `${pct(t.rate)} over ${f.moneyWhole(t.from)}`).join(', ')} (singles).</li>
+        <li><strong>HELP repayments:</strong> {pct(h.firstRate)} of repayment income over {f.moneyWhole(h.firstThreshold)}, {f.moneyWhole(h.secondBase)} plus {pct(h.secondRate)} over {f.moneyWhole(h.secondThreshold)}, or {pct(h.flatRate)} of all repayment income from {f.moneyWhole(h.flatThreshold)}. Repayment income includes salary sacrificed to super.</li>
+        <li><strong>Super:</strong> {pct(c.super.guaranteeRate)} of your salary, up to {f.moneyWhole(c.super.maxContributionBase)} of earnings, plus any salary sacrifice. Weekly and fortnightly figures are the yearly amount ÷ 52 or ÷ 26, so your payslip may differ slightly. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildAuTakeHomeView, readAuTakeHomeInput, type AuTakeHomePageParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="au-take-home"]')) {
+    const params = embeddedParams<AuTakeHomePageParams>(root);
+    bindCalculator(root, (read) => buildAuTakeHomeView(readAuTakeHomeInput(read), params));
+  }
+</script>

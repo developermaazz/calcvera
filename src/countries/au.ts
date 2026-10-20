@@ -39,7 +39,9 @@ export const au: CountryConfig = {
       { from: 171_800, to: null, rate: 0.45 },
     ],
   },
-  defaults: {},
+  defaults: {
+    auTakeHome: { salary: 90_000 },
+  },
   au: {
     medicareLevy: {
       // VERIFY: https://www.ato.gov.au/individuals-and-families/medicare-and-private-health-insurance/medicare-levy/what-is-the-medicare-levy (2%). Checked 16 Oct 2026.
@@ -86,6 +88,38 @@ export const au: CountryConfig = {
       // VERIFY: https://www.ato.gov.au/businesses-and-organisations/gst-excise-and-indirect-taxes/gst/in-detail/your-industry/motor-vehicle-and-transport/gst-and-motor-vehicles/purchasing-a-motor-vehicle
       // (GST 10%; credit capped at one-eleventh of the car limit). Checked 16 Oct 2026.
       gstRate: 0.1,
+    },
+    // The ATO site blocks automated access; the figures below were read from web.archive.org copies of the ATO pages.
+    super: {
+      // VERIFY: https://www.ato.gov.au/tax-rates-and-codes/key-superannuation-rates-and-thresholds/super-guarantee
+      // (12% from 1 July 2025; maximum contribution base $270,830 a year for 2026–27). Archive copy 7 Oct 2026. Checked 20 Oct 2026.
+      guaranteeRate: 0.12,
+      maxContributionBase: 270_830,
+      // VERIFY: https://www.ato.gov.au/tax-rates-and-codes/key-superannuation-rates-and-thresholds/contributions-caps
+      // ($32,500 for 2026–27). Archive copy 17 Sep 2026. Checked 20 Oct 2026.
+      concessionalCap: 32_500,
+    },
+    help: {
+      // VERIFY: https://www.ato.gov.au/tax-rates-and-codes/study-and-training-support-loans-rates-and-repayment-thresholds
+      // (2026–27: nil to $69,528; 15c per $1 over $69,528; $9,028 plus 17c per $1 over $129,717; 10% of total repayment income
+      // from $186,051). Archive copy 12 Oct 2026. Checked 20 Oct 2026.
+      firstThreshold: 69_528,
+      firstRate: 0.15,
+      secondThreshold: 129_717,
+      secondBase: 9_028,
+      secondRate: 0.17,
+      flatThreshold: 186_051,
+      flatRate: 0.1,
+    },
+    mls: {
+      // VERIFY: https://www.ato.gov.au/individuals-and-families/medicare-and-private-health-insurance/medicare-levy-surcharge/medicare-levy-surcharge-income-thresholds-and-rates
+      // (2026–27 singles: $105,000 or less 0%; $105,001–$123,000 1%; $123,001–$164,000 1.25%; $164,001 or more 1.5%).
+      // Archive copy 5 Oct 2026. Checked 20 Oct 2026.
+      singleTiers: [
+        { from: 105_000, rate: 0.01 },
+        { from: 123_000, rate: 0.0125 },
+        { from: 164_000, rate: 0.015 },
+      ],
     },
   },
 };

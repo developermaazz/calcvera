@@ -81,6 +81,8 @@ export const ENGINE_ICONS: Record<EngineName, IconName> = {
   isaSavings: 'shieldPound',
   rothIra: 'sunrise',
   heloc: 'homeLine',
+  caMortgage: 'homeKey',
+  auTakeHome: 'wallet',
   redundancyPay: 'briefcase',
   inheritanceTax: 'landmark',
   selfEmploymentTax: 'receipt',
