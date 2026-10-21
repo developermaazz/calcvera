@@ -1,0 +1,98 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import { createFormatters } from '../../lib/format';
+import { buildPpfView, ppfDefaults, type PpfPageParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.inPpf;
+if (!defaults) throw new Error(`Missing defaults.inPpf in the ${country.code} country config`);
+const ppf = requireFigure(country.in, `${country.code}.in`).ppf;
+const params: PpfPageParams = { ...ppf, locale: country.locale, currency: country.currency };
+const d = ppfDefaults(defaults, ppf);
+const { view } = buildPpfView(d, params);
+if (!view) throw new Error('PPF defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+const terms = [0, 1, 2, 3, 4].map((k) => ppf.termYears + k * ppf.extensionYears);
+---
+
+<div class="calc-block" data-calc="ppf" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="ppf" label="PPF calculator">
+    <Fragment slot="inputs">
+      <fieldset class="field-group">
+        <legend>Your PPF</legend>
+        <Field id="ppf-yearly" field="yearly" label="Yearly deposit" value={f.number(d.yearly)} prefix={sym} money hint={`From ${f.moneyWhole(ppf.minDeposit)} to ${f.moneyWhole(ppf.maxDeposit)} a financial year.`} />
+        <Field id="ppf-rate" field="ratePercent" label="Interest rate" value={String(d.ratePercent)} suffix="% a year" hint={`${f.percent(ppf.ratePercent)} for ${ppf.rateQuarter}. The government reviews it every quarter.`} />
+        <SelectField id="ppf-years" field="years" label="Time period" value={String(d.years)} options={terms.map((t) => ({ value: String(t), label: t === ppf.termYears ? `${t} years (full term)` : `${t} years (extended)` }))} />
+        <SelectField
+          id="ppf-timing"
+          field="timing"
+          label="How you deposit"
+          value={d.timing}
+          options={[
+            { value: 'yearStart', label: 'Once a year, by 5 April' },
+            { value: 'monthly', label: 'Every month, by the 5th' },
+          ]}
+          hint="Deposits made by the 5th earn interest for that month."
+        />
+      </fieldset>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Maturity amount</p>
+        <p class="result-figure" data-out="maturity">{view.maturity}</p>
+        <p class="result-sub" data-out="maturitySub">{view.maturitySub}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Total deposits</dt><dd data-out="invested">{view.invested}</dd></div>
+        <div><dt>Interest earned</dt><dd class="positive" data-out="interest">{view.interest}</dd></div>
+      </dl>
+      <ul class="result-warn-list" data-show="hasNotes" hidden={!view.hasNotes} data-html="notes" set:html={view.notes} />
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="ppf-breakdown-title">
+    <h2 id="ppf-breakdown-title" class="h3">How your PPF grows</h2>
+    <SvgChart id="ppf-chart" title="Balance at the end of each year" legend={[{ label: 'Deposits', className: 'chart-s1' }, { label: 'Interest', className: 'chart-s3' }]} svg={view.chartSvg} htmlKey="chartSvg" />
+    <details class="schedule">
+      <summary>Year-by-year table</summary>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Year-by-year table">
+        <table class="data-table">
+          <thead><tr><th scope="col">Year</th><th scope="col">Deposit</th><th scope="col">Interest</th><th scope="col">Balance</th></tr></thead>
+          <tbody data-html="yearRows" set:html={view.yearRows} />
+        </table>
+      </div>
+    </details>
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <ul>
+        <li><strong>Interest</strong> is worked out each month on the lowest balance between the 5th and the end of the month, and added to your account at the end of the financial year (31 March).</li>
+        <li><strong>Once a year by 5 April:</strong> interest = (balance + deposit) × rate. <strong>Monthly by the 5th:</strong> each monthly deposit earns interest from its month, so the year's interest is a little lower.</li>
+        <li><strong>Term:</strong> {ppf.termYears} years, then you can extend in blocks of {ppf.extensionYears} years. The rate is held at {f.percent(ppf.ratePercent)}; the government sets it each quarter. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildPpfView, readPpfInput, type PpfPageParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="ppf"]')) {
+    const params = embeddedParams<PpfPageParams>(root);
+    bindCalculator(root, (read) => buildPpfView(readPpfInput(read), params));
+  }
+</script>

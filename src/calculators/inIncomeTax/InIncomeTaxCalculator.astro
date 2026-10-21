@@ -1,0 +1,100 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import { createFormatters } from '../../lib/format';
+import { buildInTaxView, inTaxDefaults, type InTaxPageParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.inIncomeTax;
+if (!defaults) throw new Error(`Missing defaults.inIncomeTax in the ${country.code} country config`);
+const tax = requireFigure(country.in, `${country.code}.in`).tax;
+const params: InTaxPageParams = { ...tax, locale: country.locale, currency: country.currency, taxYear: country.taxYear };
+const d = inTaxDefaults(defaults);
+const { view } = buildInTaxView(d, params);
+if (!view) throw new Error('Income tax defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+const pct = (x: number) => f.percent(x * 100);
+const bands = (b: { from: number; to: number | null; rate: number }[]) =>
+  b.map((x) => (x.rate === 0 ? `nil to ${f.moneyWhole(x.to ?? 0)}` : `${pct(x.rate)}${x.to === null ? ` above ${f.moneyWhole(x.from)}` : ` to ${f.moneyWhole(x.to)}`}`)).join(', ');
+---
+
+<div class="calc-block" data-calc="in-income-tax" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="intax" label="Income tax calculator">
+    <Fragment slot="inputs">
+      <fieldset class="field-group">
+        <legend>Your income</legend>
+        <Field id="it-salary" field="salary" label="Gross salary" value={f.number(d.salary)} prefix={sym} suffix="a year" money hint="Your yearly salary before tax (CTC less employer PF and other employer costs)." />
+        <Field id="it-other" field="otherIncome" label="Other income" value={f.number(d.otherIncome)} prefix={sym} suffix="a year" money optional hint="Interest, rent after deductions and other taxable income." />
+        <SelectField
+          id="it-age"
+          field="ageGroup"
+          label="Your age"
+          value={d.ageGroup}
+          options={[
+            { value: 'under60', label: 'Below 60' },
+            { value: 'from60', label: '60 to 79' },
+            { value: 'from80', label: '80 or above' },
+          ]}
+          hint="Age only changes the old regime's tax-free limit."
+        />
+      </fieldset>
+      <fieldset class="field-group">
+        <legend>Old regime only</legend>
+        <Field id="it-ded" field="oldDeductions" label="Deductions and exemptions" value={f.number(d.oldDeductions)} prefix={sym} money optional hint="Total of 80C (PF, PPF, ELSS, life insurance), 80D, HRA exemption, home loan interest and others you'd claim." />
+      </fieldset>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label" data-out="betterLabel">{view.betterLabel}</p>
+        <p class="result-figure" data-out="saving">{view.saving}</p>
+        <p class="result-sub" data-out="betterSub">{view.betterSub}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>New regime tax</dt><dd data-out="newTax">{view.newTax}</dd></div>
+        <div><dt>Old regime tax</dt><dd data-out="oldTax">{view.oldTax}</dd></div>
+        <div><dt>Take-home a month</dt><dd data-out="monthly">{view.monthly}</dd></div>
+      </dl>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="it-breakdown-title">
+    <h2 id="it-breakdown-title" class="h3">New regime vs old regime</h2>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="New and old regime compared">
+      <table class="data-table">
+        <thead><tr><th scope="col"><span class="visually-hidden">Item</span></th><th scope="col">New regime</th><th scope="col">Old regime</th></tr></thead>
+        <tbody data-html="compareRows" set:html={view.compareRows} />
+      </table>
+    </div>
+    <div class="formula">
+      <h3>How this is calculated (tax year {country.taxYear})</h3>
+      <ul>
+        <li><strong>New regime (section 202, the default):</strong> {bands(tax.newRegime.bands)}. Standard deduction {f.moneyWhole(tax.newRegime.standardDeduction)} on salary. Rebate up to {f.moneyWhole(tax.newRegime.rebate.max)} if taxable income is {f.moneyWhole(tax.newRegime.rebate.upTo)} or less, with marginal relief just above.</li>
+        <li><strong>Old regime (option under section 202(4)), below 60:</strong> {bands(tax.oldRegime.bands.under60)}. The tax-free limit is {f.moneyWhole(tax.oldRegime.bands.from60[0]!.to ?? 0)} from 60 and {f.moneyWhole(tax.oldRegime.bands.from80[0]!.to ?? 0)} from 80. Standard deduction {f.moneyWhole(tax.oldRegime.standardDeduction)}, plus your deductions. Rebate up to {f.moneyWhole(tax.oldRegime.rebate.max)} if taxable income is {f.moneyWhole(tax.oldRegime.rebate.upTo)} or less.</li>
+        <li><strong>Surcharge:</strong> 10% over ₹50 lakh, 15% over ₹1 crore and 25% over ₹2 crore (37% over ₹5 crore in the old regime), with marginal relief. <strong>Cess:</strong> {pct(tax.cessRate)} of tax and surcharge.</li>
+        <li>Assumes a resident individual. Professional tax, special-rate income (such as capital gains) and employer NPS contributions aren't included. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildInTaxView, readInTaxInput, type InTaxPageParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="in-income-tax"]')) {
+    const params = embeddedParams<InTaxPageParams>(root);
+    bindCalculator(root, (read) => buildInTaxView(readInTaxInput(read), params));
+  }
+</script>

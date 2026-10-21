@@ -1,0 +1,87 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import type { CountryConfig } from '../../countries';
+import { SPLIT_ASPECT } from '../../lib/charts';
+import { createFormatters } from '../../lib/format';
+import { buildEmiView, emiDefaults, type EmiParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.inEmi;
+if (!defaults) throw new Error(`Missing defaults.inEmi in the ${country.code} country config`);
+const params: EmiParams = { locale: country.locale, currency: country.currency };
+const d = emiDefaults(defaults);
+const { view } = buildEmiView(d, params);
+if (!view) throw new Error('EMI defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+---
+
+<div class="calc-block" data-calc="emi" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="emi" label="EMI calculator">
+    <Fragment slot="inputs">
+      <fieldset class="field-group">
+        <legend>Your loan</legend>
+        <Field id="emi-amount" field="amount" label="Loan amount" value={f.number(d.amount)} prefix={sym} money />
+        <Field id="emi-rate" field="ratePercent" label="Interest rate" value={String(d.ratePercent)} suffix="% p.a." />
+        <Field id="emi-years" field="years" label="Loan tenure" value={String(d.years)} suffix="years" hint="Decimals work: 2.5 is 2 years 6 months." />
+      </fieldset>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Monthly EMI</p>
+        <p class="result-figure" data-out="emi">{view.emi}</p>
+        <p class="result-sub" data-out="emiSub">{view.emiSub}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Total interest</dt><dd data-out="totalInterest">{view.totalInterest}</dd></div>
+        <div><dt>Total payment</dt><dd data-out="totalPayment">{view.totalPayment}</dd></div>
+        <div><dt>Interest share</dt><dd data-out="interestShare">{view.interestShare}</dd></div>
+      </dl>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="emi-breakdown-title">
+    <h2 id="emi-breakdown-title" class="h3">What you pay each year</h2>
+    <SvgChart id="emi-split" title="What you repay in total" legend={[{ label: 'Principal', className: 'chart-s1' }, { label: 'Interest', className: 'chart-s2' }]} svg={view.splitSvg} htmlKey="splitSvg" aspect={SPLIT_ASPECT} />
+    <SvgChart id="emi-chart" title="Principal and interest paid each year" legend={[{ label: 'Principal', className: 'chart-s1' }, { label: 'Interest', className: 'chart-s2' }]} svg={view.chartSvg} htmlKey="chartSvg" />
+    <details class="schedule">
+      <summary>Year-by-year schedule</summary>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Year-by-year schedule">
+        <table class="data-table">
+          <thead><tr><th scope="col">Year</th><th scope="col">Paid</th><th scope="col">Principal</th><th scope="col">Interest</th><th scope="col">Balance</th></tr></thead>
+          <tbody data-html="yearRows" set:html={view.yearRows} />
+        </table>
+      </div>
+    </details>
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <p class="formula-eq"><code>EMI = P × r × (1 + r)<sup>n</sup> ÷ ((1 + r)<sup>n</sup> − 1)</code></p>
+      <ul>
+        <li><strong>P</strong> is the loan amount, <strong>r</strong> the monthly rate (yearly rate ÷ 12 ÷ 100) and <strong>n</strong> the number of monthly EMIs.</li>
+        <li>Each month, interest is charged on the balance still owed (reducing balance); the rest of the EMI repays the loan. The last EMI is adjusted so the balance ends at exactly 0.</li>
+        <li>The rate is assumed to stay the same. Processing fees, insurance and prepayment charges aren't included. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildEmiView, readEmiInput, type EmiParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="emi"]')) {
+    const params = embeddedParams<EmiParams>(root);
+    bindCalculator(root, (read) => buildEmiView(readEmiInput(read), params));
+  }
+</script>

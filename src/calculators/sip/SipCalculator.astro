@@ -1,0 +1,86 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import type { CountryConfig } from '../../countries';
+import { createFormatters } from '../../lib/format';
+import { buildSipView, sipDefaults, type SipParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.inSip;
+if (!defaults) throw new Error(`Missing defaults.inSip in the ${country.code} country config`);
+const params: SipParams = { locale: country.locale, currency: country.currency };
+const d = sipDefaults(defaults);
+const { view } = buildSipView(d, params);
+if (!view) throw new Error('SIP defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+---
+
+<div class="calc-block" data-calc="sip" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="sip" label="SIP calculator">
+    <Fragment slot="inputs">
+      <fieldset class="field-group">
+        <legend>Your SIP</legend>
+        <Field id="sip-monthly" field="monthly" label="Monthly investment" value={f.number(d.monthly)} prefix={sym} money />
+        <Field id="sip-return" field="returnPercent" label="Expected return" value={String(d.returnPercent)} suffix="% a year" hint="Mutual fund returns aren't guaranteed. Try a few rates." />
+        <Field id="sip-years" field="years" label="Time period" value={String(d.years)} suffix="years" inputmode="numeric" />
+        <Field id="sip-step" field="stepUpPercent" label="Yearly step-up" value={String(d.stepUpPercent)} suffix="%" optional hint="Raise your SIP by this much each year." />
+      </fieldset>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Estimated value</p>
+        <p class="result-figure" data-out="value">{view.value}</p>
+        <p class="result-sub" data-out="valueSub">{view.valueSub}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Invested</dt><dd data-out="invested">{view.invested}</dd></div>
+        <div><dt>Estimated returns</dt><dd class="positive" data-out="returns">{view.returns}</dd></div>
+        <div><dt>Growth</dt><dd data-out="multiple">{view.multiple}</dd></div>
+      </dl>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="sip-breakdown-title">
+    <h2 id="sip-breakdown-title" class="h3">How your SIP could grow</h2>
+    <SvgChart id="sip-chart" title="Value at the end of each year" legend={[{ label: 'Invested', className: 'chart-s1' }, { label: 'Estimated returns', className: 'chart-s3' }]} svg={view.chartSvg} htmlKey="chartSvg" />
+    <details class="schedule">
+      <summary>Year-by-year table</summary>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Year-by-year table">
+        <table class="data-table">
+          <thead><tr><th scope="col">Year</th><th scope="col">Invested</th><th scope="col">Returns</th><th scope="col">Value</th></tr></thead>
+          <tbody data-html="yearRows" set:html={view.yearRows} />
+        </table>
+      </div>
+    </details>
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <p class="formula-eq"><code>FV = P × ((1 + i)<sup>n</sup> − 1) ÷ i × (1 + i)</code></p>
+      <ul>
+        <li><strong>P</strong> is the monthly investment, <strong>i</strong> the monthly rate (expected yearly return ÷ 12 ÷ 100) and <strong>n</strong> the number of months. Each investment is made at the start of the month.</li>
+        <li>With a step-up, the monthly amount rises by that percentage at the start of each new year.</li>
+        <li>Actual returns vary and can be negative. Expense ratios, exit loads and tax on gains aren't included. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildSipView, readSipInput, type SipParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="sip"]')) {
+    const params = embeddedParams<SipParams>(root);
+    bindCalculator(root, (read) => buildSipView(readSipInput(read), params));
+  }
+</script>

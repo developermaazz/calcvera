@@ -122,6 +122,27 @@ export interface AuSuperDefaults {
   inflationPercent: number;
 }
 
+export interface InEmiDefaults {
+  amount: number;
+  ratePercent: number;
+  years: number;
+}
+
+export interface InSipDefaults {
+  monthly: number;
+  returnPercent: number;
+  years: number;
+}
+
+export interface InPpfDefaults {
+  yearly: number;
+}
+
+export interface InIncomeTaxDefaults {
+  salary: number;
+  oldDeductions: number;
+}
+
 export interface AuStampDutyDefaults {
   value: number;
 }
@@ -583,6 +604,38 @@ export interface DutyBand {
   flat?: boolean;
 }
 
+// ---------- India ----------
+
+export interface InSurchargeTier {
+  /** Total income above which the rate applies. */
+  over: number;
+  rate: number;
+}
+
+export interface InRegime {
+  bands: TaxBand[];
+  standardDeduction: number;
+  /** Rebate: up to "max" when total income is "upTo" or less. */
+  rebate: { upTo: number; max: number; marginalRelief: boolean };
+  surcharge: InSurchargeTier[];
+}
+
+export interface InTaxConfig {
+  newRegime: InRegime;
+  /** Old regime (option under section 202(4)); bands by age. */
+  oldRegime: Omit<InRegime, 'bands'> & { bands: { under60: TaxBand[]; from60: TaxBand[]; from80: TaxBand[] } };
+  cessRate: number;
+}
+
+export interface InPpfConfig {
+  ratePercent: number;
+  rateQuarter: string;
+  minDeposit: number;
+  maxDeposit: number;
+  termYears: number;
+  extensionYears: number;
+}
+
 export type AuState = 'NSW' | 'VIC' | 'QLD' | 'WA' | 'SA' | 'TAS' | 'ACT' | 'NT';
 
 export interface AuStampDutyConfig {
@@ -700,6 +753,10 @@ export interface CountryConfig {
     auSuper?: AuSuperDefaults;
     auHomeLoan?: AuHomeLoanDefaults;
     auStampDuty?: AuStampDutyDefaults;
+    inEmi?: InEmiDefaults;
+    inSip?: InSipDefaults;
+    inPpf?: InPpfDefaults;
+    inIncomeTax?: InIncomeTaxDefaults;
     auHelp?: AuHelpDefaults;
   };
 
@@ -744,5 +801,9 @@ export interface CountryConfig {
     help: AuHelpConfig;
     mls: AuMlsConfig;
     stampDuty: AuStampDutyConfig;
+  };
+  in?: {
+    tax: InTaxConfig;
+    ppf: InPpfConfig;
   };
 }

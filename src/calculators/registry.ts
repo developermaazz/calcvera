@@ -34,6 +34,10 @@ export type EngineName =
   | 'cppTiming'
   | 'caLandTransfer'
   | 'auStampDuty'
+  | 'emi'
+  | 'sip'
+  | 'ppf'
+  | 'inIncomeTax'
   | 'redundancyPay'
   | 'inheritanceTax'
   | 'selfEmploymentTax'
@@ -268,9 +272,18 @@ export const CALCULATORS: CalculatorEntry[] = [
     slug: 'income-tax-calculator',
     engine: 'caTakeHome',
     category: 'tax',
-    countries: ['ca'],
+    countries: ['ca', 'in'],
     name: 'Income Tax Calculator',
     titleHook: 'Take-Home Pay & Tax',
+    overrides: {
+      // Phase 3. Uses the inIncomeTax engine (new regime under section 202 vs the old regime; tax year 2026-27).
+      in: {
+        engine: 'inIncomeTax',
+        titleHook: 'New vs Old Regime',
+        blurb: 'Your income tax under the new and old regimes for 2026–27, which one saves more, and your take-home pay.',
+        related: ['emi-calculator', 'sip-calculator', 'ppf-calculator'],
+      },
+    },
     blurb: 'Your federal and provincial income tax, CPP and EI, take-home pay and marginal rate for your province.',
     related: ['mortgage-payment-calculator', 'fhsa-calculator', 'rrsp-vs-tfsa-calculator', 'cpp-calculator', 'land-transfer-tax-calculator'],
     popular: true,
@@ -355,6 +368,45 @@ export const CALCULATORS: CalculatorEntry[] = [
     related: ['mortgage-payment-calculator', 'fhsa-calculator', 'income-tax-calculator', 'rrsp-vs-tfsa-calculator'],
     popular: true,
     usesTaxYear: true,
+  },
+
+  {
+    // Phase 3. Uses the loan engine (reducing balance, rate ÷ 12) with an Indian EMI page.
+    slug: 'emi-calculator',
+    engine: 'emi',
+    category: 'loans',
+    countries: ['in'],
+    name: 'EMI Calculator',
+    titleHook: 'Home, Car & Personal Loans',
+    blurb: 'Your monthly EMI for a home, car or personal loan, the total interest, and the year-by-year schedule.',
+    related: ['income-tax-calculator', 'sip-calculator', 'ppf-calculator'],
+    popular: true,
+  },
+
+  {
+    // Phase 3. Uses the sip engine (monthly investment at the start of each month, optional yearly step-up).
+    slug: 'sip-calculator',
+    engine: 'sip',
+    category: 'savings',
+    countries: ['in'],
+    name: 'SIP Calculator',
+    titleHook: 'Mutual Fund Returns',
+    blurb: 'What a monthly SIP in mutual funds could grow to, how much you invest and the estimated returns, with step-up.',
+    related: ['ppf-calculator', 'income-tax-calculator', 'emi-calculator'],
+    popular: true,
+  },
+
+  {
+    // Phase 3. Uses the ppf engine (interest on the lowest balance from the 5th, credited yearly).
+    slug: 'ppf-calculator',
+    engine: 'ppf',
+    category: 'savings',
+    countries: ['in'],
+    name: 'PPF Calculator',
+    titleHook: 'Maturity & Interest',
+    blurb: 'Your Public Provident Fund maturity amount after 15 years or more, with total deposits and tax-free interest.',
+    related: ['sip-calculator', 'income-tax-calculator', 'emi-calculator'],
+    popular: true,
   },
 
   {

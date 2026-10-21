@@ -27,6 +27,10 @@ import RrspVsTfsaCalculator from '../../calculators/rrspVsTfsa/RrspVsTfsaCalcula
 import CppCalculator from '../../calculators/cppTiming/CppCalculator.astro';
 import LandTransferCalculator from '../../calculators/caLandTransfer/LandTransferCalculator.astro';
 import AuStampDutyCalculator from '../../calculators/auStampDuty/AuStampDutyCalculator.astro';
+import EmiCalculator from '../../calculators/emi/EmiCalculator.astro';
+import SipCalculator from '../../calculators/sip/SipCalculator.astro';
+import PpfCalculator from '../../calculators/ppf/PpfCalculator.astro';
+import InIncomeTaxCalculator from '../../calculators/inIncomeTax/InIncomeTaxCalculator.astro';
 import DtiCalculator from '../../calculators/dti/DtiCalculator.astro';
 import FhsaCalculator from '../../calculators/fhsa/FhsaCalculator.astro';
 import InheritanceTaxCalculator from '../../calculators/inheritanceTax/InheritanceTaxCalculator.astro';
@@ -83,6 +87,10 @@ const ENGINE_UI: Partial<Record<EngineName, typeof LoanCalculator>> = {
   cppTiming: CppCalculator,
   caLandTransfer: LandTransferCalculator,
   auStampDuty: AuStampDutyCalculator,
+  emi: EmiCalculator,
+  sip: SipCalculator,
+  ppf: PpfCalculator,
+  inIncomeTax: InIncomeTaxCalculator,
   redundancyPay: RedundancyPayCalculator,
   inheritanceTax: InheritanceTaxCalculator,
   selfEmploymentTax: QuarterlyTaxCalculator,
