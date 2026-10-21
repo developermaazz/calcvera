@@ -106,8 +106,9 @@ export const india: CountryConfig = {
     },
     ppf: {
       // VERIFY: Ministry of Finance (Department of Economic Affairs) office memorandum of 30 Sep 2026: small savings rates for
-      // 1 Oct to 31 Dec 2026 unchanged, PPF 7.1% compounded yearly (https://dea.gov.in/budget-division/475). The DEA site refuses
-      // automated connections; figure as reported and matching India Post's PPF booklet. Checked 21 Oct 2026.
+      // 1 Oct to 31 Dec 2026 unchanged, PPF 7.1% compounded yearly (https://dea.gov.in/budget-division/475). Confirmed on India
+      // Post's live Saving Schemes page ("Public Provident Fund Account (PPF) Rate of Interest: 7.1% per annum (compounded
+      // yearly)"): https://www.indiapost.gov.in/banking-services/savings. Checked 21 Oct 2026.
       ratePercent: 7.1,
       rateQuarter: 'October–December 2026',
       // VERIFY: India Post, Post Office Public Provident Fund (PPF) Account (minimum ₹500, maximum ₹1,50,000 a year; 15 years;

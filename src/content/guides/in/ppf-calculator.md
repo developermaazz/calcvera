@@ -17,8 +17,8 @@ faqs:
   - q: Is PPF interest taxable?
     a: PPF interest is not taxable, and deposits can qualify for a deduction of up to ₹1,50,000 under the old tax regime. Withdrawals at maturity are tax-free.
 sources:
-  - name: India Post, Post Office Public Provident Fund (PPF) Account
-    url: https://www.indiapost.gov.in/
+  - name: India Post, Post Office Saving Schemes (PPF rate of interest)
+    url: https://www.indiapost.gov.in/banking-services/savings
   - name: Ministry of Finance, Department of Economic Affairs, Small savings
     url: https://dea.gov.in/budget-division/475
 ---

@@ -93,7 +93,7 @@ export const au: CountryConfig = {
       // (GST 10%; credit capped at one-eleventh of the car limit). Checked 16 Oct 2026.
       gstRate: 0.1,
     },
-    // The ATO site blocks automated access; the figures below were read from web.archive.org copies of the ATO pages.
+    // First read from web.archive.org copies of the ATO pages; every figure below re-checked on the live ATO pages 21 Oct 2026.
     super: {
       // VERIFY: https://www.ato.gov.au/tax-rates-and-codes/key-superannuation-rates-and-thresholds/super-guarantee
       // (12% from 1 July 2025; maximum contribution base $270,830 a year for 2026–27). Archive copy 7 Oct 2026. Checked 20 Oct 2026.
@@ -217,10 +217,10 @@ export const au: CountryConfig = {
         concessionalUpTo: 200_000,
         firstHome: { exemptUpTo: 600_000, upTo: 800_000, rate: 0.1615 },
       },
-      // VERIFY: https://www.revenuesa.sa.gov.au/stamp-duty/rate-of-stamp-duty (conveyance rates; web.archive.org copy of 28 Nov 2025,
-      // the live site blocks automated access). First home buyers of eligible new homes: full relief regardless of value for
-      // contracts from 13 February 2025 (https://www.revenuesa.sa.gov.au/stamp-duty-land/first-home-buyer-relief/relief-available,
-      // archive copy 3 Jul 2026). Checked 20 Oct 2026.
+      // VERIFY: https://www.revenuesa.sa.gov.au/stamp-duty/rate-of-stamp-duty (conveyance rates, per $100 or part of $100). First
+      // home buyers of eligible new homes: full relief regardless of value for contracts from 13 February 2025
+      // (https://www.revenuesa.sa.gov.au/stamp-duty-land/first-home-buyer-relief/relief-available). Both checked on the live
+      // pages 21 Oct 2026.
       sa: {
         bands: [
           { from: 0, base: 0, rate: 0.01 },
@@ -250,11 +250,11 @@ export const au: CountryConfig = {
         ],
       },
       // VERIFY: https://www.revenue.act.gov.au/rates-and-property-charges/conveyance-duty-stamp-duty/conveyance-duty-for-non-commercial-property
-      // (transactions on or after 1 July 2025; web.archive.org copy of 12 Jul 2026) and Taxation Administration (Amounts
+      // (transactions on or after 1 July 2025; live page checked 21 Oct 2026) and Taxation Administration (Amounts
       // Payable—Duty) Determination 2026, DI2026-155 ("The residential marginal rates remain unchanged from 2025-26"). Home Buyer
       // Concession Scheme: exempt from 1 July 2026 if eligible, no income threshold
       // (https://www.revenue.act.gov.au/home-buyer-assistance/home-buyer-concession-scheme/about-the-home-buyer-concession-scheme,
-      // archive copy 11 Oct 2026). Checked 20 Oct 2026.
+      // live page checked 21 Oct 2026: "From 1 July 2026, the property value limit has been removed"). Checked 21 Oct 2026.
       act: {
         ownerBands: [
           { from: 0, base: 0, rate: 0.0028 },
