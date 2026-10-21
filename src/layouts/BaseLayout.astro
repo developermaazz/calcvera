@@ -112,6 +112,7 @@ const builtMonth = `${now.getFullYear()}-${now.getMonth()}`;
         </script>
       )
     }
+    {SITE.ADSENSE_CLIENT && <meta name="google-adsense-account" content={SITE.ADSENSE_CLIENT} />}
     {
       SITE.ADSENSE_CLIENT && (
         <script

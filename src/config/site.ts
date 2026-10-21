@@ -9,7 +9,7 @@ export const SITE = {
   /** Shown on the About and Privacy pages. */
   owner: 'M. Maaz Ali',
   /** AdSense publisher ID, e.g. 'ca-pub-1234567890123456'. Leave '' until approved: no ad code loads. */
-  ADSENSE_CLIENT: '',
+  ADSENSE_CLIENT: 'ca-pub-4944536231503384',
   /** AdSense ad unit IDs for manual placements. A slot renders only when its ID and ADSENSE_CLIENT are set. */
   AD_SLOTS: {
     results: '',
