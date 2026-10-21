@@ -38,6 +38,8 @@ export type EngineName =
   | 'sip'
   | 'ppf'
   | 'inIncomeTax'
+  | 'pkSalaryTax'
+  | 'zakat'
   | 'redundancyPay'
   | 'inheritanceTax'
   | 'selfEmploymentTax'
@@ -92,12 +94,18 @@ export const CALCULATORS: CalculatorEntry[] = [
     slug: 'loan-calculator',
     engine: 'loan',
     category: 'loans',
-    countries: ['us', 'uk'],
+    countries: ['us', 'uk', 'pk'],
     name: 'Loan Calculator',
     titleHook: 'Monthly Payment & Interest',
     blurb: 'Monthly payment, total interest and payoff date for any fixed-rate loan, with extra payments.',
     related: ['personal-loan-payoff-calculator', 'used-car-loan-calculator', 'credit-card-payoff-calculator', 'debt-snowball-calculator', 'car-finance-calculator'],
     popular: true,
+    overrides: {
+      pk: {
+        blurb: 'Your monthly instalment, total markup and payoff date for a personal, car or home loan, with extra payments.',
+        related: ['salary-tax-calculator', 'zakat-calculator'],
+      },
+    },
   },
 
   {
@@ -406,6 +414,33 @@ export const CALCULATORS: CalculatorEntry[] = [
     titleHook: 'Maturity & Interest',
     blurb: 'Your Public Provident Fund maturity amount after 15 years or more, with total deposits and tax-free interest.',
     related: ['sip-calculator', 'income-tax-calculator', 'emi-calculator'],
+    popular: true,
+  },
+
+  {
+    // Phase 3. Uses the pkSalaryTax engine (FBR salary slabs for tax year 2027, compared with 2026).
+    slug: 'salary-tax-calculator',
+    engine: 'pkSalaryTax',
+    category: 'tax',
+    countries: ['pk'],
+    name: 'Salary Tax Calculator',
+    titleHook: 'Monthly Tax',
+    blurb: 'Your income tax on salary for tax year 2027, monthly and yearly, your take-home pay and the change from last year.',
+    related: ['zakat-calculator', 'loan-calculator'],
+    popular: true,
+    usesTaxYear: true,
+  },
+
+  {
+    // Phase 3. Uses the zakat engine (Zakat and Ushr Ordinance nisab; official, silver or gold basis).
+    slug: 'zakat-calculator',
+    engine: 'zakat',
+    category: 'savings',
+    countries: ['pk'],
+    name: 'Zakat Calculator',
+    titleHook: 'Nisab & Amount Due',
+    blurb: 'How much zakat is due on your cash, gold, silver, savings and investments, and whether you reach the nisab.',
+    related: ['salary-tax-calculator', 'loan-calculator'],
     popular: true,
   },
 

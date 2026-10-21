@@ -143,6 +143,14 @@ export interface InIncomeTaxDefaults {
   oldDeductions: number;
 }
 
+export interface PkSalaryDefaults {
+  monthlySalary: number;
+}
+
+export interface PkZakatDefaults {
+  cash: number;
+}
+
 export interface AuStampDutyDefaults {
   value: number;
 }
@@ -636,6 +644,24 @@ export interface InPpfConfig {
   extensionYears: number;
 }
 
+// ---------- Pakistan ----------
+
+export interface PkSalaryTaxYear {
+  label: string;
+  /** Official schedule: tax = base + rate × (income − from) in the highest band reached. */
+  bands: DutyBand[];
+  /** Surcharge on salaried individuals above a taxable income (null if none). */
+  surcharge: { over: number; rate: number } | null;
+}
+
+export interface PkZakatConfig {
+  rate: number;
+  silverNisabGrams: number;
+  goldNisabGrams: number;
+  officialNisab: number;
+  officialZakatYear: string;
+}
+
 export type AuState = 'NSW' | 'VIC' | 'QLD' | 'WA' | 'SA' | 'TAS' | 'ACT' | 'NT';
 
 export interface AuStampDutyConfig {
@@ -757,6 +783,8 @@ export interface CountryConfig {
     inSip?: InSipDefaults;
     inPpf?: InPpfDefaults;
     inIncomeTax?: InIncomeTaxDefaults;
+    pkSalary?: PkSalaryDefaults;
+    pkZakat?: PkZakatDefaults;
     auHelp?: AuHelpDefaults;
   };
 
@@ -805,5 +833,9 @@ export interface CountryConfig {
   in?: {
     tax: InTaxConfig;
     ppf: InPpfConfig;
+  };
+  pk?: {
+    salaryTax: { current: PkSalaryTaxYear; previous: PkSalaryTaxYear };
+    zakat: PkZakatConfig;
   };
 }

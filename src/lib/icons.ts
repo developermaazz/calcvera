@@ -95,6 +95,8 @@ export const ENGINE_ICONS: Record<EngineName, IconName> = {
   sip: 'trendUp',
   ppf: 'shieldPlus',
   inIncomeTax: 'receipt',
+  pkSalaryTax: 'payslip',
+  zakat: 'scale',
   redundancyPay: 'briefcase',
   inheritanceTax: 'landmark',
   selfEmploymentTax: 'receipt',

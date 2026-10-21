@@ -1,0 +1,102 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import { createFormatters } from '../../lib/format';
+import { buildZakatView, zakatDefaults, type ZakatPageParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.pkZakat;
+if (!defaults) throw new Error(`Missing defaults.pkZakat in the ${country.code} country config`);
+const z = requireFigure(country.pk, `${country.code}.pk`).zakat;
+const params: ZakatPageParams = { ...z, locale: country.locale, currency: country.currency };
+const d = zakatDefaults(defaults);
+const { view } = buildZakatView(d, params);
+if (!view) throw new Error('Zakat defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+---
+
+<div class="calc-block" data-calc="zakat" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="zakat" label="Zakat calculator">
+    <Fragment slot="inputs">
+      <fieldset class="field-group">
+        <legend>Cash and savings</legend>
+        <Field id="zk-cash" field="cash" label="Cash at home" value={f.number(d.cash)} prefix={sym} money optional />
+        <Field id="zk-bank" field="bank" label="Bank and savings balances" value={f.number(d.bank)} prefix={sym} money optional />
+        <Field id="zk-inv" field="investments" label="Investments and trade goods" value={f.number(d.investments)} prefix={sym} money optional hint="Shares, mutual funds, and stock held for sale in a business, at today's value." />
+        <Field id="zk-rec" field="receivables" label="Money owed to you" value={f.number(d.receivables)} prefix={sym} money optional hint="Loans you've given that you expect to be repaid." />
+      </fieldset>
+      <fieldset class="field-group">
+        <legend>Gold and silver</legend>
+        <Field id="zk-gold" field="goldGrams" label="Gold you own" value="" suffix="grams" optional placeholder="0" hint="1 tola is about 11.66 grams." />
+        <Field id="zk-goldp" field="goldPricePer10g" label="Gold price per 10 grams" value="" prefix={sym} money optional hint="Today's rate from your jeweller or the bullion market." />
+        <Field id="zk-silver" field="silverGrams" label="Silver you own" value="" suffix="grams" optional placeholder="0" />
+        <Field id="zk-silverp" field="silverPricePer10g" label="Silver price per 10 grams" value="" prefix={sym} money optional />
+      </fieldset>
+      <fieldset class="field-group">
+        <legend>Debts and nisab</legend>
+        <Field id="zk-debts" field="debts" label="Debts and bills due now" value={f.number(d.debts)} prefix={sym} money optional />
+        <SelectField
+          id="zk-basis"
+          field="nisabBasis"
+          label="Nisab to use"
+          value={d.nisabBasis}
+          options={[
+            { value: 'official', label: `Official nisab: ${f.moneyWhole(z.officialNisab)} (${z.officialZakatYear})` },
+            { value: 'silver', label: `${z.silverNisabGrams} grams of silver at today's price` },
+            { value: 'gold', label: `${z.goldNisabGrams} grams of gold (if you only own gold)` },
+          ]}
+        />
+      </fieldset>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Zakat due</p>
+        <p class="result-figure" data-out="zakat">{view.zakat}</p>
+        <p class="result-sub" data-out="zakatSub">{view.zakatSub}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Net zakatable assets</dt><dd data-out="netAssets">{view.netAssets}</dd></div>
+        <div><dt>Nisab</dt><dd data-out="nisab">{view.nisab}</dd></div>
+        <div><dt>Status</dt><dd data-out="status">{view.status}</dd></div>
+      </dl>
+      <table class="compare-table">
+        <tbody data-html="assetRows" set:html={view.assetRows} />
+      </table>
+      <ul class="result-warn-list" data-show="hasNotes" hidden={!view.hasNotes} data-html="notes" set:html={view.notes} />
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="zk-breakdown-title">
+    <h2 id="zk-breakdown-title" class="h3">How this is calculated</h2>
+    <div class="formula">
+      <ul>
+        <li><strong>Net zakatable assets</strong> = cash + bank balances + gold + silver + investments and trade goods + money owed to you − debts due now. Gold and silver are valued at the price per 10 grams you enter.</li>
+        <li><strong>Nisab:</strong> under the Zakat and Ushr Ordinance, 1980, the nisab is the value of {z.silverNisabGrams} grams of silver, as notified for each Zakat year, or {z.goldNisabGrams} grams of gold where your assets are only gold. The notified amount for Zakat year {z.officialZakatYear} is {f.moneyWhole(z.officialNisab)}.</li>
+        <li><strong>Zakat</strong> = {f.percent(z.rate * 100)} of net zakatable assets, if they reach the nisab. Zakat is due on wealth held for a full lunar year.</li>
+        <li>This is a general guide. Scholars differ on some assets, such as jewellery in personal use, pensions and long-term debts. Ask a qualified scholar about your situation. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildZakatView, readZakatInput, type ZakatPageParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="zakat"]')) {
+    const params = embeddedParams<ZakatPageParams>(root);
+    bindCalculator(root, (read) => buildZakatView(readZakatInput(read), params));
+  }
+</script>

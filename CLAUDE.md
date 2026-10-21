@@ -179,7 +179,7 @@ public/                     robots.txt, ads.txt, _headers, fonts/, brand/ (logo 
 
 **Phase 2 (all built 20 Oct 2026):** CA rrsp-vs-tfsa-calculator (engine rrspVsTfsa), income-tax-calculator (built 20 Oct 2026, engine caTakeHome; all provinces except Quebec), cpp-calculator (engine cppTiming), land-transfer-tax-calculator (engine caLandTransfer; ON + Toronto, BC, MB, QC + Montréal, NB, NS, PE), mortgage-payment-calculator (built 20 Oct 2026, engine caMortgage). AU super-calculator (built 20 Oct 2026, engine auSuper), take-home-pay-calculator (built 20 Oct 2026, engine auTakeHome via the UK entry's `overrides.au`), stamp-duty-calculator (engine auStampDuty via the UK entry's `overrides.au`; all states and territories), hecs-help-repayment-calculator (built 20 Oct 2026, engine helpDebt), home-loan-repayment-calculator (built 20 Oct 2026, engine auHomeLoan).
 
-**Phase 3:** IN emi-calculator (engine emi, reuses the loan engine), sip-calculator (engine sip), ppf-calculator (engine ppf), income-tax-calculator (engine inIncomeTax via the CA entry's `overrides.in`; new vs old regime) — all built 21 Oct 2026; India launched. PK salary-tax-calculator, zakat-calculator, loan-calculator.
+**Phase 3:** IN emi-calculator (engine emi, reuses the loan engine), sip-calculator (engine sip), ppf-calculator (engine ppf), income-tax-calculator (engine inIncomeTax via the CA entry's `overrides.in`; new vs old regime) — all built 21 Oct 2026; India launched. PK salary-tax-calculator (engine pkSalaryTax; tax year 2027 vs 2026), zakat-calculator (engine zakat; Zakat and Ushr Ordinance nisab), loan-calculator (loan engine; `pk` added to the US/UK entry) — all built 21 Oct 2026; Pakistan launched.
 
 ## 13. Design standards
 

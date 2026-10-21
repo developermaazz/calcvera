@@ -1,0 +1,86 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import { SPLIT_ASPECT } from '../../lib/charts';
+import { createFormatters } from '../../lib/format';
+import { buildPkSalaryView, pkSalaryDefaults, type PkSalaryPageParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.pkSalary;
+if (!defaults) throw new Error(`Missing defaults.pkSalary in the ${country.code} country config`);
+const st = requireFigure(country.pk, `${country.code}.pk`).salaryTax;
+const params: PkSalaryPageParams = { locale: country.locale, currency: country.currency, current: st.current, previous: st.previous };
+const d = pkSalaryDefaults(defaults);
+const { view } = buildPkSalaryView(d, params);
+if (!view) throw new Error('Salary tax defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+const pct = (x: number) => f.percent(Math.round(x * 10000) / 100);
+const slabs = st.current.bands.map((b, k) => {
+  const next = st.current.bands[k + 1];
+  const range = next ? `${f.moneyWhole(b.from)} to ${f.moneyWhole(next.from)}` : `over ${f.moneyWhole(b.from)}`;
+  return b.rate === 0 ? `up to ${f.moneyWhole(next?.from ?? 0)}: 0%` : `${range}: ${b.base > 0 ? `${f.moneyWhole(b.base)} + ` : ''}${pct(b.rate)} of the amount over ${f.moneyWhole(b.from)}`;
+});
+---
+
+<div class="calc-block" data-calc="pk-salary" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="pksal" label="Salary tax calculator">
+    <Fragment slot="inputs">
+      <fieldset class="field-group">
+        <legend>Your salary</legend>
+        <Field id="ps-salary" field="monthlySalary" label="Monthly taxable salary" value={f.number(d.monthlySalary)} prefix={sym} suffix="a month" money hint="Your monthly salary before tax, less any exempt allowances." />
+      </fieldset>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Monthly income tax ({st.current.label.toLowerCase()})</p>
+        <p class="result-figure" data-out="monthlyTax">{view.monthlyTax}</p>
+        <p class="result-sub" data-out="monthlyTaxSub">{view.monthlyTaxSub}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Tax a year</dt><dd data-out="yearlyTax">{view.yearlyTax}</dd></div>
+        <div><dt>Take-home a month</dt><dd class="positive" data-out="takeHome">{view.takeHome}</dd></div>
+        <div><dt data-out="changeLabel">{view.changeLabel}</dt><dd data-out="change">{view.change}</dd></div>
+      </dl>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="ps-breakdown-title">
+    <h2 id="ps-breakdown-title" class="h3">{st.current.label} compared with {st.previous.label.toLowerCase()}</h2>
+    <SvgChart id="ps-chart" title="Your monthly salary" legend={[{ label: 'Take-home', className: 'chart-s1' }, { label: 'Income tax', className: 'chart-s2' }]} svg={view.chartSvg} htmlKey="chartSvg" aspect={SPLIT_ASPECT} />
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Tax years compared">
+      <table class="data-table">
+        <thead><tr><th scope="col"><span class="visually-hidden">Item</span></th><th scope="col">{st.current.label}</th><th scope="col">{st.previous.label}</th></tr></thead>
+        <tbody data-html="compareRows" set:html={view.compareRows} />
+      </table>
+    </div>
+    <div class="formula">
+      <h3>How this is calculated ({st.current.label.toLowerCase()}, 1 July 2026 to 30 June 2027)</h3>
+      <ul>
+        {slabs.map((s) => <li>{s}</li>)}
+        <li>Yearly taxable salary = monthly salary × 12. The 9% surcharge on salaried individuals over Rs 10 million no longer applies from tax year 2027. Tax credits (such as for donations or voluntary pension contributions) and other income aren't included. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildPkSalaryView, readPkSalaryInput, type PkSalaryPageParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="pk-salary"]')) {
+    const params = embeddedParams<PkSalaryPageParams>(root);
+    bindCalculator(root, (read) => buildPkSalaryView(readPkSalaryInput(read), params));
+  }
+</script>

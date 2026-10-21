@@ -1,15 +1,15 @@
 import { au } from './au';
 import { ca } from './ca';
 import { india } from './in';
+import { pk } from './pk';
 import type { CountryCode, CountryConfig } from './types';
 import { uk } from './uk';
 import { us } from './us';
 
-// Pakistan (pk) is added later in Phase 3.
-export const COUNTRIES: Partial<Record<CountryCode, CountryConfig>> = { us, uk, ca, au, in: india };
+export const COUNTRIES: Partial<Record<CountryCode, CountryConfig>> = { us, uk, ca, au, in: india, pk };
 
 /** Countries in display order: launched first, then coming soon. */
-export const ALL_COUNTRIES: CountryConfig[] = [us, uk, ca, au, india];
+export const ALL_COUNTRIES: CountryConfig[] = [us, uk, ca, au, india, pk];
 
 export const LAUNCHED_COUNTRIES: CountryConfig[] = ALL_COUNTRIES.filter((c) => c.launched);
 

@@ -31,6 +31,8 @@ import EmiCalculator from '../../calculators/emi/EmiCalculator.astro';
 import SipCalculator from '../../calculators/sip/SipCalculator.astro';
 import PpfCalculator from '../../calculators/ppf/PpfCalculator.astro';
 import InIncomeTaxCalculator from '../../calculators/inIncomeTax/InIncomeTaxCalculator.astro';
+import PkSalaryTaxCalculator from '../../calculators/pkSalaryTax/PkSalaryTaxCalculator.astro';
+import ZakatCalculator from '../../calculators/zakat/ZakatCalculator.astro';
 import DtiCalculator from '../../calculators/dti/DtiCalculator.astro';
 import FhsaCalculator from '../../calculators/fhsa/FhsaCalculator.astro';
 import InheritanceTaxCalculator from '../../calculators/inheritanceTax/InheritanceTaxCalculator.astro';
@@ -91,6 +93,8 @@ const ENGINE_UI: Partial<Record<EngineName, typeof LoanCalculator>> = {
   sip: SipCalculator,
   ppf: PpfCalculator,
   inIncomeTax: InIncomeTaxCalculator,
+  pkSalaryTax: PkSalaryTaxCalculator,
+  zakat: ZakatCalculator,
   redundancyPay: RedundancyPayCalculator,
   inheritanceTax: InheritanceTaxCalculator,
   selfEmploymentTax: QuarterlyTaxCalculator,
