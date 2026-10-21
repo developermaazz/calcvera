@@ -3,6 +3,7 @@
  * Suggests the visitor's own country version of the page. Never redirects: Google crawls from the
  * US and must see every country's page. Fixed to the bottom of the viewport so it causes no layout shift.
  * Guess order: country the visitor picked before (localStorage) → browser timezone → browser language.
+ * The wording says which one it is, so a remembered pick is never presented as the visitor's location.
  */
 import { LAUNCHED_COUNTRIES, type CountryCode } from '../countries';
 
@@ -78,7 +79,8 @@ const config = JSON.stringify({
       return null;
     };
 
-    const preferred = readStorage(STORAGE_KEYS.country) ?? detect();
+    const saved = readStorage(STORAGE_KEYS.country);
+    const preferred = saved ?? detect();
     const target = config.countries.find((c) => c.code === preferred);
 
     if (target && target.code !== config.current && readStorage(STORAGE_KEYS.bannerDismissed) !== target.code) {
@@ -86,7 +88,9 @@ const config = JSON.stringify({
       const link = banner.querySelector<HTMLAnchorElement>('[data-banner-link]');
       const samePage = config.alternates[target.code];
       if (text && link) {
-        text.textContent = `Looks like you're in the ${target.name}. `;
+        // "the United States", "the United Kingdom", but "Canada", "Pakistan".
+        const place = target.name.startsWith('United ') ? `the ${target.name}` : target.name;
+        text.textContent = saved === target.code ? `You picked ${place} last time. ` : `Looks like you're in ${place}. `;
         link.textContent = samePage ? `See the ${target.adjective} version of this page` : `See ${target.adjective} calculators`;
         link.href = samePage ?? `/${target.code}/`;
         link.addEventListener('click', () => writeStorage(STORAGE_KEYS.country, target.code));
