@@ -14,7 +14,8 @@ interface Props {
 
 const { name, height = 280 } = Astro.props;
 const slotId = SITE.AD_SLOTS[name];
-const enabled = SITE.ADSENSE_CLIENT !== '' && slotId !== '';
+// Truthiness, not !== '': SITE is `as const`, so a filled-in ID can't be compared with ''.
+const enabled = Boolean(SITE.ADSENSE_CLIENT && slotId);
 const placeholder = !enabled && import.meta.env.DEV;
 ---
 

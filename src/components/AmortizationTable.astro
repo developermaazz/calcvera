@@ -8,6 +8,8 @@ interface View {
   label: string;
   headers: string[];
   rowsHtml: string;
+  /** View key a bindCalculator script writes new rows from (data-html). */
+  htmlKey?: string;
 }
 
 interface Props {
@@ -40,7 +42,7 @@ const { summary, views } = Astro.props;
               ))}
             </tr>
           </thead>
-          <tbody data-rows={view.id} set:html={view.rowsHtml} />
+          <tbody data-rows={view.id} data-html={view.htmlKey} set:html={view.rowsHtml} />
         </table>
       </div>
     ))

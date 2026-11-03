@@ -81,6 +81,16 @@ export interface HelocDefaults {
   maxCltvPercent: number;
 }
 
+export interface UsMortgageDefaults {
+  homePrice: number;
+  downPayment: number;
+  ratePercent: number;
+  termYears: number;
+  propertyTaxPercent: number;
+  insurancePerYear: number;
+  pmiPercent: number;
+}
+
 export interface CaMortgageDefaults {
   price: number;
   downPayment: number;
@@ -329,6 +339,16 @@ export interface UsPayrollConfig {
   additionalMedicareRate: Pending<number>;
   /** Employers withhold Additional Medicare Tax on wages over this, whatever the filing status. */
   additionalMedicareWithholdingThreshold: Pending<number>;
+}
+
+/** Private mortgage insurance on conventional loans (Homeowners Protection Act), as shares of the home price. */
+export interface UsMortgageConfig {
+  /** Lenders usually require PMI when the loan is more than this share of the price (under 20% down). */
+  pmiAboveLtv: number;
+  /** You can ask to cancel PMI once the balance reaches this share of the original value. */
+  pmiRequestLtv: number;
+  /** PMI ends automatically when the balance is scheduled to reach this share. */
+  pmiAutoEndLtv: number;
 }
 
 export interface UsDtiReference {
@@ -770,6 +790,7 @@ export interface CountryConfig {
     isa?: IsaDefaults;
     rothIra?: RothIraDefaults;
     heloc?: HelocDefaults;
+    usMortgage?: UsMortgageDefaults;
     caMortgage?: CaMortgageDefaults;
     auTakeHome?: AuTakeHomeDefaults;
     caIncomeTax?: CaIncomeTaxDefaults;
@@ -800,6 +821,7 @@ export interface CountryConfig {
     retirement: UsRetirementLimits;
     /** Published lender limits shown next to the result, lowest first. */
     dtiReferences: Pending<UsDtiReference[]>;
+    mortgage: UsMortgageConfig;
   };
   uk?: {
     redundancy: UkRedundancyConfig;

@@ -1,0 +1,121 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import AmortizationTable from '../../components/AmortizationTable.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import { requireFigure, type CountryConfig } from '../../countries';
+import { createFormatters } from '../../lib/format';
+import { buildUsMortgageView, usMortgageDefaults, type UsMortgageParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.usMortgage;
+if (!defaults) throw new Error(`Missing defaults.usMortgage in the ${country.code} country config`);
+const m = requireFigure(country.us, `${country.code}.us`).mortgage;
+const params: UsMortgageParams = { ...m, locale: country.locale, currency: country.currency };
+const d = usMortgageDefaults(defaults);
+const { view } = buildUsMortgageView(d, params);
+if (!view) throw new Error('US mortgage defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+const pct = (x: number) => f.percent(x * 100);
+---
+
+<div class="calc-block" data-calc="us-mortgage" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="usmort" label="Mortgage calculator">
+    <Fragment slot="inputs">
+      <fieldset class="field-group">
+        <legend>Your home and loan</legend>
+        <Field id="um-price" field="homePrice" label="Home price" value={f.number(d.homePrice)} prefix={sym} money />
+        <Field id="um-down" field="downPayment" label="Down payment" value={f.number(d.downPayment)} prefix={sym} money hint={`With ${pct(1 - m.pmiAboveLtv)} or more down, you usually don't pay PMI.`} />
+        <Field id="um-rate" field="ratePercent" label="Interest rate" value={String(d.ratePercent)} suffix="%" />
+        <Field id="um-term" field="termYears" label="Loan term" value={String(d.termYears)} suffix="years" inputmode="numeric" hint="For example, 30 or 15 years." />
+      </fieldset>
+      <fieldset class="field-group">
+        <legend>Taxes, insurance and fees</legend>
+        <Field id="um-tax" field="propertyTaxPercent" label="Property tax" value={String(d.propertyTaxPercent)} suffix="% a year" hint="Your yearly tax as a % of the price. From a dollar amount: yearly tax ÷ price × 100." />
+        <Field id="um-ins" field="insurancePerYear" label="Homeowners insurance" value={f.number(d.insurancePerYear)} prefix={sym} suffix="a year" money />
+        <Field id="um-pmi" field="pmiPercent" label="PMI rate" value={String(d.pmiPercent)} suffix="% a year" hint={`Charged on the loan amount only when you put down less than ${pct(1 - m.pmiAboveLtv)}. Your Loan Estimate shows it.`} />
+        <Field id="um-hoa" field="hoaPerMonth" label="HOA dues" value={f.number(d.hoaPerMonth)} prefix={sym} suffix="a month" money optional />
+      </fieldset>
+      <fieldset class="field-group">
+        <legend>Pay it off faster</legend>
+        <Field id="um-extra" field="extraMonthly" label="Extra monthly payment" value={f.number(d.extraMonthly)} prefix={sym} money optional hint="Paid on top of your normal payment, straight off the balance." />
+      </fieldset>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label">Monthly payment</p>
+        <p class="result-figure" data-out="payment">{view.payment}</p>
+        <p class="result-sub" data-out="paymentSub">{view.paymentSub}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Principal and interest</dt><dd data-out="principalAndInterest">{view.principalAndInterest}</dd></div>
+        <div><dt>Property tax</dt><dd data-out="propertyTax">{view.propertyTax}</dd></div>
+        <div><dt>Homeowners insurance</dt><dd data-out="insurance">{view.insurance}</dd></div>
+        <div><dt>PMI</dt><dd data-out="pmi">{view.pmi}</dd></div>
+        <div data-show="hasHoa" hidden={!view.hasHoa}><dt>HOA dues</dt><dd data-out="hoa">{view.hoa}</dd></div>
+      </dl>
+      <table class="compare-table">
+        <thead><tr><th scope="col" colspan="2">Over the life of the loan</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Loan amount</th><td data-out="loanAmount">{view.loanAmount}</td></tr>
+          <tr><th scope="row">Total interest</th><td data-out="totalInterest">{view.totalInterest}</td></tr>
+          <tr><th scope="row">Total PMI</th><td data-out="totalPmi">{view.totalPmi}</td></tr>
+          <tr><th scope="row">Payoff date</th><td data-out="payoffDate">{view.payoffDate}</td></tr>
+        </tbody>
+      </table>
+      <p class="result-note" data-out="pmiNote">{view.pmiNote}</p>
+      <p class="result-note" data-show="hasExtra" hidden={!view.hasExtra} data-out="extraNote">{view.extraNote}</p>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="um-breakdown-title">
+    <h2 id="um-breakdown-title" class="h3">How your mortgage is paid off</h2>
+    <SvgChart
+      id="um-chart"
+      title="Principal and interest paid each year"
+      legend={[
+        { label: 'Principal', className: 'chart-s1' },
+        { label: 'Interest', className: 'chart-s2' },
+      ]}
+      svg={view.chartSvg}
+      htmlKey="chartSvg"
+    />
+    <AmortizationTable
+      summary="Amortization schedule"
+      views={[
+        { id: 'yearly', label: 'By year', headers: ['Year', 'Principal', 'Interest', 'Balance'], rowsHtml: view.yearRows, htmlKey: 'yearRows' },
+        { id: 'monthly', label: 'By month', headers: ['#', 'Month', 'Payment', 'Principal', 'Interest', 'Balance'], rowsHtml: view.monthRows, htmlKey: 'monthRows' },
+      ]}
+    />
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <p class="formula-eq"><code>M = P × r ÷ (1 − (1 + r)<sup>−n</sup>)</code></p>
+      <ul>
+        <li><strong>M</strong> is the monthly principal and interest, <strong>P</strong> the loan amount (price − down payment), <strong>r</strong> the monthly rate (annual rate ÷ 12 ÷ 100) and <strong>n</strong> the number of monthly payments.</li>
+        <li><strong>Monthly payment</strong> = M + property tax (price × tax rate ÷ 12) + insurance ÷ 12 + PMI + HOA dues. Extra payments come straight off the balance.</li>
+        <li><strong>PMI</strong> = loan amount × PMI rate ÷ 12, charged when you borrow more than {pct(m.pmiAboveLtv)} of the price. It ends automatically when your balance is scheduled to reach {pct(m.pmiAutoEndLtv)} of the price, or after the payment at the loan’s midpoint if that comes first. You can ask to cancel it once you owe {pct(m.pmiRequestLtv)}; extra payments bring that date forward but not the automatic one.</li>
+        <li>Tax, insurance and the rate are assumed to stay the same. The last payment is adjusted so the balance ends at exactly {sym}0. Figures are calculated at full precision and rounded for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildUsMortgageView, readUsMortgageInput, type UsMortgageParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="us-mortgage"]')) {
+    const params = embeddedParams<UsMortgageParams>(root);
+    bindCalculator(root, (read) => buildUsMortgageView(readUsMortgageInput(read), params));
+  }
+</script>

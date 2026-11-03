@@ -53,7 +53,8 @@ export function animateNumberChange(el: HTMLElement, before: string, after: stri
   const step = (now: number) => {
     // The calculator wrote something newer: stop and leave its text alone.
     if (el.firstChild !== text) return;
-    const t = Math.min(1, (now - start) / DURATION);
+    // The first frame's timestamp can be slightly before `start`; clamp so the figure never dips below `before`.
+    const t = Math.min(1, Math.max(0, (now - start) / DURATION));
     const eased = 1 - Math.pow(1 - t, 3);
     text.data = t < 1 ? `${to.prefix}${format.format(from.value + (to.value - from.value) * eased)}${to.suffix}` : after;
     if (t < 1) running.set(el, requestAnimationFrame(step));

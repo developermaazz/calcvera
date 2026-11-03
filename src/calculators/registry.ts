@@ -24,6 +24,7 @@ export type EngineName =
   | 'isaSavings'
   | 'rothIra'
   | 'heloc'
+  | 'usMortgage'
   | 'caMortgage'
   | 'auTakeHome'
   | 'caTakeHome'
@@ -179,7 +180,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     name: 'Rent vs Buy Calculator',
     titleHook: 'Which Leaves You Better Off',
     blurb: 'Whether buying or renting leaves you better off, the year buying pulls ahead, and every cost of owning.',
-    related: ['stamp-duty-calculator', 'mortgage-overpayment-calculator', 'heloc-payment-calculator', 'savings-goal-calculator', 'compound-interest-calculator', 'debt-to-income-ratio-calculator', 'loan-calculator'],
+    related: ['stamp-duty-calculator', 'mortgage-overpayment-calculator', 'mortgage-calculator', 'heloc-payment-calculator', 'savings-goal-calculator', 'compound-interest-calculator', 'debt-to-income-ratio-calculator', 'loan-calculator'],
   },
 
   {
@@ -251,6 +252,20 @@ export const CALCULATORS: CalculatorEntry[] = [
   },
 
   {
+    // Phase 1 continued. Uses the usMortgage engine (loan engine for principal and interest; tax, insurance, HOA and
+    // PMI with Homeowners Protection Act cancellation from us.ts).
+    slug: 'mortgage-calculator',
+    engine: 'usMortgage',
+    category: 'property',
+    countries: ['us'],
+    name: 'Mortgage Calculator',
+    titleHook: 'Payment With Taxes & PMI',
+    blurb: 'Your monthly mortgage payment with property tax, insurance, PMI and HOA dues, and when PMI drops off.',
+    related: ['rent-vs-buy-calculator', 'debt-to-income-ratio-calculator', 'heloc-payment-calculator', 'savings-goal-calculator', 'loan-calculator'],
+    popular: true,
+  },
+
+  {
     // Phase 1 continued. Uses the heloc engine (interest-only or P&I draw period, then amortised repayment).
     slug: 'heloc-payment-calculator',
     engine: 'heloc',
@@ -259,7 +274,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     name: 'HELOC Payment Calculator',
     titleHook: 'Interest-Only & Repayment',
     blurb: 'Your HELOC payment in the draw period and the repayment period, the jump between them, and your credit line.',
-    related: ['debt-consolidation-calculator', 'rent-vs-buy-calculator', 'debt-to-income-ratio-calculator', 'loan-calculator', 'credit-card-payoff-calculator'],
+    related: ['mortgage-calculator', 'debt-consolidation-calculator', 'rent-vs-buy-calculator', 'debt-to-income-ratio-calculator', 'loan-calculator'],
   },
 
   {
@@ -559,7 +574,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     name: 'Debt-to-Income Ratio Calculator',
     titleHook: 'Front & Back-End DTI',
     blurb: 'Front-end and back-end DTI, what lenders look for, and how much debt to cut to reach a target ratio.',
-    related: ['debt-consolidation-calculator', 'debt-snowball-calculator', 'heloc-payment-calculator', 'credit-card-payoff-calculator', 'car-affordability-calculator', 'loan-calculator'],
+    related: ['mortgage-calculator', 'debt-consolidation-calculator', 'debt-snowball-calculator', 'heloc-payment-calculator', 'credit-card-payoff-calculator', 'car-affordability-calculator', 'loan-calculator'],
   },
   {
     // Uses the loan engine in reverse: budget → maximum loan → maximum price.

@@ -57,6 +57,8 @@ export const us: CountryConfig = {
   defaults: {
     loan: { amount: 20_000, aprPercent: 7.5, termYears: 5 },
     creditCard: { balance: 5_000, aprPercent: 21.99, monthlyPayment: 200, targetMonths: 24 },
+    // Rate near Freddie Mac’s weekly 30-year average (7.24% on 29 Oct 2026, https://www.freddiemac.com/pmms).
+    usMortgage: { homePrice: 400_000, downPayment: 40_000, ratePercent: 7.25, termYears: 30, propertyTaxPercent: 1.1, insurancePerYear: 1_800, pmiPercent: 0.5 },
     heloc: { balance: 50_000, ratePercent: 8, drawYears: 10, repayYears: 20, homeValue: 400_000, mortgageBalance: 250_000, maxCltvPercent: 85 },
     rothIra: { age: 30, retirementAge: 65, currentBalance: 5_000, plannedContribution: 7_500, magi: 75_000, returnPercent: 7 },
     paycheck: { annualSalary: 65_000, hourlyRate: 25, hoursPerWeek: 40, retirementPercent: 5, pretaxBenefits: 75 },
@@ -225,5 +227,9 @@ export const us: CountryConfig = {
       { backEndMax: 0.45, label: 'Fannie Mae’s manual maximum for borrowers who meet its credit score and cash reserve requirements' },
       { backEndMax: 0.5, label: 'Fannie Mae’s maximum for mortgages approved through its automated system' },
     ],
+    // VERIFY: https://www.consumerfinance.gov/ask-cfpb/what-is-private-mortgage-insurance-en-122/ (under 20% down) and
+    // https://www.consumerfinance.gov/ask-cfpb/when-can-i-remove-private-mortgage-insurance-pmi-from-my-loan-en-202/
+    // (request at 80%, automatic at 78% of original value, or the month after the loan’s midpoint). Checked 3 Nov 2026.
+    mortgage: { pmiAboveLtv: 0.8, pmiRequestLtv: 0.8, pmiAutoEndLtv: 0.78 },
   },
 };
