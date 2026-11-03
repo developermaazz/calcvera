@@ -114,48 +114,43 @@ const builtMonth = `${now.getFullYear()}-${now.getMonth()}`;
     }
     {SITE.ADSENSE_CLIENT && <meta name="google-adsense-account" content={SITE.ADSENSE_CLIENT} />}
     {
-      SITE.ADSENSE_CLIENT && (
-        <script
-          is:inline
-          async
-          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${SITE.ADSENSE_CLIENT}`}
-          crossorigin="anonymous"
-        />
-      )
-    }
-    {
-      SITE.GA_ID && (
-        <>
-          <script is:inline define:vars={{ id: SITE.GA_ID }}>
-            // GA loads on the first interaction, or 3.5 s after the page loads, so it never competes
-            // with the calculator for the main thread while the page starts up. Queued calls still count.
-            window.dataLayer = window.dataLayer || [];
-            function gtag() {
-              dataLayer.push(arguments);
-            }
+      (SITE.ADSENSE_CLIENT || SITE.GA_ID) && (
+        <script is:inline define:vars={{ gaId: SITE.GA_ID, adClient: SITE.ADSENSE_CLIENT }}>
+          // GA and AdSense load on the first interaction, or 3.5 s after the page loads, so neither competes
+          // with the page and calculator while they start up. Queued gtag calls and ad slot pushes still count.
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          if (gaId) {
             gtag('js', new Date());
-            gtag('config', id);
-            var gaEvents = ['pointerdown', 'keydown', 'scroll', 'touchstart'];
-            var gaLoaded = false;
-            function loadGa() {
-              if (gaLoaded) return;
-              gaLoaded = true;
-              gaEvents.forEach(function (e) {
-                removeEventListener(e, loadGa);
-              });
-              var s = document.createElement('script');
-              s.async = true;
-              s.src = 'https://www.googletagmanager.com/gtag/js?id=' + id;
-              document.head.appendChild(s);
-            }
-            gaEvents.forEach(function (e) {
-              addEventListener(e, loadGa, { passive: true });
+            gtag('config', gaId);
+          }
+          var tagEvents = ['pointerdown', 'keydown', 'scroll', 'touchstart'];
+          var tagsLoaded = false;
+          function addScript(src, crossOrigin) {
+            var s = document.createElement('script');
+            s.async = true;
+            if (crossOrigin) s.crossOrigin = 'anonymous';
+            s.src = src;
+            document.head.appendChild(s);
+          }
+          function loadTags() {
+            if (tagsLoaded) return;
+            tagsLoaded = true;
+            tagEvents.forEach(function (e) {
+              removeEventListener(e, loadTags);
             });
-            addEventListener('load', function () {
-              setTimeout(loadGa, 3500);
-            });
-          </script>
-        </>
+            if (gaId) addScript('https://www.googletagmanager.com/gtag/js?id=' + gaId, false);
+            if (adClient) addScript('https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + adClient, true);
+          }
+          tagEvents.forEach(function (e) {
+            addEventListener(e, loadTags, { passive: true });
+          });
+          addEventListener('load', function () {
+            setTimeout(loadTags, 3500);
+          });
+        </script>
       )
     }
   </head>
