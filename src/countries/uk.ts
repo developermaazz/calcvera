@@ -30,6 +30,10 @@ export const uk: CountryConfig = {
   defaults: {
     loan: { amount: 10_000, aprPercent: 6.9, termYears: 5 },
     creditCard: { balance: 3_000, aprPercent: 24.9, monthlyPayment: 150, targetMonths: 24 },
+    // Initial rate near the Bank of England's average effective rate on new secured lending to households (4.63%,
+    // September 2026: https://www.bankofengland.co.uk/statistics/effective-interest-rates/2026/september-2026).
+    // The follow-on rate is an illustrative SVR; lenders set their own.
+    ukMortgage: { price: 300_000, deposit: 45_000, termYears: 25, initialRatePercent: 4.6, dealYears: 5, followOnRatePercent: 7.1, productFee: 999 },
     mortgageOverpayment: { balance: 200_000, ratePercent: 4.5, years: 25, monthlyOverpayment: 200, allowancePercent: 10 },
     isa: { startingBalance: 5_000, monthlyDeposit: 300, ratePercent: 4, years: 10 },
     pensionRelief: { salary: 60_000, contributionPercent: 5, contributionMonthly: 250, employerPercent: 3 },

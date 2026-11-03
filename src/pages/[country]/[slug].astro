@@ -18,6 +18,7 @@ import IsaSavingsCalculator from '../../calculators/isaSavings/IsaSavingsCalcula
 import RothIraCalculator from '../../calculators/rothIra/RothIraCalculator.astro';
 import HelocCalculator from '../../calculators/heloc/HelocCalculator.astro';
 import UsMortgageCalculator from '../../calculators/usMortgage/UsMortgageCalculator.astro';
+import UkMortgageCalculator from '../../calculators/ukMortgage/UkMortgageCalculator.astro';
 import CaMortgageCalculator from '../../calculators/caMortgage/CaMortgageCalculator.astro';
 import AuTakeHomeCalculator from '../../calculators/auTakeHome/AuTakeHomeCalculator.astro';
 import CaTakeHomeCalculator from '../../calculators/caTakeHome/CaTakeHomeCalculator.astro';
@@ -81,6 +82,7 @@ const ENGINE_UI: Partial<Record<EngineName, typeof LoanCalculator>> = {
   rothIra: RothIraCalculator,
   heloc: HelocCalculator,
   usMortgage: UsMortgageCalculator,
+  ukMortgage: UkMortgageCalculator,
   caMortgage: CaMortgageCalculator,
   auTakeHome: AuTakeHomeCalculator,
   caTakeHome: CaTakeHomeCalculator,

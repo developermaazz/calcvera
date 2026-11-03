@@ -91,6 +91,16 @@ export interface UsMortgageDefaults {
   pmiPercent: number;
 }
 
+export interface UkMortgageDefaults {
+  price: number;
+  deposit: number;
+  termYears: number;
+  initialRatePercent: number;
+  dealYears: number;
+  followOnRatePercent: number;
+  productFee: number;
+}
+
 export interface CaMortgageDefaults {
   price: number;
   downPayment: number;
@@ -787,6 +797,7 @@ export interface CountryConfig {
     paycheck?: PaycheckDefaults;
     pensionRelief?: PensionReliefDefaults;
     mortgageOverpayment?: MortgageOverpaymentDefaults;
+    ukMortgage?: UkMortgageDefaults;
     isa?: IsaDefaults;
     rothIra?: RothIraDefaults;
     heloc?: HelocDefaults;

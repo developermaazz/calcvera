@@ -1,0 +1,127 @@
+---
+import AdSlot from '../../components/AdSlot.astro';
+import AmortizationTable from '../../components/AmortizationTable.astro';
+import CalculatorShell from '../../components/CalculatorShell.astro';
+import CheckboxField from '../../components/CheckboxField.astro';
+import Field from '../../components/Field.astro';
+import ResultSummary from '../../components/ResultSummary.astro';
+import SelectField from '../../components/SelectField.astro';
+import SvgChart from '../../components/SvgChart.astro';
+import type { CountryConfig } from '../../countries';
+import { createFormatters } from '../../lib/format';
+import { buildUkMortgageView, ukMortgageDefaults, type UkMortgageParams } from './model';
+
+interface Props {
+  country: CountryConfig;
+}
+
+const { country } = Astro.props;
+const defaults = country.defaults.ukMortgage;
+if (!defaults) throw new Error(`Missing defaults.ukMortgage in the ${country.code} country config`);
+const params: UkMortgageParams = { locale: country.locale, currency: country.currency };
+const d = ukMortgageDefaults(defaults);
+const { view } = buildUkMortgageView(d, params);
+if (!view) throw new Error('UK mortgage defaults are invalid');
+const f = createFormatters(country.locale, country.currency);
+const sym = country.currencySymbol;
+---
+
+<div class="calc-block" data-calc="uk-mortgage" data-locale={country.locale} data-currency={country.currency} data-params={JSON.stringify(params)}>
+  <CalculatorShell id="ukmort" label="Mortgage calculator">
+    <Fragment slot="inputs">
+      <fieldset class="field-group">
+        <legend>Your property and mortgage</legend>
+        <Field id="km-price" field="price" label="Property price" value={f.number(d.price)} prefix={sym} money />
+        <Field id="km-deposit" field="deposit" label="Deposit" value={f.number(d.deposit)} prefix={sym} money />
+        <Field id="km-term" field="termYears" label="Mortgage term" value={String(d.termYears)} suffix="years" inputmode="numeric" />
+        <SelectField
+          id="km-type"
+          field="repaymentType"
+          label="Repayment type"
+          value={d.repaymentType}
+          options={[
+            { value: 'repayment', label: 'Repayment (capital and interest)' },
+            { value: 'interestOnly', label: 'Interest-only' },
+          ]}
+        />
+      </fieldset>
+      <fieldset class="field-group">
+        <legend>Your deal</legend>
+        <Field id="km-rate" field="initialRatePercent" label="Initial interest rate" value={String(d.initialRatePercent)} suffix="%" hint="The rate on your fixed, tracker or discount deal." />
+        <Field id="km-deal" field="dealYears" label="Initial rate period" value={String(d.dealYears)} suffix="years" inputmode="numeric" hint="Set it to the mortgage term if the rate stays the same throughout." />
+        <Field id="km-svr" field="followOnRatePercent" label="Rate after the deal" value={String(d.followOnRatePercent)} suffix="%" hint="Usually your lender's standard variable rate (SVR). Your mortgage offer shows it." />
+        <Field id="km-fee" field="productFee" label="Product fee" value={f.number(d.productFee)} prefix={sym} money optional />
+        <CheckboxField id="km-addfee" field="addFeeToLoan" label="Add the fee to the mortgage" checked={d.addFeeToLoan} hint="You pay interest on it, but don't need the cash upfront." />
+      </fieldset>
+    </Fragment>
+    <Fragment slot="results">
+      <div class="result-main">
+        <p class="result-label" data-out="paymentLabel">{view.paymentLabel}</p>
+        <p class="result-figure" data-out="payment">{view.payment}</p>
+        <p class="result-sub" data-out="paymentSub">{view.paymentSub}</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>Mortgage amount</dt><dd data-out="loan">{view.loan}</dd></div>
+        <div><dt>Loan to value</dt><dd data-out="ltv">{view.ltv}</dd></div>
+        <div><dt>Total interest</dt><dd data-out="totalInterest">{view.totalInterest}</dd></div>
+        <div><dt>Total to repay</dt><dd data-out="totalRepaid">{view.totalRepaid}</dd></div>
+      </dl>
+      <table class="compare-table" data-show="hasFollowOn" hidden={!view.hasFollowOn}>
+        <thead><tr><th scope="col" colspan="2" data-out="dealHeading">{view.dealHeading}</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Payments</th><td data-out="dealPaid">{view.dealPaid}</td></tr>
+          <tr><th scope="row">Of which interest</th><td data-out="dealInterest">{view.dealInterest}</td></tr>
+          <tr><th scope="row">Cost including fee</th><td data-out="dealCost">{view.dealCost}</td></tr>
+          <tr><th scope="row">Balance when the deal ends</th><td data-out="dealBalance">{view.dealBalance}</td></tr>
+        </tbody>
+      </table>
+      <p class="result-note" data-show="hasFollowOn" hidden={!view.hasFollowOn} data-out="followOnNote">{view.followOnNote}</p>
+      <p class="result-note" data-show="isInterestOnly" hidden={!view.isInterestOnly} data-out="interestOnlyNote">{view.interestOnlyNote}</p>
+      <p class="result-note" data-show="hasFeeNote" hidden={!view.hasFeeNote} data-out="feeNote">{view.feeNote}</p>
+      <ResultSummary text={view.summary} />
+    </Fragment>
+  </CalculatorShell>
+
+  <AdSlot name="results" />
+
+  <section class="card breakdown" aria-labelledby="km-breakdown-title">
+    <h2 id="km-breakdown-title" class="h3">How your mortgage is repaid</h2>
+    <SvgChart
+      id="km-chart"
+      title="Capital and interest paid each year"
+      legend={[
+        { label: 'Capital', className: 'chart-s1' },
+        { label: 'Interest', className: 'chart-s2' },
+      ]}
+      svg={view.chartSvg}
+      htmlKey="chartSvg"
+    />
+    <AmortizationTable
+      summary="Repayment schedule"
+      views={[
+        { id: 'yearly', label: 'By year', headers: ['Year', 'Capital', 'Interest', 'Balance'], rowsHtml: view.yearRows, htmlKey: 'yearRows' },
+        { id: 'monthly', label: 'By month', headers: ['#', 'Month', 'Payment', 'Capital', 'Interest', 'Balance'], rowsHtml: view.monthRows, htmlKey: 'monthRows' },
+      ]}
+    />
+    <div class="formula">
+      <h3>How this is calculated</h3>
+      <p class="formula-eq"><code>M = P × r ÷ (1 − (1 + r)<sup>−n</sup>)</code></p>
+      <ul>
+        <li><strong>M</strong> is the monthly payment, <strong>P</strong> the mortgage amount, <strong>r</strong> the monthly rate (annual rate ÷ 12 ÷ 100) and <strong>n</strong> the number of monthly payments left.</li>
+        <li><strong>When the deal ends</strong>, the payment is worked out again from the balance left, the rate after the deal and the months remaining.</li>
+        <li><strong>Interest-only:</strong> each payment is the mortgage amount × r, and the whole amount is still owed at the end of the term.</li>
+        <li><strong>Loan to value</strong> = (price − deposit) ÷ price. A product fee added to the mortgage is charged interest like the rest of the loan. Rates are assumed to stay the same; your lender may work out interest daily, so its figures can differ slightly. The last payment is adjusted so the balance ends at exactly {sym}0, and figures are rounded only for display.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { bindCalculator, embeddedParams } from '../../lib/calcUi';
+  import { buildUkMortgageView, readUkMortgageInput, type UkMortgageParams } from './model';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="uk-mortgage"]')) {
+    const params = embeddedParams<UkMortgageParams>(root);
+    bindCalculator(root, (read) => buildUkMortgageView(readUkMortgageInput(read), params));
+  }
+</script>

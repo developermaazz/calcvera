@@ -25,6 +25,7 @@ export type EngineName =
   | 'rothIra'
   | 'heloc'
   | 'usMortgage'
+  | 'ukMortgage'
   | 'caMortgage'
   | 'auTakeHome'
   | 'caTakeHome'
@@ -220,7 +221,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     name: 'Mortgage Overpayment Calculator',
     titleHook: 'Interest & Time Saved',
     blurb: 'How much interest and time you save by overpaying your mortgage each month or with a lump sum.',
-    related: ['stamp-duty-calculator', 'rent-vs-buy-calculator', 'savings-goal-calculator', 'isa-savings-calculator', 'loan-calculator'],
+    related: ['mortgage-calculator', 'stamp-duty-calculator', 'rent-vs-buy-calculator', 'savings-goal-calculator', 'isa-savings-calculator', 'loan-calculator'],
     popular: true,
   },
 
@@ -257,12 +258,21 @@ export const CALCULATORS: CalculatorEntry[] = [
     slug: 'mortgage-calculator',
     engine: 'usMortgage',
     category: 'property',
-    countries: ['us'],
+    countries: ['us', 'uk'],
     name: 'Mortgage Calculator',
     titleHook: 'Payment With Taxes & PMI',
     blurb: 'Your monthly mortgage payment with property tax, insurance, PMI and HOA dues, and when PMI drops off.',
     related: ['rent-vs-buy-calculator', 'debt-to-income-ratio-calculator', 'heloc-payment-calculator', 'savings-goal-calculator', 'loan-calculator'],
     popular: true,
+    overrides: {
+      // Uses the ukMortgage engine (initial deal then the follow-on rate, repayment or interest-only, product fee).
+      uk: {
+        engine: 'ukMortgage',
+        titleHook: 'Monthly Repayments',
+        blurb: 'Your monthly mortgage payment during your deal and after it ends, repayment or interest-only, with fees.',
+        related: ['mortgage-overpayment-calculator', 'stamp-duty-calculator', 'rent-vs-buy-calculator', 'take-home-pay-calculator', 'savings-goal-calculator'],
+      },
+    },
   },
 
   {
@@ -504,7 +514,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     name: 'Stamp Duty Calculator',
     titleHook: 'SDLT for Any Buyer',
     blurb: 'Stamp Duty Land Tax on a home in England or Northern Ireland, for first-time buyers, movers and additional properties.',
-    related: ['rent-vs-buy-calculator', 'take-home-pay-calculator', 'inheritance-tax-calculator', 'mortgage-overpayment-calculator', 'loan-calculator'],
+    related: ['mortgage-calculator', 'rent-vs-buy-calculator', 'mortgage-overpayment-calculator', 'take-home-pay-calculator', 'inheritance-tax-calculator', 'loan-calculator'],
     popular: true,
     overrides: {
       // Phase 2. Uses the auStampDuty engine (transfer duty for every state and territory, with home buyer concessions).
