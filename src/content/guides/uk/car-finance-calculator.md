@@ -1,8 +1,8 @@
 ---
-h1: UK Car Finance Calculator (PCP and HP)
+h1: UK Car Finance Calculator (PCP and Hire Purchase)
 description: Free UK car finance calculator. Monthly PCP or hire purchase payments, the optional final payment and the total you'll pay, with interest and fees.
 intro: Enter the car's price, your deposit, the APR and any final payment to see your monthly PCP or hire purchase payment and the total amount you'll pay.
-updated: 2026-10-18
+updated: 2026-11-03
 faqs:
   - q: What is the difference between PCP and hire purchase?
     a: With hire purchase, your monthly payments cover the whole amount borrowed and you own the car at the end. With PCP, a large part of the cost is left as an optional final payment, so monthly payments are lower. At the end, you can pay it and keep the car, hand the car back, or part-exchange it.

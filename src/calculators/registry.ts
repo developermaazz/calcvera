@@ -560,7 +560,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     category: 'loans',
     countries: ['uk'],
     name: 'Car Finance Calculator',
-    titleHook: 'PCP & HP Payments',
+    titleHook: 'PCP & Hire Purchase',
     blurb: 'Monthly PCP or hire purchase payments, the final payment, and the total you pay for the car.',
     related: ['loan-calculator', 'take-home-pay-calculator', 'credit-card-payoff-calculator'],
   },
