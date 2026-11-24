@@ -85,6 +85,44 @@ describe('time to reach the goal', () => {
   });
 });
 
+describe('guide figures (src/content/guides/uk/savings-goal-calculator.md)', () => {
+  const uk: SavingsGoalInput = { goal: 15_000, currentSavings: 1_000, ratePercent: 4, mode: 'deposit', years: 3, monthlyDeposit: 0 };
+  const monthly = (x: Partial<SavingsGoalInput>) => calculateSavingsGoal({ ...uk, ...x }).monthlyDeposit;
+  const months = (x: Partial<SavingsGoalInput>) => calculateSavingsGoal({ ...uk, mode: 'time', ...x }).months;
+
+  it('matches the example, including the interest earned in each year', () => {
+    const r = calculateSavingsGoal(uk);
+    expect(r.monthlyDeposit).toBeCloseTo(363.78, 2);
+    expect(r.totalDeposits).toBeCloseTo(13_096.24, 2);
+    expect(r.interest).toBeCloseTo(903.76, 2);
+    expect(r.years.map((y) => Math.round(y.interest * 100) / 100)).toEqual([119.47, 298.86, 485.43]);
+  });
+
+  it('matches the AER table and the deadlines', () => {
+    const rows: [number, number, number][] = [
+      [0, 388.89, 0],
+      [2, 376.11, 459.98],
+      [3, 369.89, 683.84],
+      [4, 363.78, 903.76],
+      [5, 357.78, 1_119.81],
+    ];
+    for (const [ratePercent, pay, interest] of rows) {
+      const r = calculateSavingsGoal({ ...uk, ratePercent });
+      expect(r.monthlyDeposit, `${ratePercent}%`).toBeCloseTo(pay, 2);
+      expect(r.interest, `${ratePercent}%`).toBeCloseTo(interest, 2);
+    }
+    expect(monthly({ years: 2 })).toBeCloseTo(558.4, 2);
+    expect(monthly({ years: 5 })).toBeCloseTo(208.27, 2);
+    expect(monthly({}) - monthly({ years: 5 })).toBeCloseTo(155.51, 2);
+    expect(monthly({ ratePercent: 2 }) - monthly({ ratePercent: 5 })).toBeCloseTo(18.33, 2);
+  });
+
+  it('matches the "how long" figures and the £10,000 FAQ', () => {
+    expect([300, 400, 500].map((monthlyDeposit) => months({ monthlyDeposit }))).toEqual([44, 33, 27]);
+    expect(months({ goal: 10_000, currentSavings: 0, monthlyDeposit: 250 })).toBe(38);
+  });
+});
+
 describe('validateSavingsGoalInput', () => {
   it('checks only the fields the chosen mode uses', () => {
     expect(validateSavingsGoalInput({ ...deposit, monthlyDeposit: Number.NaN })).toEqual([]);

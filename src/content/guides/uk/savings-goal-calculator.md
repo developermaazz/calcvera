@@ -1,81 +1,103 @@
 ---
 h1: UK Savings Goal Calculator
-description: "Free UK savings goal calculator: find how much to save each month to reach a goal by a date, or how long your monthly savings will take."
-intro: Enter your savings goal, what you've saved so far and your account's AER to see how much to save each month to get there by a date, or how long your monthly savings will take.
-updated: 2026-10-20
+description: "Free UK savings goal calculator: how much to save each month for a house deposit or other goal, or how long your monthly savings will take."
+intro: Enter your goal, what you've saved so far and your account's AER. You'll see what to put away each month to get there on time, or how long a monthly amount will take.
+updated: 2026-11-24
 faqs:
   - q: How much do I need to save each month to reach £15,000 in 3 years?
-    a: With £1,000 already saved and a 4% AER, you'd need to save £363.78 a month. Over 3 years you'd deposit £13,096.24 and earn £903.76 in interest. Without interest, it would take £388.89 a month.
-  - q: How long will it take to reach my savings goal?
-    a: Choose "How long it will take" and enter what you can save each month. In the example, £300 a month reaches £15,000 in 3 years 8 months, and £400 a month gets there in 2 years 9 months.
-  - q: What is AER?
-    a: The annual equivalent rate shows how much your savings would grow in a year once interest is added and compounded. It lets you compare accounts that pay interest monthly or yearly on the same basis. The calculator uses the AER you enter as the yearly growth of your balance.
-  - q: Is my money protected?
-    a: Deposits in UK banks and building societies authorised by the Prudential Regulation Authority are protected by the Financial Services Compensation Scheme up to £120,000 per person per firm. Check that your provider is covered before you deposit.
-  - q: Do I pay tax on savings interest?
-    a: Most people can earn some interest without paying tax, thanks to the Personal Savings Allowance. Interest in an ISA is tax-free, and you can save up to £20,000 in ISAs in the 2026 to 2027 tax year. The calculator doesn't include tax.
-  - q: What if my savings rate changes?
-    a: Easy-access rates can change at any time, and bonus rates often end after a year. If your rate falls, enter the new one and the calculator shows the new monthly amount. Saving a little more than the figure shown gives you a buffer.
+    a: With £1,000 already saved and a 4% AER, £363.78 a month. You'd pay in £13,096.24 and earn £903.76 in interest. At 2% AER the monthly figure is £376.11, and with no interest at all it's £388.89.
+  - q: How long will it take to save £10,000?
+    a: Starting from nothing at 4% AER, £250 a month takes 3 years 2 months. Choose "How long it will take" in the calculator and enter your own amount, balance and rate.
+  - q: Can I use a Lifetime ISA for a house deposit?
+    a: Yes, if you meet the rules. You can open one from 18 and before you turn 40, pay in up to £4,000 a year until 50, and the government adds 25%, up to £1,000 a year. To use it for a first home you need to buy with a mortgage, at least 12 months after your first payment, through a conveyancer or solicitor. Homes over £450,000 carry a withdrawal charge, and so do other withdrawals before 60 (25%), unless you're terminally ill.
+  - q: Do I pay tax on my savings interest?
+    a: Often not. The Personal Savings Allowance covers £1,000 of interest a year for basic-rate taxpayers, £500 for higher-rate and nothing for additional-rate. If your other taxable income is below £17,570 you may also get up to £5,000 at the starting rate for savings. Interest in an ISA is tax-free. Any tax due is usually collected through your tax code. The calculator doesn't include tax.
+  - q: Is my money safe in a savings account?
+    a: The Financial Services Compensation Scheme protects up to £120,000 per eligible person, per bank, building society or credit union. Brands that share a banking licence count as one firm, so a large pot may need to be split between firms. Joint accounts are covered up to the same limit for each eligible person.
+  - q: Is there extra help for people on a low income?
+    a: "Help to Save is for people getting Universal Credit who had take-home pay of £1 or more in their last monthly assessment period. You can pay in up to £50 a calendar month for 4 years, and bonuses add 50p for every £1 you save, up to £1,200 in total."
 sources:
   - name: GOV.UK, Individual Savings Accounts (ISAs)
     url: https://www.gov.uk/individual-savings-accounts
-  - name: GOV.UK, Tax on savings interest
-    url: https://www.gov.uk/apply-tax-free-interest-on-savings
-  - name: FSCS, Check your money is protected
-    url: https://www.fscs.org.uk/check/check-your-money-is-protected/
+  - name: GOV.UK, Lifetime ISA
+    url: https://www.gov.uk/lifetime-isa
+  - name: GOV.UK, Withdrawing money from your Lifetime ISA
+    url: https://www.gov.uk/lifetime-isa/withdrawing-money-from-your-lifetime-isa
+  - name: GOV.UK, First Time Buyer ISA consultation
+    url: https://www.gov.uk/government/consultations/first-time-buyer-isa-consultation/first-time-buyer-isa-consultation
+  - name: GOV.UK, Tax on savings interest, how much is tax-free
+    url: https://www.gov.uk/apply-tax-free-interest-on-savings/how-much-is-tax-free
+  - name: FSCS, Banks, building societies and credit unions
+    url: https://www.fscs.org.uk/what-we-cover/banks-building-societies/
+  - name: GOV.UK, Help to Save
+    url: https://www.gov.uk/get-help-savings-low-income
 ---
 
 ## How to use this calculator
 
-The results update as you type.
+Change any figure and the result updates.
 
-- **Savings goal:** the amount you want to have, such as an emergency fund, a house deposit or a holiday.
-- **Saved so far:** money you've already put aside for this goal. Leave it at 0 if you're starting fresh.
-- **Interest rate (AER):** the AER your savings account pays. Enter 0 for money that won't earn interest.
-- **What do you want to work out?** Choose how much to save each month by a set time, or how long a monthly amount takes.
-- **Time to reach your goal** or **Monthly savings:** the years you have (1.5 years is 18 months), or the amount you can save each month.
+- **Savings goal:** what you want to end up with. That could be a house deposit, a new boiler or a wedding.
+- **Saved so far:** the money you've already put towards it. Leave it at 0 if you're starting today.
+- **Interest rate (AER):** the AER of the account you'll use. Compare accounts by AER rather than the gross rate, because AER includes compounding. For money earning nothing, enter 0.
+- **What do you want to work out?** Pick the monthly amount for a deadline, or the time a monthly amount takes.
+- **Time to reach your goal** or **Monthly savings:** your deadline in years (1.5 is 18 months), or what you can put aside each month.
 
-The results show the monthly amount or the time it takes, the month you'll reach your goal, how much you'll deposit and the interest you'll earn. Below the calculator, the chart shows your savings at the end of each year, and the table gives the figures for every year.
+You'll see the month you get there, what you pay in and the interest you earn. Below the calculator, a chart splits each year's savings into what you put in and the interest, and the table lists every year.
 
-## Example: £15,000 in 3 years
+Saving into a Lifetime ISA? Enter only what you pay in. The 25% government bonus is extra and isn't in the calculator's figures.
 
-Say you want £15,000 for a house deposit in 3 years. You've saved £1,000 so far, and your account pays a 4% AER.
+## Example: a £15,000 house deposit in 3 years
 
-You'd need to save **£363.78 a month**. Over the 36 months you'd deposit £13,096.24, and interest would add £903.76. Without any interest, you'd need £388.89 a month, so interest saves you £25.11 a month.
+You have £1,000 towards a £15,000 deposit and want the rest in 3 years, in an account paying 4% AER. You'd need to put away **£363.78 a month**. That's £13,096.24 over the 36 months, and interest adds £903.76.
 
-More time makes a big difference:
+Interest builds slowly: £119.47 in the first year, £298.86 in the second and £485.43 in the third. Even that last figure is under the £500 Personal Savings Allowance for a higher-rate taxpayer, so many savers would pay no tax on it unless they earn interest elsewhere too.
 
-| Time to goal | Monthly savings | Interest earned |
+A better rate helps, but less than you might expect:
+
+| AER | Monthly savings | Interest over 3 years |
 | --- | --- | --- |
-| 2 years | £558.40 | £598.46 |
-| 3 years | £363.78 | £903.76 |
-| 5 years | £208.27 | £1,503.58 |
+| No interest | £388.89 | £0.00 |
+| 2% | £376.11 | £459.98 |
+| 3% | £369.89 | £683.84 |
+| 4% | £363.78 | £903.76 |
+| 5% | £357.78 | £1,119.81 |
 
-If you'd rather start from what you can afford, choose "How long it will take":
+Going from 2% to 5% cuts the monthly amount by £18.33. Moving the deadline from 3 years to 5 cuts it by £155.51, to £208.27. In 2 years it takes £558.40 a month.
 
-- **£250 a month** reaches £15,000 in 4 years 3 months.
-- **£300 a month** gets there in 3 years 8 months, with £1,127.80 of interest.
-- **£400 a month** gets there in 2 years 9 months.
+If you'd rather work from what you can afford, £300 a month gets to £15,000 in 3 years 8 months and £400 a month in 2 years 9 months. At £500 a month it's 2 years 3 months.
+
+### First home: what a Lifetime ISA adds
+
+A Lifetime ISA can add a government bonus of 25% to what you pay in, up to £1,000 a year. Paying in the £4,000 yearly maximum for 3 years means £12,000 from you and £3,000 from the government: £15,000 before any interest. That's £333.33 a month, against £363.78 in the example, without counting interest or the £1,000 you already have. It comes with conditions:
+
+- You must open it when you're 18 or over and under 40.
+- It must be your first home, bought with a mortgage through a conveyancer or solicitor at least 12 months after your first payment. Homes over £450,000 carry a withdrawal charge.
+- Take the money out for another reason before 60 and you pay a 25% charge. GOV.UK's own example: £800 of savings grows to £1,000 with the bonus, and taking it all out leaves £750.
+- The £4,000 counts towards your £20,000 ISA allowance for the 2026 to 2027 tax year.
+
+The government has consulted on a First Time Buyer ISA to replace it. Until that launches, the consultation says you can still open a Lifetime ISA and pay into one under the existing rules.
 
 ## How it's calculated
 
-The calculator turns the AER into a monthly rate that gives the same yearly growth:
+Every month your balance earns interest, then your deposit goes in. The yearly AER is turned into a monthly rate with the same growth over a year:
 
-**i = (1 + AER)^(1/12) − 1**
+**i = (1 + AER)^(1/12) − 1**, so 4% AER is 0.327% a month.
 
-A 4% AER gives i = 0.327% a month. Deposits are made at the end of each month.
+With **G** as your goal, **S** as savings so far and **n** as the number of months:
 
-**Monthly savings needed:** P = (G − S × (1 + i)^n) × i ÷ ((1 + i)^n − 1), where G is your goal, S what you've saved so far and n the number of months. At 0%, it's simply (G − S) ÷ n. If your current savings grow to the goal on their own with interest, no monthly savings are needed.
+- **Monthly amount:** P = (G − S(1 + i)^n) × i ÷ ((1 + i)^n − 1). With no interest, it's (G − S) ÷ n.
+- **Time needed:** n = ln((G × i + P) ÷ (S × i + P)) ÷ ln(1 + i), rounded up to a full month. With no interest, it's (G − S) ÷ P.
 
-**Time to reach the goal:** n = ln((G × i + P) ÷ (S × i + P)) ÷ ln(1 + i), rounded up to a whole month, where P is what you save each month. At 0%, it's (G − S) ÷ P. Because the last deposit is a full month's savings, your final balance can end a little above the goal.
+If what you already have will reach the goal on its own, the monthly amount is £0. When you work out the time instead, the last deposit is a full month's amount, so you may finish slightly over.
 
-The calculator assumes the rate stays the same and leaves out tax, fees and inflation. Figures are calculated at full precision and rounded only for display.
+It assumes the AER never changes, and it leaves out tax, fees and inflation. Figures are rounded only when shown.
 
-## Tips to reach your goal sooner
+## Tips for UK savers
 
-1. **Give the goal its own account.** Money that's kept separate is less likely to be spent on something else.
-2. **Set up a standing order on payday.** The money moves before you can spend it.
-3. **Shop around for a better AER.** Rates vary a lot between providers. Check how often you can withdraw and whether a bonus rate ends after a year.
-4. **Use a cash ISA.** Interest inside an ISA is tax-free, which matters more as your balance grows.
-5. **Add windfalls.** Putting part of a bonus, tax refund or gift towards the goal can cut months off the time.
-6. **Revisit the plan.** If your rate, income or goal changes, update the numbers and adjust your monthly amount.
+1. **Pay yourself first.** A standing order on payday moves the money before it's spent, and a separate pot makes it harder to dip in.
+2. **Check your tax before choosing an account.** With interest over your Personal Savings Allowance, a cash ISA can be worth a lower rate, because the interest is tax-free.
+3. **Know when your ISA year ends.** The tax year runs from 6 April to 5 April, and you can save up to £20,000 in ISAs in 2026 to 2027.
+4. **Read the withdrawal rules.** Fixed-rate and notice accounts may limit access, so match the account to when you'll need the money.
+5. **Look at Help to Save if you get Universal Credit.** Two bonuses, after years 2 and 4, add 50p for every £1 saved on up to £50 a month.
+6. **Spread large balances.** Protection is per person, per authorised firm, so check whether two brands share a licence before you split your savings.
