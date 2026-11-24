@@ -47,7 +47,9 @@ export const uk: CountryConfig = {
       maintenancePercent: 1,
       feesPerMonth: 0,
       sellingCostsPercent: 2,
-      homeGrowthPercent: 3,
+      // Illustrative. ONS: UK house prices rose 1.2% in the 12 months to September 2026 (provisional):
+      // https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/privaterentandhousepricesuk/november2026
+      homeGrowthPercent: 2,
       monthlyRent: 1_300,
       rentGrowthPercent: 3,
       investReturnPercent: 4,

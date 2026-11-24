@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { uk as ukConfig } from '../../src/countries/uk';
+import { calculatePropertyTax, type PropertyTaxParams } from '../../src/engines/propertyTax';
 import { RENT_VS_BUY_YEARS, calculateRentVsBuy, validateRentVsBuyInput, type RentVsBuyInput } from '../../src/engines/rentVsBuy';
 
 /*
@@ -119,6 +121,73 @@ describe('calculateRentVsBuy', () => {
     for (const y of r.rows) expect(y.buyerNetWorth).toBeCloseTo(y.homeEquity + y.buyerInvestments, 6);
     const big = calculateRentVsBuy({ ...base, homePrice: 100_000_000, monthlyRent: 1_000_000, investReturnPercent: 30, homeGrowthPercent: 20 });
     expect(Number.isFinite(big.atYears.advantage)).toBe(true);
+  });
+});
+
+describe('guide figures (src/content/guides/uk/rent-vs-buy-calculator.md)', () => {
+  // Calculator defaults with the ONS rates (November 2026): house prices +1.2%, rents +3.8% a year.
+  const ons: RentVsBuyInput = {
+    homePrice: 300_000,
+    depositPercent: 15,
+    mortgageRatePercent: 4.5,
+    termYears: 25,
+    buyingCosts: 2_500,
+    propertyTaxPercent: 0,
+    insurancePerYear: 350,
+    maintenancePercent: 1,
+    feesPerMonth: 0,
+    sellingCostsPercent: 2,
+    homeGrowthPercent: 1.2,
+    monthlyRent: 1_300,
+    rentGrowthPercent: 3.8,
+    investReturnPercent: 4,
+    years: 10,
+  };
+  const run = (x: Partial<RentVsBuyInput>) => calculateRentVsBuy({ ...ons, ...x });
+  const lead = (x: Partial<RentVsBuyInput>, year = 10) => run(x).rows[year - 1]!.advantage;
+
+  it('matches the example', () => {
+    const r = run({});
+    expect(r.monthlyMortgage).toBeCloseTo(1_417.37, 2);
+    expect(r.upfrontCash).toBe(47_500);
+    expect(r.firstMonthOwning).toBeCloseTo(1_696.54, 2);
+    expect(r.firstMonthOwning - 1_300).toBeCloseTo(396.54, 2);
+    expect(r.atYears.buyerNetWorth).toBeCloseTo(147_421.11, 2);
+    expect(r.atYears.renterNetWorth).toBeCloseTo(98_625.27, 2);
+    expect(r.atYears.advantage).toBeCloseTo(48_795.84, 2);
+    expect(r.breakEvenYear).toBe(3);
+    expect(lead({}, 5)).toBeCloseTo(10_086.78, 2);
+    expect(lead({}, 20)).toBeCloseTo(222_343.21, 2);
+    const defaults = ukConfig.defaults.rentVsBuy!;
+    expect([defaults.homeGrowthPercent, defaults.rentGrowthPercent]).toEqual([2, 3]);
+    const starting = run({ homeGrowthPercent: 2, rentGrowthPercent: 3 });
+    expect(starting.breakEvenYear).toBe(2);
+    expect(starting.atYears.advantage).toBeCloseTo(66_857.8, 2);
+  });
+
+  it('matches the table of changes', () => {
+    const rows: [Partial<RentVsBuyInput>, number, number][] = [
+      [{ mortgageRatePercent: 5.5 }, 20_635.36, 7],
+      [{ mortgageRatePercent: 6.5 }, -8_234.04, 12],
+      [{ monthlyRent: 1_100 }, 14_313.99, 7],
+      [{ feesPerMonth: 200 }, 17_939.69, 7],
+      [{ investReturnPercent: 6 }, 29_798.71, 5],
+      [{ buyingCosts: 7_500 }, 41_394.62, 5],
+    ];
+    for (const [change, amount, year] of rows) {
+      expect(lead(change), JSON.stringify(change)).toBeCloseTo(amount, 2);
+      expect(run(change).breakEvenYear, JSON.stringify(change)).toBe(year);
+    }
+  });
+
+  it('matches the Stamp Duty figures', () => {
+    const sdlt = (price: number, buyerType: 'firstTime' | 'standard') =>
+      calculatePropertyTax({ price, buyerType, nonResident: false }, ukConfig.uk!.stampDuty as unknown as PropertyTaxParams).tax;
+    expect(sdlt(300_000, 'firstTime')).toBe(0);
+    expect(sdlt(300_000, 'standard')).toBe(5_000);
+    expect(sdlt(500_000, 'firstTime')).toBe(10_000);
+    expect(sdlt(500_001, 'firstTime')).toBeCloseTo(15_000.05, 2);
+    expect((1_300 * 12) / 52 * 5).toBeCloseTo(1_500, 6);
   });
 });
 
