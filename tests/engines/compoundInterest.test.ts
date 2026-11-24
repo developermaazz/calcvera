@@ -78,6 +78,57 @@ describe('calculateCompoundInterest', () => {
   });
 });
 
+describe('guide figures (src/content/guides/uk/compound-interest-calculator.md)', () => {
+  const uk: CompoundInterestInput = { initialDeposit: 5_000, monthlyDeposit: 150, annualRatePercent: 4.5, compounding: 'monthly', years: 15, timing: 'end' };
+  const run = (x: Partial<CompoundInterestInput>) => calculateCompoundInterest({ ...uk, ...x });
+  const child = (years: number) => run({ initialDeposit: 0, monthlyDeposit: 50, years });
+
+  it('matches the example table and the rates', () => {
+    const rows: [number, number, number, number][] = [
+      [5, 14_000, 2_330.81, 16_330.81],
+      [10, 23_000, 7_514.67, 30_514.67],
+      [15, 32_000, 16_269.98, 48_269.98],
+      [25, 50_000, 48_318.41, 98_318.41],
+    ];
+    const r = run({ years: 25 }).years;
+    for (const [year, paidIn, interest, balance] of rows) {
+      const row = r[year - 1]!;
+      expect(row.totalDeposits, `year ${year}`).toBe(paidIn);
+      expect(row.totalInterest, `year ${year}`).toBeCloseTo(interest, 2);
+      expect(row.balance, `year ${year}`).toBeCloseTo(balance, 2);
+    }
+    expect(r[24]!.totalInterest - r[14]!.totalInterest).toBeCloseTo(32_048.44, 2);
+    expect(run({ annualRatePercent: 3.5 }).finalBalance).toBeCloseTo(43_888.74, 2);
+    expect(run({ annualRatePercent: 5.5 }).finalBalance).toBeCloseTo(53_199.75, 2);
+    expect(run({ monthlyDeposit: 250 }).finalBalance).toBeCloseTo(73_911.44, 2);
+    expect(r[0]!.interest).toBeCloseTo(267.29, 2);
+    expect(r[14]!.interest).toBeCloseTo(2_077, 2);
+  });
+
+  it('the interest passes the £500 allowance in year 4 and the £1,000 allowance in year 8', () => {
+    const interest = run({ years: 10 }).years.map((y) => y.interest);
+    expect(interest.findIndex((v) => v > 500) + 1).toBe(4);
+    expect(interest.findIndex((v) => v > 1_000) + 1).toBe(8);
+    expect(interest[3]).toBeCloseTo(565.49, 2);
+    expect(interest[7]).toBeCloseTo(1_031.06, 2);
+  });
+
+  it('matches the FAQs and the child and inflation figures', () => {
+    expect(run({ initialDeposit: 20_000, monthlyDeposit: 0, years: 1 }).totalInterest).toBeCloseTo(918.8, 2);
+    expect(run({ initialDeposit: 20_000, monthlyDeposit: 0, years: 1, compounding: 'annually' }).totalInterest).toBeCloseTo(900, 2);
+    expect(run({}).effectiveAnnualRate).toBeCloseTo(0.04594, 4);
+    expect(12 * (Math.pow(1.045, 1 / 12) - 1) * 100).toBeCloseTo(4.41, 2);
+    expect(run({ compounding: 'daily' }).finalBalance - run({}).finalBalance).toBeCloseTo(37.96, 2);
+    expect(run({}).finalBalance - run({ compounding: 'annually' }).finalBalance).toBeCloseTo(416.79, 2);
+    expect(Math.log(2) / (12 * Math.log(1 + 0.045 / 12))).toBeCloseTo(15.4, 1);
+    expect(child(18).finalBalance).toBeCloseTo(16_593.4, 2);
+    expect(child(18).totalInterest).toBeCloseTo(5_793.4, 2);
+    expect(child(9).finalBalance).toBeCloseTo(6_642.23, 2);
+    expect(child(18).finalBalance - child(9).finalBalance).toBeCloseTo(9_951.17, 2);
+    expect(run({}).finalBalance / Math.pow(1.02, 15)).toBeCloseTo(35_865.3, 2);
+  });
+});
+
 describe('validateCompoundInterestInput', () => {
   it('flags empty, out-of-range and all-zero inputs', () => {
     const fields = (x: Partial<CompoundInterestInput>) => validateCompoundInterestInput({ ...base, ...x }).map((e) => e.field);

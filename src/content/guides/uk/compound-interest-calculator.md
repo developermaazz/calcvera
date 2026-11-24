@@ -1,80 +1,90 @@
 ---
 h1: UK Compound Interest Calculator
-description: "Free UK compound interest calculator: see how a lump sum and monthly deposits grow with daily, monthly or annual compounding, year by year."
-intro: Enter a starting amount, a monthly deposit, the interest rate and how long you'll save to see your future balance, how much of it is interest, and how it grows each year.
-updated: 2026-10-20
+description: "Free UK compound interest calculator: how a lump sum and monthly savings grow, the AER you earn, and when the interest could be taxed."
+intro: Enter what you have now, what you can add each month, the gross rate and the number of years. You'll see the balance you could reach, the AER, and how much of it is interest.
+updated: 2026-11-24
 faqs:
   - q: What is compound interest?
-    a: It's interest earned on your interest as well as on the money you put in. Each time interest is added, the next round of interest is worked out on a bigger balance. In our example, £5,000 plus £150 a month at 4.5% earns £7,514.67 of interest in the first 10 years, and £16,269.98 by year 15.
-  - q: What is the difference between the gross rate and the AER?
-    a: The gross rate is the yearly interest rate before compounding. The AER (annual equivalent rate) shows what you'd earn in a year once interest is added and compounded, so it's the fairest way to compare accounts that pay interest monthly or yearly. A 4.5% gross rate paid monthly is an AER of 4.59%.
-  - q: Does monthly or annual interest make a big difference?
-    a: Not much at savings rates. In the example, daily compounding ends £37.95 higher than monthly after 15 years, and annual compounding ends £416.79 lower. The rate, the time and how much you add matter far more.
-  - q: What is the rule of 72?
-    a: Divide 72 by the interest rate to estimate how many years it takes money to double. At 4.5% that's 16 years. The exact figure with monthly compounding is 15.4 years, so it's a quick, rough guide.
-  - q: Is interest on savings taxed?
-    a: Most people can earn some interest from their savings without paying tax, thanks to the Personal Savings Allowance. Interest above your allowance is taxed at your Income Tax rate. Interest earned inside an ISA is tax-free. This calculator doesn't include tax.
-  - q: How much can I put in an ISA?
-    a: In the 2026 to 2027 tax year, you can save up to £20,000 in ISAs in total. In the example, £5,000 plus £150 a month adds up to £6,800 in the first year, well within the allowance.
+    a: It's interest on your interest. Once interest is added to your account, the next lot is worked out on the bigger balance. In our example, the account earns £267.29 in the first year and £2,077.00 in year 15, with the same deposit every month.
+  - q: How much interest would £20,000 earn in a year?
+    a: At a 4.5% gross rate, £918.80 if interest is added monthly, or £900.00 if it's added once a year. Enter your own amount and rate above to see the figure for your account.
+  - q: What's the difference between gross rate and AER?
+    a: The gross rate is the yearly rate before compounding and before tax. The AER shows what you'd earn in a year once interest is added and compounded, so it lets you compare accounts that pay monthly and yearly. A 4.5% gross rate paid monthly is an AER of 4.59%.
+  - q: Is monthly or yearly interest better?
+    a: Compare the AERs, because they already include compounding. At the same 4.5% AER, an account paying monthly would quote a gross rate of about 4.41%. In our example, 4.5% gross compounded daily ends £37.96 above monthly after 15 years, and yearly ends £416.79 below.
+  - q: Do I pay tax on savings interest?
+    a: Only above your allowances. The Personal Savings Allowance is £1,000 a year for basic-rate taxpayers, £500 for higher-rate and nothing for additional-rate, and interest in an ISA is tax-free. Budget 2026 said tax rates on savings income will rise to 24%, 44% and 49% from 6 April 2027, once the Finance Bill 2026-27 is law. The calculator doesn't include tax.
+  - q: How much can I pay into a Junior ISA?
+    a: Up to £9,000 in the 2026 to 2027 tax year, from anyone. A parent or guardian opens it for a child under 16, the money belongs to the child, and it can't be taken out until they turn 18, apart from some exceptions.
+  - q: How long does it take to double my money?
+    a: "Divide 72 by the rate for a quick guide: at 4.5% that's 16 years. Compounded monthly, the exact time is 15.4 years."
 sources:
-  - name: GOV.UK, Tax on savings interest
-    url: https://www.gov.uk/apply-tax-free-interest-on-savings
   - name: GOV.UK, Individual Savings Accounts (ISAs)
     url: https://www.gov.uk/individual-savings-accounts
+  - name: GOV.UK, Junior Individual Savings Accounts (ISA)
+    url: https://www.gov.uk/junior-individual-savings-accounts
+  - name: GOV.UK, Tax on savings interest, how much is tax-free
+    url: https://www.gov.uk/apply-tax-free-interest-on-savings/how-much-is-tax-free
+  - name: GOV.UK, Income Tax, changes to tax rates for property and savings income
+    url: https://www.gov.uk/government/publications/income-tax-changes-to-tax-rates-for-property-and-savings-income/income-tax-changes-to-tax-rates-for-property-and-savings-income
+  - name: Bank of England, Inflation and the 2% target
+    url: https://www.bankofengland.co.uk/monetary-policy/inflation
 ---
 
 ## How to use this calculator
 
-The results update as you type.
+Fill in what you know; the balance changes as you type.
 
-- **Starting amount:** what you're putting in now. Enter 0 if you're starting from nothing.
-- **Monthly deposit:** how much you'll add each month. Leave it at 0 for a one-off lump sum.
-- **Annual interest rate:** the gross yearly rate. If you only know the AER, enter that and choose "Annually".
-- **Interest compounds:** how often interest is added: daily, monthly, quarterly, twice a year or annually. Many UK savings accounts pay interest monthly or once a year.
-- **How long:** the number of years you'll leave the money to grow.
-- **Deposits are made at the:** start or end of each month. Deposits at the start earn one extra month of interest.
+- **Starting amount** and **Monthly deposit:** what you have now and what you'll add. Either one can be 0.
+- **Annual interest rate:** the gross rate. UK accounts usually show a gross rate and an AER side by side. If you only have the AER, enter that and set compounding to "Annually".
+- **Interest compounds:** how often your bank or building society adds interest. Check your account's summary box.
+- **How long:** whole years, up to 100.
+- **Deposits are made at the:** start or end of each month. Paying in on the 1st earns slightly more than on the last day.
 
-The results show your balance at the end, how much you put in, the interest earned and the AER. Below the calculator, the chart shows your balance at the end of each year, split into deposits and interest, and the table gives the figures for every year.
+You get the final balance, what you paid in, the interest and the AER. The chart and table below show every year. If your account sends the interest somewhere else, such as your current account, it won't compound and you'll end up with less than shown.
 
 ## Example: £5,000 plus £150 a month at 4.5%
 
-Say you start with £5,000, add £150 at the end of each month, and earn 4.5% compounded monthly for 15 years.
+You open an easy-access account with £5,000, pay in £150 at the end of each month, and the rate stays at 4.5% gross with interest added monthly.
 
-| After | Balance | Put in | Interest |
+| After | Paid in | Interest | Balance |
 | --- | --- | --- | --- |
-| 10 years | £30,514.67 | £23,000.00 | £7,514.67 |
-| 15 years | £48,269.98 | £32,000.00 | £16,269.98 |
-| 25 years | £98,318.41 | £50,000.00 | £48,318.41 |
+| 5 years | £14,000.00 | £2,330.81 | £16,330.81 |
+| 10 years | £23,000.00 | £7,514.67 | £30,514.67 |
+| 15 years | £32,000.00 | £16,269.98 | £48,269.98 |
+| 25 years | £50,000.00 | £48,318.41 | £98,318.41 |
 
-After 15 years, interest makes up 34% of the balance. Leave it for 25 years and interest is almost half: the balance grows faster each year because interest is earned on a bigger balance.
+The last 10 years add £32,048.44 of interest, nearly twice what the first 15 did. The rate matters too: over 15 years, 3.5% gives £43,888.74 and 5.5% gives £53,199.75. Paying in £250 a month instead of £150 gives £73,911.44.
 
-Small changes add up:
+### When the interest could be taxed
 
-- **Rate:** at 3.5% the 15-year balance is £43,888.74.
-- **Deposit:** £250 a month instead of £150 gives £73,911.44.
-- **Timing:** depositing at the start of each month adds £144.23.
-- **Lump sum only:** £5,000 with no monthly deposits grows to £9,807.78.
+Interest in year 4 is £565.49, which is over the £500 Personal Savings Allowance for a higher-rate taxpayer. In year 8 it's £1,031.06, over the £1,000 basic-rate allowance. Before then, with no other savings interest, those taxpayers would owe nothing. Additional-rate taxpayers have no allowance, so all of it could be taxed. An ISA avoids the question: in year 1 you'd pay in £6,800, well inside the £20,000 allowance for the 2026 to 2027 tax year.
+
+### Starting early for a child
+
+Put £50 a month into an account at 4.5% from birth and it reaches **£16,593.40** at 18, of which £5,793.40 is interest. Wait until the child is 9 and the same £50 a month reaches £6,642.23. You'd have paid in half as much, but end with £9,951.17 less. A Junior ISA keeps the interest tax-free, though the money is locked until 18.
+
+### What it buys later
+
+Prices rise too. If inflation runs at the Bank of England's 2% target, the £48,269.98 after 15 years would buy what £35,865.30 buys today.
 
 ## How it's calculated
 
-Your monthly deposits and the bank's compounding don't always line up, so the calculator first finds the monthly rate that gives exactly the same yearly growth:
+Deposits are monthly but interest may be added on another schedule, so the rate is first converted to the monthly growth that gives the same result over a year:
 
 **i = (1 + r ÷ n)^(n ÷ 12) − 1**
 
-- **r** is the annual rate as a decimal (4.5% = 0.045).
-- **n** is how many times a year interest compounds: 365 for daily, 12 for monthly, 4 for quarterly, 2 for twice a year and 1 for annually.
+where **r** is the gross rate as a decimal and **n** the number of times a year interest is added (365, 12, 4, 2 or 1). Each month the balance grows by i, then your deposit goes in, or the other way round if you pay at the start. With no monthly deposits the result is **P × (1 + r ÷ n)^(n × t)** after t years.
 
-Each month, the balance grows by i and your deposit is added, at the start or the end of the month. A lump sum on its own grows to **P × (1 + r ÷ n)^(n × t)** after t years, the standard compound interest formula.
+**AER = (1 + r ÷ n)^n − 1.** At 4.5% added monthly that's 4.59%.
 
-The **AER** is **(1 + r ÷ n)^n − 1**: the yearly growth after compounding. It's the figure to use when you compare savings accounts.
+Your rate is assumed to stay the same. Tax, charges and inflation aren't deducted. Figures are rounded only when shown.
 
-The calculator assumes the rate stays the same and leaves out tax, fees and inflation. Figures are calculated at full precision and rounded only for display.
+## Tips for UK savers
 
-## Tips to make compound interest work harder
-
-1. **Start as early as you can.** Time does most of the work. In the example, years 16 to 25 add almost twice as much interest as the first 15.
-2. **Compare accounts by AER.** It includes compounding, so accounts that pay interest monthly and yearly can be compared directly.
-3. **Set up a standing order on payday.** A fixed monthly amount is easier to keep up than saving what's left at the end of the month.
-4. **Use your ISA allowance.** Interest inside an ISA is tax-free, so more of it stays to earn interest.
-5. **Watch for rates that drop.** Bonus rates often end after a year, and easy-access rates can change at any time. Check yours and move if it falls.
-6. **Remember inflation.** Rising prices reduce what your balance will buy, so your real growth is lower than the figure shown.
+1. **Compare on AER.** It puts accounts that pay monthly, quarterly or yearly on the same footing.
+2. **Check where the interest goes.** Interest paid into another account doesn't compound.
+3. **Use your ISA allowance early in the tax year.** A new allowance starts each 6 April, and interest inside an ISA is tax-free.
+4. **Note when a bonus rate ends.** An easy-access rate can be cut, so check yours a couple of times a year.
+5. **Leave it alone.** Withdrawing even a small sum removes all the interest it would have earned later.
+6. **Remember that prices rise.** Use the inflation figure above to judge what a long-term balance might buy.
