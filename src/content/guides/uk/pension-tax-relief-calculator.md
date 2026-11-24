@@ -2,7 +2,7 @@
 h1: UK Pension Tax Relief Calculator
 description: "Free UK pension tax relief calculator for 2026/27: the relief on your contributions, what they cost you, and higher-rate relief to claim back."
 intro: Enter your salary and pension contribution to see how much tax relief you get, what your contribution really costs you, and any extra relief you need to claim from HMRC.
-updated: 2026-10-20
+updated: 2026-11-24
 faqs:
   - q: How much tax relief do I get on pension contributions?
     a: "Relief is at your highest rate of Income Tax: 20% for basic-rate taxpayers, 40% for higher-rate and 45% for additional-rate (with different rates in Scotland). In our example, £3,000 into a pension on a £60,000 salary gets £1,200 of relief, so it costs you £1,800."
@@ -11,7 +11,7 @@ faqs:
   - q: What is the difference between relief at source and net pay?
     a: "With relief at source, you pay from your take-home pay and the provider adds 20% basic-rate relief. With a net pay arrangement, your contribution comes out of your pay before Income Tax. They give the same relief for most taxpayers, but on net pay you get no relief if you earn too little to pay Income Tax."
   - q: Is salary sacrifice better?
-    a: It usually saves the most, because you don't pay National Insurance on the salary you give up, as well as Income Tax. In the example, salary sacrifice costs £1,740 a year against £1,800 for the other two methods. It also lowers your official salary, which can affect things like mortgage applications and some benefits.
+    a: It usually saves the most, because you don't pay National Insurance on the salary you give up, as well as Income Tax. In the example, salary sacrifice costs £1,740 a year against £1,800 for the other two methods. It also lowers your official salary, which can affect things like mortgage applications and some benefits. GOV.UK says that from April 2029 only the first £2,000 a year of employee pension contributions made this way will be free of National Insurance. Income Tax relief isn't changing.
   - q: How much can I pay into a pension with tax relief?
     a: You get relief on contributions up to 100% of your earnings in the tax year. If you have little or no earnings, you can still pay in up to £2,880 a year and the provider adds relief to make £3,600. The annual allowance of £60,000 in 2026 to 2027 limits the total going in, including your employer's contributions, before a tax charge applies.
   - q: What is the 60% tax trap and how do pensions help?
@@ -23,6 +23,8 @@ sources:
     url: https://www.gov.uk/tax-on-your-private-pension/pension-tax-relief
   - name: GOV.UK, Tax on your private pension contributions, annual allowance
     url: https://www.gov.uk/tax-on-your-private-pension/annual-allowance
+  - name: GOV.UK, Changes to salary sacrifice for pensions from April 2029
+    url: https://www.gov.uk/government/publications/changes-to-salary-sacrifice-for-pensions-from-april-2029/changes-to-salary-sacrifice-for-pensions-from-april-2029
   - name: GOV.UK, Pension schemes rates and allowances
     url: https://www.gov.uk/government/publications/rates-and-allowances-pension-schemes/pension-schemes-rates
   - name: GOV.UK, Work out your reduced (tapered) annual allowance

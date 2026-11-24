@@ -2,7 +2,7 @@
 h1: UK Inheritance Tax Calculator
 description: Free UK Inheritance Tax calculator for 2026/27. Work out the nil-rate bands, residence allowance, charity rate and tax due on an estate.
 intro: Enter the estate's value, debts, home and gifts to estimate Inheritance Tax, including the residence nil-rate band, allowances passed on by a spouse and the reduced charity rate.
-updated: 2026-10-16
+updated: 2026-11-24
 faqs:
   - q: What is the Inheritance Tax threshold in 2026/27?
     a: The nil-rate band is £325,000. If you leave a home to your children or grandchildren, the residence nil-rate band adds up to £175,000, so the threshold can reach £500,000. Both bands are fixed at these levels until 5 April 2031.
@@ -12,6 +12,8 @@ faqs:
     a: "Up to £1 million when both bands are unused at the first death and the home goes to direct descendants: two nil-rate bands of £325,000 and two residence nil-rate bands of £175,000."
   - q: How does the residence nil-rate band taper work?
     a: For estates worth more than £2 million, the residence nil-rate band falls by £1 for every £2 over £2 million. The value used for the taper is the estate's assets minus debts, before exemptions and reliefs.
+  - q: Do pensions count towards Inheritance Tax?
+    a: For deaths before 6 April 2027, unused pension funds in most UK schemes can be passed on without Inheritance Tax, though some schemes, such as the NHS scheme, are treated as part of the estate. For deaths on or after 6 April 2027, most unused pension funds and pension death benefits will count. Death in service benefits from a registered scheme are excluded, and the exemptions for a spouse, civil partner or charity stay. To see the effect here, add the pension to the estate's value.
   - q: How does the 36% charity rate work?
     a: If at least 10% of the baseline amount goes to charity, the rest of the estate is taxed at 36% instead of 40%. The baseline amount is the estate after exemptions and the nil-rate band, with the charity gifts added back.
   - q: What happens to gifts made in the last 7 years?
@@ -23,6 +25,8 @@ sources:
     url: https://www.gov.uk/guidance/inheritance-tax-residence-nil-rate-band
   - name: GOV.UK, Inheritance Tax, Leaving money to charity
     url: https://www.gov.uk/inheritance-tax/leaving-money-to-charity
+  - name: GOV.UK, Inheritance Tax, unused pension funds and death benefits
+    url: https://www.gov.uk/government/publications/inheritance-tax-unused-pension-funds-and-death-benefits/inheritance-tax-unused-pension-funds-and-death-benefits
   - name: GOV.UK, Inheritance Tax thresholds and interest rates
     url: https://www.gov.uk/government/publications/rates-and-allowances-inheritance-tax-thresholds-and-interest-rates
   - name: HMRC Inheritance Tax Manual, IHTM45010 (charity baseline amount)
@@ -33,7 +37,7 @@ sources:
 
 The result updates as you type.
 
-- **Total value of the estate:** everything the person owns at death, including their home or share of it, savings, investments and possessions.
+- **Total value of the estate:** everything the person owns at death, including their home or share of it, savings, investments and possessions. Most unused pensions don't count for deaths before 6 April 2027 (see the FAQ).
 - **Debts and funeral costs:** mortgages, loans, unpaid bills and reasonable funeral costs. These come off first.
 - **Gifts in the last 7 years:** gifts that count for Inheritance Tax after exemptions such as the annual exemption. They use up the nil-rate band first.
 - **Leaving a home to children or grandchildren:** tick this to apply the residence nil-rate band, then enter the value of the home (or share) less any mortgage on it.

@@ -2,7 +2,7 @@
 h1: UK Take-Home Pay Calculator
 description: Free UK take-home pay calculator for 2026/27. Your pay after Income Tax, National Insurance, student loan and pension, including Scotland.
 intro: Enter your salary to see your monthly take-home pay after Income Tax, National Insurance, student loan repayments and pension contributions, using 2026/27 rates.
-updated: 2026-10-18
+updated: 2026-11-24
 faqs:
   - q: How much is take-home pay on £35,000?
     a: In England, Wales or Northern Ireland, with no pension or student loan, you'd pay £4,486 Income Tax and £1,794.40 National Insurance in 2026/27, leaving £28,719.60 a year, or £2,393.30 a month.
@@ -13,7 +13,7 @@ faqs:
   - q: How are student loan repayments worked out?
     a: You repay 9% of your income over your plan's threshold. For 2026/27, the thresholds are £26,900 for Plan 1, £29,385 for Plan 2, £33,795 for Plan 4 and £25,000 for Plan 5. Postgraduate Loans are 6% of income over £21,000, on top of any other plan.
   - q: Is salary sacrifice better than other pension methods?
-    a: Salary sacrifice also saves National Insurance, because the contribution comes off your pay before NI is worked out. At £35,000 with a 5% pension, it leaves you £140 a year better off than net pay or relief at source.
+    a: Salary sacrifice also saves National Insurance, because the contribution comes off your pay before NI is worked out. At £35,000 with a 5% pension, it leaves you £140 a year better off than net pay or relief at source. GOV.UK says that from April 2029 only the first £2,000 a year of employee pension contributions made this way will be free of National Insurance. Income Tax relief isn't changing.
   - q: Why is my payslip different from this calculator?
     a: Payroll works out tax and National Insurance each pay period, and your tax code may not be the standard one, for example if you have taxable benefits or untaxed income. Check your tax code on your payslip or in your HMRC account.
 sources:
@@ -29,6 +29,8 @@ sources:
     url: https://www.gov.uk/repaying-your-student-loan/what-you-pay
   - name: GOV.UK, Tax on your private pension contributions
     url: https://www.gov.uk/tax-on-your-private-pension/pension-tax-relief
+  - name: GOV.UK, Changes to salary sacrifice for pensions from April 2029
+    url: https://www.gov.uk/government/publications/changes-to-salary-sacrifice-for-pensions-from-april-2029/changes-to-salary-sacrifice-for-pensions-from-april-2029
 ---
 
 ## How to use this calculator

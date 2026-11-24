@@ -2,14 +2,14 @@
 h1: UK ISA Savings Calculator
 description: "Free UK ISA savings calculator for 2026/27: see how your ISA grows, how much allowance you use, and the tax you save against a savings account."
 intro: Enter what you'll pay into your ISA, the rate and how long, to see what it grows to, how much of your £20,000 allowance you use, and how much better off you are than in a taxable savings account.
-updated: 2026-10-20
+updated: 2026-11-24
 faqs:
   - q: How much can I put in an ISA?
     a: In the 2026 to 2027 tax year, you can save up to £20,000 in ISAs in total. Money already in your ISAs from earlier years doesn't count towards this year's allowance.
   - q: Is a cash ISA worth it if I'm a basic-rate taxpayer?
     a: It can be. Most basic-rate taxpayers can earn £1,000 of interest a year tax-free under the Personal Savings Allowance, so small savings may not need an ISA. As your balance grows, interest can go over that allowance. In our example, saving £300 a month for 10 years, an ISA leaves you £513.89 better off as a basic-rate taxpayer and £2,409.95 as a higher-rate taxpayer.
   - q: How is interest outside an ISA taxed?
-    a: Interest over your Personal Savings Allowance is taxed at your usual rate of Income Tax. The allowance is £1,000 for basic-rate taxpayers, £500 for higher-rate and £0 for additional-rate. HMRC usually collects the tax through your tax code.
+    a: Interest over your Personal Savings Allowance is taxed at your usual rate of Income Tax. The allowance is £1,000 for basic-rate taxpayers, £500 for higher-rate and £0 for additional-rate. HMRC usually collects the tax through your tax code. Budget 2026 said tax rates on savings income will rise to 24%, 44% and 49% from 6 April 2027, once the Finance Bill 2026-27 is law. The calculator uses today's rates for every year, so an ISA could leave you further ahead than it shows.
   - q: What is the starting rate for savings?
     a: If your other taxable income is less than £17,570, you may be able to earn up to £5,000 of interest tax-free on top of your Personal Savings Allowance. Every £1 of other income above your Personal Allowance reduces it by £1. This calculator leaves it out.
   - q: Can I use this for a stocks and shares ISA?
@@ -23,6 +23,8 @@ sources:
     url: https://www.gov.uk/apply-tax-free-interest-on-savings/how-much-is-tax-free
   - name: GOV.UK, How you pay tax on savings interest
     url: https://www.gov.uk/apply-tax-free-interest-on-savings/how-you-pay-tax-on-savings-interest
+  - name: GOV.UK, Income Tax, changes to tax rates for property and savings income
+    url: https://www.gov.uk/government/publications/income-tax-changes-to-tax-rates-for-property-and-savings-income/income-tax-changes-to-tax-rates-for-property-and-savings-income
 ---
 
 ## How to use this calculator
@@ -59,9 +61,9 @@ The ISA's lead grows over time. Over 20 years, a basic-rate taxpayer saving the 
 
 **ISA allowance:** your deposits in each year (monthly amount × 12) are checked against the £20,000 limit for 2026 to 2027.
 
-**Outside an ISA:** each tax year, interest over your Personal Savings Allowance (£1,000 basic rate, £500 higher rate, £0 additional rate) is taxed at your usual rate: 20%, 40% or 45%. The tax is taken off the balance at the end of the year, so the taxable account also loses the interest that money would have earned. That's why the ISA advantage is more than the tax itself.
+**Outside an ISA:** each tax year, interest over your Personal Savings Allowance (£1,000 basic rate, £500 higher rate, £0 additional rate) is taxed at your usual rate. The calculator uses the 2026 to 2027 rates of 20%, 40% or 45% for every year. The tax is taken off the balance at the end of the year, so the taxable account also loses the interest that money would have earned. That's why the ISA advantage is more than the tax itself.
 
-The comparison leaves out the starting rate for savings, which helps people with low other income, and assumes your rate and tax band stay the same. Figures are calculated at full precision and rounded for display.
+The comparison leaves out the starting rate for savings, which helps people with low other income, and assumes your interest rate, tax band and the tax rates stay the same. The rates on savings income are due to rise in April 2027 (see the FAQ above). Figures are calculated at full precision and rounded for display.
 
 ## Tips for your ISA
 
