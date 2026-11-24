@@ -1,13 +1,17 @@
 ---
 import { SITE } from '../config/site';
+import { LAUNCHED_COUNTRIES } from '../countries';
 import PageLayout from '../layouts/PageLayout.astro';
+
+// Built from the launched countries, so this list can't go out of date.
+const names = LAUNCHED_COUNTRIES.map((c) => (c.name.startsWith('United') ? `the ${c.name}` : c.name));
+const countries = `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 ---
 
 <PageLayout title="About Calcvera" description="Who runs Calcvera, why it exists and how we keep our finance calculators accurate.">
   <p>
-    {SITE.name} is a set of free finance calculators for people in the United States and the United Kingdom, with more
-    countries to follow. The name comes from "calc" and "vera", Latin for true: the point of the site is calculators
-    you can trust.
+    {SITE.name} is a set of free finance calculators for people in {countries}. The name comes from "calc" and "vera",
+    Latin for true: the point of the site is calculators you can trust.
   </p>
 
   <h2>Why this site exists</h2>
