@@ -23,8 +23,8 @@ sources:
     url: https://www.gov.uk/lifetime-isa
   - name: GOV.UK, Withdrawing money from your Lifetime ISA
     url: https://www.gov.uk/lifetime-isa/withdrawing-money-from-your-lifetime-isa
-  - name: GOV.UK, First Time Buyer ISA consultation
-    url: https://www.gov.uk/government/consultations/first-time-buyer-isa-consultation/first-time-buyer-isa-consultation
+  - name: GOV.UK, Budget 2026
+    url: https://www.gov.uk/government/publications/budget-2026-document/budget-2026-html
   - name: GOV.UK, Tax on savings interest, how much is tax-free
     url: https://www.gov.uk/apply-tax-free-interest-on-savings/how-much-is-tax-free
   - name: FSCS, Banks, building societies and credit unions
@@ -76,7 +76,7 @@ A Lifetime ISA can add a government bonus of 25% to what you pay in, up to £1,0
 - Take the money out for another reason before 60 and you pay a 25% charge. GOV.UK's own example: £800 of savings grows to £1,000 with the bonus, and taking it all out leaves £750.
 - The £4,000 counts towards your £20,000 ISA allowance for the 2026 to 2027 tax year.
 
-The government has consulted on a First Time Buyer ISA to replace it. Until that launches, the consultation says you can still open a Lifetime ISA and pay into one under the existing rules.
+At Budget 2026 the government said a First Time Buyer ISA will replace the Lifetime ISA for new savers from April 2029. If you already have a Lifetime ISA, you can keep paying in and using it under the current rules.
 
 ## How it's calculated
 
