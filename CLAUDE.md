@@ -114,7 +114,7 @@ public/                     robots.txt, ads.txt, _headers, fonts/, brand/ (logo 
 - Never invent or guess a tax figure. If unknown, stop and ask the owner for the official figure.
 - Unfilled figures are `null` (type `Pending<T>`) with their VERIFY comment. Engines and pages read them only through `requireFigure()`, which fails the build while a figure is still null.
 - Each country config holds `taxYear`, and every tax calculator page shows "Updated for the [tax year] tax year".
-- Update windows: US in January, UK and Australia by April/July (new tax years), Canada in January, Pakistan after the June budget, India after the February budget.
+- Update windows: US in January, UK and Australia by April/July (new tax years), Canada in January, Pakistan after the June budget, India after the February budget. UK: also check all pages after each Budget.
 
 ## 9. URLs and naming
 
