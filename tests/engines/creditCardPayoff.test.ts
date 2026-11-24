@@ -113,3 +113,58 @@ describe('validateCardPayoffInput', () => {
     expect(() => calculateCardPayoff({ ...base, balance: Number.NaN })).toThrow(RangeError);
   });
 });
+
+describe('guide figures (src/content/guides/uk/credit-card-payoff-calculator.md)', () => {
+  const uk: CardPayoffInput = { balance: 3_000, aprPercent: 24.9, mode: 'payment', monthlyPayment: 150, targetMonths: 24 };
+  const pay = (monthlyPayment: number) => calculateCardPayoff({ ...uk, monthlyPayment });
+  const target = (targetMonths: number, aprPercent = 24.9) => calculateCardPayoff({ ...uk, mode: 'months', targetMonths, aprPercent });
+  /** The FCA test: interest against principal over the first 18 months. */
+  const first18 = (monthlyPayment: number) => {
+    const rows = pay(monthlyPayment).schedule.slice(0, 18);
+    return { interest: rows.reduce((s, x) => s + x.interest, 0), principal: rows.reduce((s, x) => s + x.principal, 0) };
+  };
+
+  it('matches the payment table and the first month of interest', () => {
+    const rows: [number, number, number][] = [
+      [70, 108, 4_501.25],
+      [100, 48, 1_743.66],
+      [150, 27, 915.95],
+      [200, 19, 631.43],
+    ];
+    for (const [payment, months, interest] of rows) {
+      const r = pay(payment);
+      expect(r.months, `£${payment}`).toBe(months);
+      expect(r.totalInterest, `£${payment}`).toBeCloseTo(interest, 2);
+    }
+    expect(pay(150).firstMonthInterest).toBeCloseTo(62.25, 2);
+    expect(pay(100).totalInterest - pay(200).totalInterest).toBeCloseTo(1_112.24, 2);
+  });
+
+  it('matches the target-date figures and the 0% transfer', () => {
+    const rows: [number, number, number][] = [
+      [12, 284.99, 419.84],
+      [24, 159.96, 839.14],
+      [36, 119.12, 1_288.35],
+      [48, 99.3, 1_766.6],
+    ];
+    for (const [months, payment, interest] of rows) {
+      expect(target(months).monthlyPayment, `${months} months`).toBeCloseTo(payment, 2);
+      expect(target(months).totalInterest, `${months} months`).toBeCloseTo(interest, 2);
+    }
+    expect(target(24, 0).monthlyPayment).toBe(125);
+  });
+
+  it('matches the persistent debt figures, with £107 the lowest whole-pound payment that avoids it', () => {
+    const rows: [number, number, number][] = [
+      [70, 1_092.95, 167.05],
+      [100, 986.3, 813.7],
+      [107, 961.41, 964.59],
+    ];
+    for (const [payment, interest, principal] of rows) {
+      expect(first18(payment).interest, `£${payment}`).toBeCloseTo(interest, 2);
+      expect(first18(payment).principal, `£${payment}`).toBeCloseTo(principal, 2);
+    }
+    expect(first18(106).principal).toBeLessThan(first18(106).interest);
+    expect(first18(107).principal).toBeGreaterThan(first18(107).interest);
+  });
+});
