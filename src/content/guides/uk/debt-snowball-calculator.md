@@ -1,81 +1,95 @@
 ---
 h1: UK Debt Snowball Calculator
-description: "Free UK debt snowball calculator: list your debts to see your debt-free date, payoff order and interest saved, and compare it with the avalanche method."
-intro: List your debts and how much extra you can pay each month to see when you'll be debt-free, the order your debts are cleared, and how the snowball compares with the avalanche method.
-updated: 2026-10-19
+description: "Free UK debt snowball calculator: list your debts to see when you'll be debt-free, which to clear first, and how the avalanche method compares."
+intro: List your debts and any extra you can pay each month. You'll see your debt-free date, the order your debts are cleared, the interest you'd pay, and how the snowball and avalanche compare.
+updated: 2026-11-24
 faqs:
   - q: What is the debt snowball method?
-    a: You pay the minimum on every debt and put any extra money towards the smallest balance. When that debt is cleared, you add its payment to the next smallest, so the amount going to each new target keeps growing, like a snowball rolling downhill. Your total monthly payment stays the same until everything is paid off.
-  - q: Is the snowball or the avalanche method better?
-    a: The avalanche (highest interest rate first) usually costs less interest. In our example it saves £22.69 against the snowball, with the same 24-month finish. The snowball clears small debts sooner, which some people find easier to keep going with. The calculator shows both, so you can compare them for your own debts.
-  - q: How long will it take to clear my debts with the snowball method?
-    a: It depends on your balances, rates and how much you pay each month. In the example, four debts totalling £10,900 are cleared in 24 months at £536 a month, against 58 months paying only the minimums. Enter your own debts above to see your date.
+    a: Pay the minimum on every debt, and put everything else on the smallest balance. Once it's cleared, its payment joins the next smallest. Your total each month stays the same, so the amount going to each new target grows.
+  - q: Snowball or avalanche, which is better?
+    a: The avalanche (highest interest rate first) usually costs less. In our example it saves £22.69, and both finish in 24 months, so the difference is small. It can be much bigger when your dearest debt is also one of your largest, so compare both for your own debts.
+  - q: Can I pay a loan or car finance off early?
+    a: Yes. The Consumer Credit Act lets you repay a regulated agreement early in full, or in part if it isn't secured on land. Tell the lender, which needn't be in writing, and pay within 28 days. On a fixed-rate agreement, the lender can only claim compensation if your early payments total more than £8,000 in 12 months, up to 1% of what you pay (0.5% with a year or less left).
+  - q: What is Breathing Space?
+    a: In England and Wales, a debt adviser can apply for up to 60 days' protection. Creditors can't add interest or charges, contact you or take enforcement action on the debts included. You still need to keep up your repayments, and you can normally use it once in 12 months. Scotland has its own Debt Arrangement Scheme.
+  - q: Is buy now pay later regulated?
+    a: The FCA has regulated deferred payment credit since 15 July 2026. Lenders must check you can afford to repay, and you can complain to the Financial Ombudsman Service. Agreements taken out before that date stay unregulated, and so does credit from the same business you buy from.
   - q: Which debts should I deal with first?
-    a: Priority debts come before the snowball. These are bills where falling behind can have the most serious consequences, such as rent or mortgage payments, Council Tax and energy bills. Once those are up to date, the snowball or avalanche can help you clear credit cards, store cards and loans.
-  - q: What is persistent credit card debt?
-    a: If you've been in persistent debt on a credit card for 18 months, paying more in interest, fees and charges than off the balance, your provider must contact you about paying more if you can. After 36 months, it must offer you a way to repay the balance in a reasonable period. A snowball plan that targets that card can help you avoid getting there.
+    a: Priority debts come before the snowball. These are the ones where falling behind has the most serious results, such as rent or mortgage, Council Tax and energy bills. Once they're up to date, cards, loans and buy now pay later can go into the plan.
   - q: What if I can't afford more than the minimums?
-    a: Rolling over the payments of debts you clear still helps. In the example, with no extra money at all, the debts are cleared in 36 months instead of 58, saving £1,167.75 in interest. If you're struggling, free debt advice is available through MoneyHelper, StepChange and Citizens Advice.
-  - q: Does the calculator include new spending or rate changes?
-    a: No. It assumes rates stay the same, you don't add new spending, and minimum payments stay fixed. Card minimums that fall as the balance drops, new purchases or a rate change will move your debt-free date.
+    a: Rolling over cleared payments still helps. With no extra at all, the example finishes in 36 months instead of 58 and saves £1,167.75. If you can't keep up the minimums, talk to a free debt adviser such as MoneyHelper, StepChange or Citizens Advice.
 sources:
-  - name: FCA, New credit card rules introduced (persistent debt at 18 and 36 months)
-    url: https://www.fca.org.uk/news/press-releases/new-credit-card-rules-introduced-fca
+  - name: Consumer Credit Act 1974, section 94 (early repayment)
+    url: https://www.legislation.gov.uk/ukpga/1974/39/section/94
+  - name: Consumer Credit Act 1974, section 95A (compensation for early repayment)
+    url: https://www.legislation.gov.uk/ukpga/1974/39/section/95A
+  - name: GOV.UK, Options for paying off your debts, Breathing Space
+    url: https://www.gov.uk/options-for-paying-off-your-debts/breathing-space
+  - name: FCA, Buy Now Pay Later
+    url: https://www.fca.org.uk/consumers/buy-now-pay-later
   - name: MoneyHelper, Bill prioritiser (priority debts)
     url: https://www.moneyhelper.org.uk/en/money-troubles/cost-of-living/bill-prioritiser
-  - name: GOV.UK, Options for paying off your debts
-    url: https://www.gov.uk/options-for-paying-off-your-debts
 ---
 
 ## How to use this calculator
 
-The results update as you type.
+Fill in the debts you want to clear; the results change as you type.
 
-- **Your debts:** for each one, enter a name (optional), the balance, the interest rate and the minimum monthly payment from your latest statement. Four rows are shown; use **Add another debt** for up to 10. Leave a balance empty to skip a row.
-- **Extra each month:** how much you can pay on top of all your minimum payments. Enter 0 to see what rolling over payments alone does.
-- **Payoff order:** the snowball targets the smallest balance first. The avalanche targets the highest interest rate first.
+- **Your debts:** one row for each card, loan, buy now pay later plan or overdraft. Use the balance, interest rate and minimum payment from your latest statement. A name is optional, and you can add up to 10 debts. Leave a balance empty to skip a row.
+- **Extra each month:** what you can pay on top of the minimums. Try £0 first to see what rolling over payments does by itself.
+- **Payoff order:** snowball (smallest balance first) or avalanche (highest interest rate first).
 
-The results show the month you'll be debt-free, your total monthly payment, the total interest, and how much interest and time you save against paying only the minimums. A table compares the snowball, the avalanche and minimum payments only. Below the calculator, you'll see the payoff order with the month each debt is cleared, a yearly chart and a month-by-month schedule.
+You'll see the debt-free month, your total payment, the interest and how that compares with paying only the minimums. The table sets snowball, avalanche and minimums side by side. Underneath are the payoff order, a chart and a month-by-month schedule.
 
-## Example: four debts and £150 extra a month
+## Example: £10,900 across four debts
 
-Say you owe four debts, £10,900 in total, and can add £150 a month to your minimum payments:
+Say you pay £150 a month on top of your minimums, which come to £386. That's £536 in all:
 
-| Debt | Balance | Interest rate | Minimum payment |
+| Debt | Balance | Rate | Minimum |
 | --- | --- | --- | --- |
 | Buy now pay later | £300 | 0% | £50 |
 | Store card | £900 | 29.9% | £30 |
 | Credit card | £3,200 | 24.9% | £96 |
 | Car finance | £6,500 | 9.9% | £210 |
 
-Your minimums add up to £386, so you pay £536 a month in total.
+When each debt is cleared:
 
-With the **snowball**, the buy now pay later balance goes first and is cleared in month 2. Its £50, plus the extra £150, then goes on the store card, which is cleared by month 6. The growing payment clears the credit card in month 17 and the car finance in month 24. You pay £1,657.08 in interest in total.
+- **Snowball:** buy now pay later in month 2, store card in month 6, credit card in month 17, car finance in month 24.
+- **Avalanche:** store card and buy now pay later in month 6, credit card in month 16, car finance in month 24.
+- **Minimums only:** buy now pay later in month 6, car finance in month 36, store card in month 56, credit card in month 58.
 
-With the **avalanche**, the store card goes first, because its rate is highest. It's cleared in month 6, the credit card in month 16 and the car finance in month 24. The buy now pay later balance is cleared by its own payments in month 6. Interest comes to £1,634.39, which is £22.69 less than the snowball, for the same finish date.
+The snowball costs **£1,657.08** in interest and the avalanche £1,634.39. Paying only the minimums takes 58 months and costs £4,113.92. The store card shows why: in month 1, £22.43 of its £30 minimum is interest.
 
-Paying **only the minimums** would take 58 months (4 years 10 months) and cost £4,113.92 in interest. Compared with that, the snowball saves £2,456.84 and gets you debt-free 2 years 10 months sooner.
+The extra payment matters more than the method:
 
-Even with no extra money, rolling each cleared payment into the next debt finishes in 36 months with £2,946.17 of interest. Raising the extra amount to £250 a month cuts the snowball to 20 months and £1,317.53 of interest.
+| Extra each month | Debt-free in | Interest (snowball) |
+| --- | --- | --- |
+| £0 | 36 months | £2,946.17 |
+| £50 | 31 months | £2,302.84 |
+| £150 | 24 months | £1,657.08 |
+| £250 | 20 months | £1,317.53 |
+
+### Should car finance be in the plan?
+
+Car finance is often the largest debt but has a lower rate than cards. If you keep it out of the plan and pay its £210 a month as agreed, the other three debts are cleared in month 17 and the car in month 36. The interest comes to £1,860.99, which is £203.91 more than with the car in the plan, but you'd have the £326 a month free after month 17. On a Personal Contract Purchase, ask how an overpayment is applied, because of the large final payment.
 
 ## How it's calculated
 
-Each month, the calculator works through four steps for every debt:
+Each month, for every debt:
 
-1. **Interest is added:** balance × annual rate ÷ 12. In month 1 of the example, that's £142.45 across all four debts.
-2. **Every debt gets its minimum payment**, or the rest of its balance if that's less.
-3. **The rest of your monthly budget goes to the target debt:** the smallest starting balance for the snowball, or the highest rate for the avalanche. If the target is cleared, anything left over goes straight to the next one.
-4. **Your total payment stays the same.** When a debt is cleared, its minimum payment becomes part of the money going to the next target.
+1. Interest = balance × yearly rate ÷ 12 is added.
+2. The debt gets its minimum payment, or what's left if that's less.
+3. Whatever remains of your monthly total goes to one target debt, and any leftover to the next.
 
-**Minimums only** pays each debt its own minimum with no extra, and a cleared debt's payment isn't reused. If a minimum doesn't cover that debt's monthly interest, it's never cleared this way.
+When a debt is cleared, its minimum stays in the pot. "Minimums only" pays each minimum and doesn't reuse a cleared debt's payment. If a minimum is lower than the interest, that debt never clears this way.
 
-The calculator assumes fixed rates, fixed minimum payments, no new spending and no fees. Lenders usually charge interest daily, so your statements can differ a little. Figures are calculated at full precision and rounded only for display.
+The plan assumes fixed rates and minimums, no new spending and no fees. In practice card minimums fall with your balance, and lenders charge interest daily, so your own dates may be a little different. Figures are rounded only when shown.
 
-## Tips to clear your debts faster
+## Tips for UK borrowers
 
-1. **Sort out priority bills first.** Make sure rent or mortgage, Council Tax and energy payments are up to date before putting extra money into the snowball.
-2. **Set every minimum up as a Direct Debit.** A missed payment can bring a late fee and a mark on your credit file. Then pay the extra to your target debt each month.
-3. **Find a little more to add.** In the example, going from £150 to £250 extra a month finishes 4 months sooner and saves £339.55 of interest.
-4. **Check how overpayments work on loans and car finance.** Ask your lender whether extra payments reduce the balance straight away, and whether any early repayment charge applies.
-5. **Compare snowball and avalanche for your debts.** If the avalanche saves only a few pounds, the snowball's quick early wins may be worth it. If the gap is large, the avalanche keeps more money in your pocket.
-6. **Get free help if you're struggling.** If your payments mostly cover interest, contact your lenders or a free debt advice service such as MoneyHelper, StepChange or Citizens Advice.
+1. **Make the minimums automatic.** Set up Direct Debits so nothing is missed, then pay the target debt by bank transfer.
+2. **Tell the lender before you overpay a loan.** Say the payment is a partial early repayment. Ask how it changes your balance and whether any charge applies.
+3. **Check buy now pay later dates.** Missed instalments can bring late fees. Put each plan in as its own row.
+4. **Ask before moving a balance.** A 0% balance transfer can help, but check the fee and the rate afterwards.
+5. **Ask for help early.** Breathing Space stops interest for up to 60 days, but only through a debt adviser.
+6. **Pick the method you'll keep.** If the avalanche saves only a few pounds, an early cleared debt may be worth more to you.

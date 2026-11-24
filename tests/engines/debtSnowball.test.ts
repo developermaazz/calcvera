@@ -164,6 +164,56 @@ describe('edge cases', () => {
   });
 });
 
+describe('guide figures (src/content/guides/uk/debt-snowball-calculator.md)', () => {
+  const debts = [
+    { name: 'Buy now pay later', balance: 300, aprPercent: 0, minimumPayment: 50 },
+    { name: 'Store card', balance: 900, aprPercent: 29.9, minimumPayment: 30 },
+    { name: 'Credit card', balance: 3_200, aprPercent: 24.9, minimumPayment: 96 },
+    { name: 'Car finance', balance: 6_500, aprPercent: 9.9, minimumPayment: 210 },
+  ];
+  const uk: SnowballInput = { debts, extraMonthly: 150, method: 'snowball' };
+  const byName = (r: ReturnType<typeof simulatePlan>) => Object.fromEntries(r.debts.map((d) => [d.name, d.paidOffMonth]));
+
+  it('matches the debt table', () => {
+    const r = calculateDebtSnowball(uk);
+    expect(r.monthlyBudget).toBe(536);
+    expect(byName(r.snowball)).toEqual({ 'Buy now pay later': 2, 'Store card': 6, 'Credit card': 17, 'Car finance': 24 });
+    expect(byName(r.avalanche)).toEqual({ 'Buy now pay later': 6, 'Store card': 6, 'Credit card': 16, 'Car finance': 24 });
+    expect(byName(r.minimumOnly)).toEqual({ 'Buy now pay later': 6, 'Store card': 56, 'Credit card': 58, 'Car finance': 36 });
+    expect(r.snowball.totalInterest).toBeCloseTo(1_657.08, 2);
+    expect(r.avalanche.totalInterest).toBeCloseTo(1_634.39, 2);
+    expect(r.snowball.totalInterest - r.avalanche.totalInterest).toBeCloseTo(22.69, 2);
+    expect(r.minimumOnly.totalInterest).toBeCloseTo(4_113.92, 2);
+    expect(900 * (0.299 / 12)).toBeCloseTo(22.43, 2);
+  });
+
+  it('matches the extra payment table and the no-extra FAQ', () => {
+    const rows: [number, number, number][] = [
+      [0, 36, 2_946.17],
+      [50, 31, 2_302.84],
+      [150, 24, 1_657.08],
+      [250, 20, 1_317.53],
+    ];
+    for (const [extraMonthly, months, interest] of rows) {
+      const r = calculateDebtSnowball({ ...uk, extraMonthly });
+      expect(r.plan.months, `extra ${extraMonthly}`).toBe(months);
+      expect(r.plan.totalInterest, `extra ${extraMonthly}`).toBeCloseTo(interest, 2);
+    }
+    expect(calculateDebtSnowball({ ...uk, extraMonthly: 0 }).interestSaved!).toBeCloseTo(1_167.75, 2);
+  });
+
+  it('matches the figures with the car finance left out of the plan', () => {
+    const others = calculateDebtSnowball({ ...uk, debts: debts.slice(0, 3) });
+    const car = calculateDebtSnowball({ debts: [debts[3]!], extraMonthly: 0, method: 'snowball' });
+    expect(others.plan.months).toBe(17);
+    expect(car.plan.months).toBe(36);
+    const total = others.plan.totalInterest + car.plan.totalInterest;
+    expect(total).toBeCloseTo(1_860.99, 2);
+    expect(total - calculateDebtSnowball(uk).plan.totalInterest).toBeCloseTo(203.91, 2);
+    expect(others.monthlyBudget).toBe(326);
+  });
+});
+
 describe('validateSnowballInput', () => {
   it('skips empty rows and needs at least one debt', () => {
     const empty = { balance: 0, aprPercent: Number.NaN, minimumPayment: Number.NaN };
